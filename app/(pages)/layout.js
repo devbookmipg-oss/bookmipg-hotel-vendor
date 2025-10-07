@@ -2,14 +2,6 @@
 import { useAuth } from '@/context';
 import { Box, styled } from '@mui/material';
 
-import {
-  User,
-  Building2,
-  Utensils,
-  LayoutDashboard,
-  ShoppingCart,
-  UserPen,
-} from '@mui/icons-material';
 import { Header, Sidebar } from '@/component/common';
 
 // styles
@@ -34,7 +26,7 @@ const menuLinks = [
   // },
   {
     label: 'Property',
-    icon: <Building2 sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     subMenu: [
       { href: '/master/hotel-profile', label: '▫️Hotel Profile' },
       { href: '/master/restaurant-profile', label: '▫️Restaurant Profile' },
@@ -45,17 +37,17 @@ const menuLinks = [
   },
   {
     href: '/front-office/room-booking',
-    icon: <UserPen sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     label: 'Manage Booking',
   },
   {
     href: '/front-office/reviews',
-    icon: <UserPen sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     label: 'Reviews',
   },
   // {
   //   label: 'Frontoffice',
-  //   icon: <UserPen sx={{ mr: 0.8, fontSize: '20px' }} />,
+  //
   //   subMenu: [
   //     { href: '/front-office/room-booking', label: '▫️Booking' },
   //     { href: '/front-office/room-booking-report', label: '▫️Booking Report' },
@@ -70,7 +62,7 @@ const menuLinks = [
 
   {
     label: 'Restaurant',
-    icon: <Utensils sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     subMenu: [
       { href: '/restaurant/dashboard', label: '▫️Dashboard' },
       { href: '/restaurant/tables', label: '▫️Tables' },
@@ -82,7 +74,7 @@ const menuLinks = [
   },
   {
     label: 'Inventory',
-    icon: <ShoppingCart sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     subMenu: [
       { href: '/inventory/category', label: '▫️Category' },
       { href: '/inventory/inventory-item', label: '▫️Inventory List' },
@@ -93,7 +85,7 @@ const menuLinks = [
   },
   {
     href: '/expenses',
-    icon: <UserPen sx={{ mr: 0.8, fontSize: '20px' }} />,
+
     label: 'Expenses',
   },
 ];

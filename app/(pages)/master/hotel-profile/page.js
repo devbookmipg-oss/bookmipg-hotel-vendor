@@ -1,7 +1,18 @@
 'use client';
-import { Typography, Container, Box, Breadcrumbs, Link } from '@mui/material';
+import {
+  Typography,
+  Container,
+  Box,
+  Breadcrumbs,
+  Link,
+  Grid,
+} from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { UpdateHotelProfileForm } from '@/component/updateForms';
+import {
+  UpdateHotelBanner,
+  UpdateHotelImages,
+  UpdateHotelProfileForm,
+} from '@/component/updateForms';
 import { GetSingleData } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
@@ -28,9 +39,18 @@ export default function HotelRestaurantForm() {
       {!data ? (
         <Loader />
       ) : (
-        <Box p={3}>
-          <UpdateHotelProfileForm data={data} auth={auth} />
-        </Box>
+        <Grid container spacing={2} p={3}>
+          <Grid size={{ xs: 12, md: 8 }}>
+            <UpdateHotelProfileForm data={data} auth={auth} />
+          </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <UpdateHotelBanner data={data} auth={auth} />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            {' '}
+            <UpdateHotelImages data={data} auth={auth} />
+          </Grid>
+        </Grid>
       )}
     </>
   );

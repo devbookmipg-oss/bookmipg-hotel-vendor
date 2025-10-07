@@ -1,3 +1,11 @@
 import UpdateHotelProfileForm from './UpdateHotelProfileForm';
 import UpdateRestaurantProfileForm from './UpdateRestaurantProfileForm';
-export { UpdateHotelProfileForm, UpdateRestaurantProfileForm };
+import UpdateHotelBanner from './UpdateHotelBanner';
+import UpdateHotelImages from './UpdateHotelImages';
+
+export {
+  UpdateHotelProfileForm,
+  UpdateRestaurantProfileForm,
+  UpdateHotelBanner,
+  UpdateHotelImages,
+};

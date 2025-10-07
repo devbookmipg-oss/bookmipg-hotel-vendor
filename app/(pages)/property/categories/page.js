@@ -37,6 +37,7 @@ import {
   Grid,
   styled,
 } from '@mui/material';
+import { AddCircle, Cancel } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -102,6 +103,7 @@ const Page = () => {
   const [formData, setFormData] = useState(initialFormData());
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [amenityInput, setAmenityInput] = useState('');
 
   function initialFormData() {
     return {
@@ -115,6 +117,7 @@ const Page = () => {
       max_adults: 1,
       max_child: 0,
       max_capacity: 1,
+      amenities: [],
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
@@ -171,6 +174,7 @@ const Page = () => {
   const handleEdit = (row) => {
     setEditing(true);
     setFormData(row);
+    setPreviewImage(row?.room_image.url || null);
     setFormOpen(true);
   };
 
@@ -179,6 +183,33 @@ const Page = () => {
     setEditing(false);
     setFormData(initialFormData());
     setFormOpen(true);
+  };
+
+  // handle close
+  const handleClose = () => {
+    setFormOpen(false);
+    setPreviewImage(null);
+    setFormData(initialFormData());
+  };
+
+  // Add amenity
+  const handleAddAmenity = () => {
+    const trimmed = amenityInput.trim();
+    if (trimmed && !formData.amenities.some((a) => a.attribute === trimmed)) {
+      setFormData({
+        ...formData,
+        amenities: [...formData.amenities, { id: Date.now(), title: trimmed }],
+      });
+      setAmenityInput('');
+    }
+  };
+
+  // Remove amenity
+  const handleRemoveAmenity = (id) => {
+    setFormData({
+      ...formData,
+      amenities: formData.amenities.filter((a) => a.id !== id),
+    });
   };
 
   const handleSave = async () => {
@@ -195,6 +226,10 @@ const Page = () => {
       } = formData;
 
       let payload = { data: { ...cleanFormData } };
+      const sanitizedAmenities = formData.amenities.map(({ title }) => ({
+        title,
+      }));
+      payload.data.amenities = sanitizedAmenities;
 
       // Handle image upload (for both create & update)
       if (upload || !editing) {
@@ -403,12 +438,7 @@ const Page = () => {
           </Dialog>
 
           {/* Create/Edit Dialog */}
-          <Dialog
-            open={formOpen}
-            onClose={() => setFormOpen(false)}
-            maxWidth="md"
-            fullWidth
-          >
+          <Dialog open={formOpen} onClose={handleClose} maxWidth="md" fullWidth>
             <DialogTitle>
               {editing ? 'Edit Category' : 'Create Category'}
             </DialogTitle>
@@ -529,10 +559,58 @@ const Page = () => {
                     InputProps={{ readOnly: true }}
                   />
                 </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    Amenities
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <TextField
+                      label="Add Amenity"
+                      value={amenityInput}
+                      onChange={(e) => setAmenityInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddAmenity();
+                        }
+                      }}
+                      size="small"
+                    />
+                    <IconButton
+                      color="primary"
+                      onClick={handleAddAmenity}
+                      sx={{ mt: '2px' }}
+                    >
+                      <AddCircle />
+                    </IconButton>
+                  </Box>
+
+                  <Box
+                    sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}
+                  >
+                    {formData.amenities.map((amenity) => (
+                      <Chip
+                        key={amenity.id}
+                        label={amenity.title}
+                        onDelete={() => handleRemoveAmenity(amenity.id)}
+                        deleteIcon={<Cancel />}
+                        color="secondary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                </Grid>
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setFormOpen(false)}>Cancel</Button>
+              <Button onClick={handleClose}>Cancel</Button>
               <Button
                 onClick={handleSave}
                 variant="contained"
