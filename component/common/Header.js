@@ -80,7 +80,7 @@ const Header = ({ logOut, menuLinks }) => {
           <CustomButton onClick={toggleDrawer(true)}>
             <MenuIcon />
           </CustomButton>
-          <Image src="/logo-white.png" width={90} height={35} alt="logo" />
+          <Image src="/logo-white.png" width={110} height={50} alt="logo" />
         </Box>
       </Container>
 

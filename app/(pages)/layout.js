@@ -36,9 +36,9 @@ const menuLinks = [
     ],
   },
   {
-    href: '/front-office/room-booking',
+    href: '/front-office/online-booking',
 
-    label: 'Manage Booking',
+    label: 'Online Bookings',
   },
   {
     href: '/front-office/reviews',

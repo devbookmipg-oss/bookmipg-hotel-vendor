@@ -35,6 +35,8 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
     hotel_latitude: data.hotel_latitude || '',
     hotel_longitude: data.hotel_longitude || '',
     amenities: data.amenities || [],
+    base_price: data.base_price,
+    discounted_base_price: data.discounted_base_price,
     about: data.about || '',
   });
 
@@ -257,7 +259,7 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 fullWidth
                 label="Check-in Time"
@@ -268,13 +270,35 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
                 size="small"
               />
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <TextField
                 fullWidth
                 label="Check-out Time"
                 name="hotel_checkout"
                 type="time"
                 value={formData.hotel_checkout}
+                onChange={handleChange}
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                fullWidth
+                label="Base price"
+                name="base_price"
+                type="number"
+                value={formData.base_price}
+                onChange={handleChange}
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <TextField
+                fullWidth
+                label="Discounted Price"
+                name="discounted_base_price"
+                type="number"
+                value={formData.discounted_base_price}
                 onChange={handleChange}
                 size="small"
               />

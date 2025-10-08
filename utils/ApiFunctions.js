@@ -98,3 +98,25 @@ export const GetUserList = ({ auth }) => {
   });
   return filteredData;
 };
+
+// fetch data list
+export const GetUnfilteredDataList = ({ auth, endPoint }) => {
+  const apiUrl = `${BASEURL}/${endPoint}?sort=id:DESC&populate=*`;
+
+  const { data } = useSWR(
+    apiUrl,
+    async (url) => {
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
+      return res.data.data;
+    },
+    {
+      refreshInterval: 500,
+      revalidateOnFocus: true,
+    }
+  );
+  return data;
+};
