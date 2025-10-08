@@ -216,7 +216,6 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
 
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
-                select
                 fullWidth
                 label="City/District"
                 name="hotel_district"
@@ -224,14 +223,7 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
                 onChange={handleChange}
                 size="small"
                 required
-              >
-                <MenuItem value="">Select District</MenuItem>
-                {getHotelDistrictOptions().map((district) => (
-                  <MenuItem key={district} value={district}>
-                    {district}
-                  </MenuItem>
-                ))}
-              </TextField>
+              />
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
