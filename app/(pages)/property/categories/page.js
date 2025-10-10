@@ -116,7 +116,6 @@ const Page = () => {
       total: 0,
       max_adults: 1,
       max_child: 0,
-      max_capacity: 1,
       amenities: [],
       hotel_id: auth?.user?.hotel_id || '',
     };
@@ -499,6 +498,32 @@ const Page = () => {
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    margin="dense"
+                    label="Max Adults"
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={formData.max_adults}
+                    onChange={(e) =>
+                      setFormData({ ...formData, max_adults: e.target.value })
+                    }
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    margin="dense"
+                    label="Max Child"
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={formData.max_child}
+                    onChange={(e) =>
+                      setFormData({ ...formData, max_child: e.target.value })
                     }
                   />
                 </Grid>
