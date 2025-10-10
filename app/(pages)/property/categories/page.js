@@ -506,8 +506,7 @@ const Page = () => {
                     margin="dense"
                     label="Max Adults"
                     fullWidth
-                    multiline
-                    rows={3}
+                    type="number"
                     value={formData.max_adults}
                     onChange={(e) =>
                       setFormData({ ...formData, max_adults: e.target.value })
@@ -519,8 +518,7 @@ const Page = () => {
                     margin="dense"
                     label="Max Child"
                     fullWidth
-                    multiline
-                    rows={3}
+                    type="number"
                     value={formData.max_child}
                     onChange={(e) =>
                       setFormData({ ...formData, max_child: e.target.value })
