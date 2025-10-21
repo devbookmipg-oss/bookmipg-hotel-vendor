@@ -38,6 +38,7 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
     base_price: data.base_price,
     discounted_base_price: data.discounted_base_price,
     about: data.about || '',
+    google_map_link: data.google_map_link || '',
   });
 
   const [amenityInput, setAmenityInput] = useState('');
@@ -299,6 +300,16 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
                 name="discounted_base_price"
                 type="number"
                 value={formData.discounted_base_price}
+                onChange={handleChange}
+                size="small"
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label="Google Map Link"
+                name="google_map_link"
+                value={formData.google_map_link}
                 onChange={handleChange}
                 size="small"
               />

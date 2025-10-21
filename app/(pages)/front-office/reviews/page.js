@@ -71,8 +71,8 @@ const Page = () => {
                 {data?.map((row) => (
                   <TableRow key={row.documentId}>
                     <TableCell>{GetCustomDate(row.createdAt)}</TableCell>
-                    <TableCell>{row.customer.name}</TableCell>
-                    <TableCell>{row.customer.mobile}</TableCell>
+                    <TableCell>{row.online_user.name}</TableCell>
+                    <TableCell>{row.online_user.phone}</TableCell>
                     <TableCell>⭐{row.star}</TableCell>
                     <TableCell>{row.comment}</TableCell>
                   </TableRow>
