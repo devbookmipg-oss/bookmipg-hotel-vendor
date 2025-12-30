@@ -97,6 +97,7 @@ const Page = () => {
 
   const [viewOpen, setViewOpen] = useState(false);
   const [viewData, setViewData] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const handleItemSelect = () => {
     if (!selectedItem) return;
@@ -105,17 +106,16 @@ const Page = () => {
     if (!itemObj) return;
 
     const rate = itemObj.rate || 0;
-    const gstPercent = itemObj.gst_percent || 0;
+    const gstPercent = itemObj.gst || 0;
     const gstValue = (rate * gstPercent) / 100;
 
     const newItem = {
-      name: itemObj.name,
-      hsn_code: itemObj.hsn_code || '',
+      item: itemObj.name,
+      hsn: itemObj.hsn_code || '',
       rate,
       qty: 1,
-      gst_percent: gstPercent,
-      gst_value: gstValue, // ✅ calculated gst value
-      total: rate + gstValue, // ✅ total includes gst
+      gst: gstPercent,
+      amount: rate + gstValue, // ✅ total includes gst
     };
 
     setFormData({
@@ -167,15 +167,36 @@ const Page = () => {
     setFormData(initialFormData());
     setFormOpen(true);
   };
+  const validateForm = (formData) => {
+    const errors = {};
+
+    if (!formData.menu_items || formData.menu_items.length === 0) {
+      errors.menu_items = 'Please add at least one menu item';
+    }
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      // show first error toast
+
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSave = async () => {
+    if (!validateForm(formData)) {
+      ErrorToast('Enter required fields');
+      return;
+    }
     // recalc before save
     const totalAmount = formData.menu_items.reduce(
       (acc, cur) => acc + cur.rate * cur.qty,
       0
     );
     const tax = formData.menu_items.reduce(
-      (acc, cur) => acc + (cur.rate * cur.qty * cur.gst_percent) / 100,
+      (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
       0
     );
     const payable = totalAmount + tax;
@@ -551,8 +572,10 @@ const Page = () => {
                     <TableBody>
                       {formData.menu_items.map((item, idx) => (
                         <TableRow key={idx}>
-                          <TableCell>{item.name}</TableCell>
-                          <TableCell>{item.hsn_code}</TableCell>
+                          <TableCell>{item.item}</TableCell>
+                          <TableCell>{item.hsn}</TableCell>
+
+                          {/* Rate Field */}
                           <TableCell>
                             <TextField
                               type="number"
@@ -562,12 +585,13 @@ const Page = () => {
                                 const newRate = parseFloat(e.target.value) || 0;
                                 const updated = [...formData.menu_items];
                                 updated[idx].rate = newRate;
-                                updated[idx].total =
-                                  updated[idx].qty * newRate +
-                                  (updated[idx].qty *
-                                    newRate *
-                                    updated[idx].gst_percent) /
-                                    100;
+                                const gst = updated[idx].gst || 0;
+                                const qty = updated[idx].qty || 1;
+                                updated[idx].amount = +(
+                                  qty *
+                                  newRate *
+                                  (1 + gst / 100)
+                                ).toFixed(2);
                                 setFormData({
                                   ...formData,
                                   menu_items: updated,
@@ -576,21 +600,24 @@ const Page = () => {
                               sx={{ width: 80 }}
                             />
                           </TableCell>
+
+                          {/* Qty Field */}
                           <TableCell>
                             <TextField
                               type="number"
                               size="small"
                               value={item.qty}
                               onChange={(e) => {
-                                const newQty = parseInt(e.target.value) || 1;
+                                const newQty = parseFloat(e.target.value) || 1;
                                 const updated = [...formData.menu_items];
                                 updated[idx].qty = newQty;
-                                updated[idx].total =
-                                  newQty * item.rate +
-                                  (newQty *
-                                    item.rate *
-                                    updated[idx].gst_percent) /
-                                    100;
+                                const rate = updated[idx].rate || 0;
+                                const gst = updated[idx].gst || 0;
+                                updated[idx].amount = +(
+                                  newQty *
+                                  rate *
+                                  (1 + gst / 100)
+                                ).toFixed(2);
                                 setFormData({
                                   ...formData,
                                   menu_items: updated,
@@ -599,18 +626,24 @@ const Page = () => {
                               sx={{ width: 60 }}
                             />
                           </TableCell>
+
+                          {/* GST Field */}
                           <TableCell>
                             <TextField
                               type="number"
                               size="small"
-                              value={item.gst_percent}
+                              value={item.gst}
                               onChange={(e) => {
                                 const newGst = parseFloat(e.target.value) || 0;
                                 const updated = [...formData.menu_items];
-                                updated[idx].gst_percent = newGst;
-                                updated[idx].total =
-                                  updated[idx].qty * item.rate +
-                                  (updated[idx].qty * item.rate * newGst) / 100;
+                                updated[idx].gst = newGst;
+                                const rate = updated[idx].rate || 0;
+                                const qty = updated[idx].qty || 1;
+                                updated[idx].amount = +(
+                                  qty *
+                                  rate *
+                                  (1 + newGst / 100)
+                                ).toFixed(2);
                                 setFormData({
                                   ...formData,
                                   menu_items: updated,
@@ -619,7 +652,36 @@ const Page = () => {
                               sx={{ width: 60 }}
                             />
                           </TableCell>
-                          <TableCell>{item.total.toFixed(2)}</TableCell>
+
+                          {/* Amount Field (reverse calculation) */}
+                          <TableCell>
+                            <TextField
+                              type="number"
+                              size="small"
+                              value={item.amount}
+                              onChange={(e) => {
+                                const newAmount =
+                                  parseFloat(e.target.value) || 0;
+                                const updated = [...formData.menu_items];
+                                const gst = updated[idx].gst || 0;
+                                const qty = updated[idx].qty || 1;
+                                updated[idx].amount = newAmount;
+                                // Reverse calculate base rate excluding GST
+                                updated[idx].rate = +(
+                                  newAmount /
+                                  qty /
+                                  (1 + gst / 100)
+                                ).toFixed(2);
+                                setFormData({
+                                  ...formData,
+                                  menu_items: updated,
+                                });
+                              }}
+                              sx={{ width: 100 }}
+                            />
+                          </TableCell>
+
+                          {/* Delete Button */}
                           <TableCell>
                             <IconButton
                               color="error"
@@ -648,33 +710,46 @@ const Page = () => {
               <Typography variant="h6" gutterBottom>
                 Summary
               </Typography>
+
               {(() => {
-                const totalAmount = formData.menu_items.reduce(
-                  (acc, cur) => acc + cur.rate * cur.qty,
-                  0
-                );
-                const tax = formData.menu_items.reduce(
-                  (acc, cur) =>
-                    acc + (cur.rate * cur.qty * cur.gst_percent) / 100,
-                  0
-                );
-                const payable = totalAmount + tax;
+                // ✅ Calculate live totals
+                const totalAmount = formData.menu_items.reduce((acc, cur) => {
+                  const qty = parseFloat(cur.qty) || 0;
+                  const rate = parseFloat(cur.rate) || 0;
+                  return acc + qty * rate;
+                }, 0);
+
+                const totalTax = formData.menu_items.reduce((acc, cur) => {
+                  const qty = parseFloat(cur.qty) || 0;
+                  const rate = parseFloat(cur.rate) || 0;
+                  const gst = parseFloat(cur.gst) || 0;
+                  return acc + (qty * rate * gst) / 100;
+                }, 0);
+
+                const payable = totalAmount + totalTax;
+                const sgst = totalTax / 2;
+                const cgst = totalTax / 2;
 
                 return (
                   <Grid container spacing={2} mb={2}>
-                    <Grid item size={{ xs: 12, sm: 4 }}>
+                    <Grid item size={{ xs: 12, sm: 3 }}>
                       <Typography>
-                        Total: <b>{totalAmount.toFixed(2)}</b>
+                        Total: <b>₹{totalAmount.toFixed(2)}</b>
                       </Typography>
                     </Grid>
-                    <Grid item size={{ xs: 12, sm: 4 }}>
+                    <Grid item size={{ xs: 12, sm: 3 }}>
                       <Typography>
-                        GST: <b>{tax.toFixed(2)}</b>
+                        SGST: <b>₹{sgst.toFixed(2)}</b>
                       </Typography>
                     </Grid>
-                    <Grid item size={{ xs: 12, sm: 4 }}>
+                    <Grid item size={{ xs: 12, sm: 3 }}>
                       <Typography>
-                        Payable: <b>{payable.toFixed(2)}</b>
+                        CGST: <b>₹{cgst.toFixed(2)}</b>
+                      </Typography>
+                    </Grid>
+                    <Grid item size={{ xs: 12, sm: 3 }}>
+                      <Typography>
+                        Payable: <b>₹{payable.toFixed(2)}</b>
                       </Typography>
                     </Grid>
                   </Grid>
@@ -741,18 +816,20 @@ const Page = () => {
                           <TableCell>Rate</TableCell>
                           <TableCell>Qty</TableCell>
                           <TableCell>GST %</TableCell>
+
                           <TableCell>Total</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {viewData.menu_items?.map((item, idx) => (
                           <TableRow key={idx}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>{item.hsn_code}</TableCell>
+                            <TableCell>{item.item}</TableCell>
+                            <TableCell>{item.hsn}</TableCell>
                             <TableCell>{item.rate}</TableCell>
                             <TableCell>{item.qty}</TableCell>
-                            <TableCell>{item.gst_percent}</TableCell>
-                            <TableCell>{item.total.toFixed(2)}</TableCell>
+                            <TableCell>{item.gst}</TableCell>
+
+                            <TableCell>{item.amount.toFixed(2)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

@@ -51,13 +51,13 @@ const RestaurantPosInvoice = React.forwardRef((props, ref) => {
           {invoice?.menu_items?.map((item, index) => (
             <tr key={index}>
               <td>
-                {item.name}
+                {item.item}
                 <br />
-                <span style={{ fontSize: 10 }}>GST:{item?.gst_percent}%</span>
+                <span style={{ fontSize: 10 }}>GST:{item?.gst}%</span>
               </td>
               <td align="right">{item.qty}</td>
               <td align="right">{item.rate}</td>
-              <td align="right">{item.total}</td>
+              <td align="right">{item.amount}</td>
             </tr>
           ))}
         </tbody>
