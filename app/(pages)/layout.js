@@ -25,6 +25,11 @@ const menuLinks = [
   //   ],
   // },
   {
+    href: '/dashboard',
+
+    label: 'Dashboard',
+  },
+  {
     label: 'Property',
 
     subMenu: [

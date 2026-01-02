@@ -36,6 +36,8 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  Autocomplete,
+  FormControl,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -446,7 +448,6 @@ const Page = () => {
                   </Typography>
                 </Grid>
               </Grid>
-
               {/* Customer Info */}
               <Typography variant="h6" gutterBottom>
                 Customer Info
@@ -510,44 +511,54 @@ const Page = () => {
                   />
                 </Grid>
               </Grid>
-
               {/* Items Section */}
               <Typography variant="h6" gutterBottom>
                 Items
               </Typography>
+
               <Grid container spacing={2} alignItems="center" mb={2}>
-                <Grid item size={{ xs: 10 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Select Menu Item"
-                    size="small"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={selectedItem || ''}
-                    onChange={(e) => setSelectedItem(e.target.value)}
-                    SelectProps={{ native: true }}
-                  >
-                    <option value="">-- Select --</option>
-                    {menuItems?.map((cat) => (
-                      <option key={cat.documentId} value={cat.documentId}>
-                        {cat?.name}
-                      </option>
-                    ))}
-                  </TextField>
+                <Grid size={10}>
+                  <FormControl fullWidth>
+                    <Autocomplete
+                      options={menuItems || []}
+                      getOptionLabel={(option) => option?.name || ''}
+                      value={
+                        menuItems?.find(
+                          (item) => item.documentId === selectedItem
+                        ) || null
+                      }
+                      onChange={(event, newValue) => {
+                        setSelectedItem(newValue ? newValue.documentId : '');
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Search Menu Item"
+                          margin="dense"
+                          size="small"
+                          fullWidth
+                        />
+                      )}
+                      isOptionEqualToValue={(option, value) =>
+                        option.documentId === value.documentId
+                      }
+                      clearOnEscape
+                    />
+                  </FormControl>
                 </Grid>
-                <Grid item size={{ xs: 2 }}>
+
+                <Grid size={2}>
                   <Button
                     variant="contained"
                     color="secondary"
                     fullWidth
                     onClick={handleItemSelect}
+                    disabled={!selectedItem}
                   >
                     Add
                   </Button>
                 </Grid>
               </Grid>
-
               {formData.menu_items?.length > 0 && (
                 <TableContainer
                   component={Paper}
@@ -705,12 +716,10 @@ const Page = () => {
                   </Table>
                 </TableContainer>
               )}
-
               {/* Summary Section */}
               <Typography variant="h6" gutterBottom>
                 Summary
               </Typography>
-
               {(() => {
                 // ✅ Calculate live totals
                 const totalAmount = formData.menu_items.reduce((acc, cur) => {
@@ -755,9 +764,7 @@ const Page = () => {
                   </Grid>
                 );
               })()}
-
               {/* Payment Section */}
-
               <Grid container spacing={2}>
                 <Grid item size={{ xs: 12 }}>
                   <TextField

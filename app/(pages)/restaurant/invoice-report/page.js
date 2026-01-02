@@ -141,15 +141,21 @@ const Page = () => {
                       'Invoice No',
                       'Date/Time',
                       'Customer Name',
-                      'Total Amount',
-                      'GST',
-                      'Payable Amount',
                       'Payment Method',
                     ].map((item, index) => (
                       <TableCell key={index} sx={{ fontWeight: 'bold' }}>
                         {item}
                       </TableCell>
                     ))}
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      Subtotal
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      GST
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                      Payable
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -160,10 +166,14 @@ const Page = () => {
                         {row.date}:{row.time}
                       </TableCell>
                       <TableCell>{row.customer_name}</TableCell>
-                      <TableCell>{row.total_amount}</TableCell>
-                      <TableCell>{row.tax}</TableCell>
-                      <TableCell>{row.payable_amount}</TableCell>
                       <TableCell>{row.mop}</TableCell>
+                      <TableCell align="right">
+                        {row.total_amount.toFixed(2)}
+                      </TableCell>
+                      <TableCell align="right">{row.tax.toFixed(2)}</TableCell>
+                      <TableCell align="right">
+                        {row.payable_amount.toFixed(2)}
+                      </TableCell>
                     </TableRow>
                   ))}
                   {filteredData?.length === 0 && (
@@ -173,6 +183,38 @@ const Page = () => {
                       </TableCell>
                     </TableRow>
                   )}
+                  <TableRow>
+                    <TableCell colSpan={4} align="right">
+                      <Typography fontWeight={600}>Total:</Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography fontWeight={600}>
+                        {filteredData
+                          .reduce(
+                            (sum, row) => sum + parseFloat(row.total_amount),
+                            0
+                          )
+                          .toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography fontWeight={600}>
+                        {filteredData
+                          .reduce((sum, row) => sum + parseFloat(row.tax), 0)
+                          .toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography fontWeight={600}>
+                        {filteredData
+                          .reduce(
+                            (sum, row) => sum + parseFloat(row.payable_amount),
+                            0
+                          )
+                          .toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>

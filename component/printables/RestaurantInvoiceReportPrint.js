@@ -67,15 +67,21 @@ const RestaurantInvoiceReportPrint = React.forwardRef((props, ref) => {
                 'Invoice No',
                 'Date/Time',
                 'Customer Name',
-                'Total Amount',
-                'GST',
-                'Payable Amount',
                 'Payment Method',
               ].map((item, index) => (
                 <HeadingCell key={index} sx={{ fontWeight: 'bold' }}>
                   {item}
                 </HeadingCell>
               ))}
+              <HeadingCell align="right" sx={{ fontWeight: 'bold' }}>
+                Subtotal
+              </HeadingCell>
+              <HeadingCell align="right" sx={{ fontWeight: 'bold' }}>
+                GST
+              </HeadingCell>
+              <HeadingCell align="right" sx={{ fontWeight: 'bold' }}>
+                Payable
+              </HeadingCell>
             </TableRow>
             {filteredData?.map((row, index) => (
               <TableRow key={index}>
@@ -83,13 +89,19 @@ const RestaurantInvoiceReportPrint = React.forwardRef((props, ref) => {
                 <BodyCell>
                   {row.date}:{row.time}
                 </BodyCell>
-                <BodyCell>{row.customer_name}</BodyCell>
-                <BodyCell>{row.total_amount}</BodyCell>
-                <BodyCell>{row.tax}</BodyCell>
-                <BodyCell>{row.payable_amount}</BodyCell>
+                <BodyCell>{row.customer_name}</BodyCell>{' '}
                 <BodyCell>{row.mop}</BodyCell>
+                <BodyCell align="right">{row.total_amount}</BodyCell>
+                <BodyCell align="right">{row.tax}</BodyCell>
+                <BodyCell align="right">{row.payable_amount}</BodyCell>
               </TableRow>
             ))}
+            <TableRow>
+              <BodyCell colSpan={4}>Total: </BodyCell>
+              <BodyCell align="right">{totalAmount.toFixed(2)}</BodyCell>
+              <BodyCell align="right">{totalGst.toFixed(2)}</BodyCell>
+              <BodyCell align="right">{totalPayable.toFixed(2)}</BodyCell>
+            </TableRow>
           </TableBody>
         </Table>
       </CustomTableContainer>
