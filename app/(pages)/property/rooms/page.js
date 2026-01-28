@@ -17,7 +17,6 @@ import {
   Link,
   Typography,
   TextField,
-  Chip,
   IconButton,
   Tooltip,
   Dialog,
@@ -32,15 +31,13 @@ import {
   TableHead,
   TableRow,
   Paper,
-  FormControlLabel,
-  Switch,
   Grid,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { SuccessToast } from '@/utils/GenerateToast';
+import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 
 import { Loader } from '@/component/common';
 
@@ -60,43 +57,64 @@ const Page = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
 
-  // Create/Edit dialog state
   const [formOpen, setFormOpen] = useState(false);
   const [formData, setFormData] = useState(initialFormData());
+  const [formErrors, setFormErrors] = useState({});
   const [editing, setEditing] = useState(false);
 
   function initialFormData() {
     return {
       room_no: '',
       floor: '',
-      category: null,
+      category: '',
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
 
-  // filter data by name
-  const filteredData = useMemo(() => {
-    if (!data) return [];
-    return data.filter((item) =>
-      item.room_no?.toLowerCase().includes(search.toLowerCase())
+  // ✅ Validation function
+  const validateForm = (data) => {
+    const errors = {};
+
+    if (!data.room_no?.trim()) errors.room_no = 'Room number is required';
+    if (!data.floor?.trim()) errors.floor = 'Floor is required';
+    if (!data.category) errors.category = 'Category is required';
+
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      return false;
+    }
+    return true;
+  };
+
+  const isDuplicateName = (room_no, id = null) => {
+    if (!data) return false;
+
+    return data.some(
+      (item) =>
+        item.room_no?.trim().toLowerCase() === room_no.trim().toLowerCase() &&
+        item.documentId !== id,
     );
-  }, [data, search]);
-
-  // handle edit
-  const handleEdit = (row) => {
-    setEditing(true);
-    setFormData({ ...row, category: row?.category?.documentId });
-    setFormOpen(true);
   };
 
-  // handle create
-  const handleCreate = () => {
-    setEditing(false);
-    setFormData(initialFormData());
-    setFormOpen(true);
-  };
-
+  // ✅ Save handler
   const handleSave = async () => {
+    if (!validateForm(formData)) {
+      ErrorToast('Enter required fields');
+      return;
+    }
+
+    // 🔍 NEW: Check duplicate category name before save
+    const duplicate = isDuplicateName(
+      formData.room_no,
+      editing ? formData.documentId : null,
+    );
+
+    if (duplicate) {
+      ErrorToast('Room already exists');
+      return;
+    }
+
     if (editing) {
       const {
         id,
@@ -111,25 +129,45 @@ const Page = () => {
         auth,
         endPoint: 'rooms',
         id: formData.documentId,
-        payload: {
-          data: updateBody,
-        },
+        payload: { data: updateBody },
       });
       SuccessToast('Room updated successfully');
     } else {
       await CreateNewData({
         auth,
         endPoint: 'rooms',
-        payload: {
-          data: formData,
-        },
+        payload: { data: formData },
       });
       SuccessToast('Room created successfully');
     }
     setFormOpen(false);
   };
 
-  // handle delete
+  // Filtered list
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((item) =>
+      item.room_no?.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [data, search]);
+
+  // Edit room
+  const handleEdit = (row) => {
+    setEditing(true);
+    setFormData({ ...row, category: row?.category?.documentId });
+    setFormErrors({});
+    setFormOpen(true);
+  };
+
+  // Create room
+  const handleCreate = () => {
+    setEditing(false);
+    setFormData(initialFormData());
+    setFormErrors({});
+    setFormOpen(true);
+  };
+
+  // Delete handlers
   const handleDeleteClick = (row) => {
     setSelectedRow(row);
     setDeleteOpen(true);
@@ -141,7 +179,7 @@ const Page = () => {
       endPoint: 'rooms',
       id: selectedRow.documentId,
     });
-    SuccessToast('Category deleted successfully');
+    SuccessToast('Room deleted successfully');
     setDeleteOpen(false);
     setSelectedRow(null);
   };
@@ -158,17 +196,18 @@ const Page = () => {
           separator={<NavigateNextIcon fontSize="small" />}
           aria-label="breadcrumb"
         >
-          <Link underline="hover" color="inherit" href="/">
+          <Link underline="hover" color="inherit" href="/dashboard">
             Dashboard
           </Link>
           <Typography color="text.primary">Rooms</Typography>
         </Breadcrumbs>
       </Box>
+
       {!data || !roomCategories ? (
         <Loader />
       ) : (
         <Box p={3}>
-          {/* Header Section */}
+          {/* Header */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -192,7 +231,7 @@ const Page = () => {
             </Button>
           </Box>
 
-          {/* Data Table */}
+          {/* Table */}
           <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
             <Table>
               <TableHead>
@@ -203,7 +242,7 @@ const Page = () => {
                     'Category',
                     'HSN/SAC',
                     'Tariff',
-                    'Gst (%)',
+                    'GST (%)',
                     'Total',
                     'Actions',
                   ].map((item, index) => (
@@ -218,12 +257,11 @@ const Page = () => {
                   <TableRow key={row.documentId}>
                     <TableCell>{row.room_no}</TableCell>
                     <TableCell>{row.floor}</TableCell>
-                    <TableCell>{row.category.name}</TableCell>
-                    <TableCell>{row.category.hsn}</TableCell>
-                    <TableCell>{row.category.tariff}</TableCell>
-                    <TableCell>{row.category.gst}</TableCell>
-                    <TableCell>{row.category.total}</TableCell>
-
+                    <TableCell>{row.category?.name}</TableCell>
+                    <TableCell>{row.category?.hsn}</TableCell>
+                    <TableCell>{row.category?.tariff}</TableCell>
+                    <TableCell>{row.category?.gst}</TableCell>
+                    <TableCell>{row.category?.total}</TableCell>
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
@@ -248,7 +286,7 @@ const Page = () => {
                 ))}
                 {filteredData?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       No room found
                     </TableCell>
                   </TableRow>
@@ -257,7 +295,7 @@ const Page = () => {
             </Table>
           </TableContainer>
 
-          {/* Delete Confirmation Dialog */}
+          {/* Delete Dialog */}
           <Dialog
             open={deleteOpen}
             onClose={handleCancelDelete}
@@ -266,8 +304,8 @@ const Page = () => {
             <DialogTitle id="delete-dialog-title">Delete Room</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Are you sure you want to delete
-                <strong>{selectedRow?.name}</strong>? This action cannot be
+                Are you sure you want to delete{' '}
+                <strong>{selectedRow?.room_no}</strong>? This action cannot be
                 undone.
               </DialogContentText>
             </DialogContent>
@@ -302,8 +340,11 @@ const Page = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, room_no: e.target.value })
                     }
+                    error={!!formErrors.room_no}
+                    helperText={formErrors.room_no}
                   />
                 </Grid>
+
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     margin="dense"
@@ -313,6 +354,8 @@ const Page = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, floor: e.target.value })
                     }
+                    error={!!formErrors.floor}
+                    helperText={formErrors.floor}
                   />
                 </Grid>
 
@@ -324,9 +367,11 @@ const Page = () => {
                     fullWidth
                     InputLabelProps={{ shrink: true }}
                     value={formData.category}
-                    onChange={(e) => {
-                      setFormData({ ...formData, category: e.target.value });
-                    }}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
+                    error={!!formErrors.category}
+                    helperText={formErrors.category}
                     SelectProps={{
                       native: true,
                     }}
@@ -341,6 +386,7 @@ const Page = () => {
                 </Grid>
               </Grid>
             </DialogContent>
+
             <DialogActions>
               <Button onClick={() => setFormOpen(false)}>Cancel</Button>
               <Button onClick={handleSave} variant="contained">

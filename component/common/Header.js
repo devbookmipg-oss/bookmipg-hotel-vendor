@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -7,7 +9,6 @@ import {
   Drawer,
   List,
   ListItemButton,
-  ListItem,
   ListItemIcon,
   ListItemText,
   Collapse,
@@ -22,25 +23,28 @@ const Container = styled(Box)`
   width: 100%;
   background: #eb282c;
   position: fixed;
-  z-index: 1;
+  z-index: 1200;
   top: 0;
   left: 0;
   display: none;
+
   & > div {
     padding: 10px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  @media screen and (max-width: 996px) {
+
+  @media (max-width: 996px) {
     display: block;
   }
 `;
 
 const CustomButton = styled(Button)`
-  padding: 0px;
-  min-width: 0px;
-  & > svg {
+  padding: 0;
+  min-width: 0;
+
+  & svg {
     color: #fff;
     font-size: 30px;
   }
@@ -48,8 +52,8 @@ const CustomButton = styled(Button)`
 
 const SubMenuItem = styled(ListItemText)`
   span {
-    transition: all 0.2s ease;
     padding-left: 16px;
+    transition: all 0.2s ease;
   }
 
   &:hover span {
@@ -58,23 +62,22 @@ const SubMenuItem = styled(ListItemText)`
   }
 `;
 
-const Header = ({ logOut, menuLinks }) => {
+const Header = ({ logout, menuLinks }) => {
   const [open, setOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
 
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
+  const toggleDrawer = (state) => () => setOpen(state);
 
-  const handleToggleSubMenu = (label) => {
+  const toggleSubMenu = (key) => {
     setExpandedMenus((prev) => ({
       ...prev,
-      [label]: !prev[label],
+      [key]: !prev[key],
     }));
   };
 
   return (
     <>
+      {/* Mobile Header */}
       <Container>
         <Box>
           <CustomButton onClick={toggleDrawer(true)}>
@@ -84,46 +87,33 @@ const Header = ({ logOut, menuLinks }) => {
         </Box>
       </Container>
 
+      {/* Drawer */}
       <Drawer open={open} onClose={toggleDrawer(false)}>
-        <Box sx={{ width: 250 }} role="presentation">
+        <Box sx={{ width: 260 }}>
           <List>
-            {menuLinks.map((link, index) => {
-              const hasSubMenu = !!link.subMenu;
+            {menuLinks.map((menu) => {
+              const hasChildren = !!menu.children?.length;
+              const isOpen = expandedMenus[menu.key];
 
-              if (hasSubMenu) {
+              if (hasChildren) {
                 return (
-                  <Box key={index}>
-                    <ListItemButton
-                      onClick={() => handleToggleSubMenu(link.label)}
-                    >
-                      {/* <ListItemIcon sx={{ minWidth: 0 }}>
-                        {link.icon}
-                      </ListItemIcon> */}
-                      <ListItemText primary={link.label} />
-                      {expandedMenus[link.label] ? (
-                        <ExpandLess />
-                      ) : (
-                        <ExpandMore />
-                      )}
+                  <Box key={menu.key}>
+                    <ListItemButton onClick={() => toggleSubMenu(menu.key)}>
+                      <ListItemText primary={menu.label} />
+                      {isOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
-                    <Collapse
-                      in={expandedMenus[link.label]}
-                      timeout="auto"
-                      unmountOnExit
-                    >
-                      <List component="div" disablePadding>
-                        {link.subMenu.map((sub, subIndex) => (
+
+                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                      <List disablePadding>
+                        {menu.children.map((child) => (
                           <Link
-                            href={sub.href}
-                            key={subIndex}
-                            passHref
+                            key={child.url}
+                            href={child.url}
                             style={{ textDecoration: 'none', color: 'inherit' }}
+                            onClick={() => setOpen(false)}
                           >
-                            <ListItemButton
-                              sx={{ pl: 4 }}
-                              onClick={() => setOpen(false)}
-                            >
-                              <SubMenuItem primary={sub.label} />
+                            <ListItemButton sx={{ pl: 4 }}>
+                              <SubMenuItem primary={child.label} />
                             </ListItemButton>
                           </Link>
                         ))}
@@ -135,33 +125,30 @@ const Header = ({ logOut, menuLinks }) => {
 
               return (
                 <Link
-                  href={link.href}
-                  key={index}
-                  passHref
+                  key={menu.key}
+                  href={menu.url}
                   style={{ textDecoration: 'none', color: 'inherit' }}
+                  onClick={() => setOpen(false)}
                 >
-                  <ListItem disablePadding>
-                    <ListItemButton onClick={() => setOpen(false)}>
-                      <ListItemText primary={link.label} />
-                    </ListItemButton>
-                  </ListItem>
+                  <ListItemButton>
+                    <ListItemText primary={menu.label} />
+                  </ListItemButton>
                 </Link>
               );
             })}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  setOpen(false);
-                  logOut();
-                }}
-              >
-                <ListItemIcon>
-                  <LogoutIcon />
-                </ListItemIcon>
-                <ListItemText primary="Logout" />
-              </ListItemButton>
-            </ListItem>
+            {/* Logout */}
+            <ListItemButton
+              onClick={() => {
+                setOpen(false);
+                logout();
+              }}
+            >
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
           </List>
         </Box>
       </Drawer>
