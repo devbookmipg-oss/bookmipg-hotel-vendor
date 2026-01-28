@@ -34,35 +34,18 @@ const FinalPreviewStep = ({
     checkout: bookingDetails.checkout_date,
   });
 
-  // ✅ Bidirectional handler
   const handleChange = (index, field, value) => {
     const updated = [...roomTokens];
-    const room = { ...updated[index] };
-    const numericValue = parseFloat(value) || 0;
 
-    room[field] = numericValue;
+    // Update the field
+    updated[index][field] =
+      field === 'rate' || field === 'gst' ? Number(value) : value;
 
-    const rate = parseFloat(room.rate) || 0;
-    const gst = parseFloat(room.gst) || 0;
-    const days = parseFloat(room.days) || totalDays;
-    const amount = parseFloat(room.amount) || 0;
+    // Calculate final amount considering totalDays
+    const rate = updated[index].rate || 0;
+    const gst = updated[index].gst || 0;
+    updated[index].amount = (rate + (rate * gst) / 100) * totalDays;
 
-    if (field === 'rate' || field === 'gst') {
-      // Forward calc
-      const newAmount = (rate + (rate * gst) / 100) * days;
-      room.amount = parseFloat(newAmount.toFixed(2));
-    } else if (field === 'amount') {
-      // Reverse calc
-      const base = amount / days;
-      const newRate = base / (1 + gst / 100);
-      room.rate = parseFloat(newRate.toFixed(2));
-    }
-
-    // Keep everything to 2 decimals
-    room.rate = parseFloat((room.rate || 0).toFixed(2));
-    room.amount = parseFloat((room.amount || 0).toFixed(2));
-
-    updated[index] = room;
     setRoomTokens(updated);
   };
 
@@ -73,7 +56,7 @@ const FinalPreviewStep = ({
     }));
   };
 
-  const totalAmount = roomTokens.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalAmount = roomTokens.reduce((sum, r) => sum + r.amount, 0);
 
   return (
     <Box>
@@ -226,7 +209,7 @@ const FinalPreviewStep = ({
             {selectedRooms.map((room) => (
               <Chip
                 key={room.room_no}
-                label={`${room.room_no} - ${room.category.name}`}
+                label={room?.room_no}
                 color="info"
                 size="small"
               />
@@ -254,9 +237,10 @@ const FinalPreviewStep = ({
           </TableHead>
           <TableBody>
             {roomTokens.map((room, index) => (
-              <TableRow key={room.room_no}>
+              <TableRow key={index}>
                 <TableCell>{room.room}</TableCell>
                 <TableCell>{room.item}</TableCell>
+
                 <TableCell>{room.hsn}</TableCell>
                 <TableCell>
                   <TextField
@@ -280,15 +264,7 @@ const FinalPreviewStep = ({
                   />
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>
-                  <TextField
-                    type="number"
-                    value={room.amount}
-                    onChange={(e) =>
-                      handleChange(index, 'amount', e.target.value)
-                    }
-                    size="small"
-                    variant="outlined"
-                  />
+                  {room.amount.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -303,8 +279,6 @@ const FinalPreviewStep = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Advance Payment */}
       <Card
         sx={{
           my: 2,

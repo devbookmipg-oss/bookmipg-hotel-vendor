@@ -20,6 +20,7 @@ import {
   BillingSummaryCard,
   BookingDetailsCard,
   BookingServiceActionsCard,
+  InvoiceListCard,
   PaymentHistoryCard,
 } from '@/component/bookingComp';
 import { BookingSlip } from '@/component/printables/RoomBookingSlip';
@@ -40,7 +41,10 @@ export default function RoomBookings({ params }) {
     auth: auth,
     id: id,
   });
-
+  const roomInvoices = GetDataList({
+    endPoint: 'room-invoices',
+    auth: auth,
+  });
   const paymentMethods = GetDataList({
     auth,
     endPoint: 'payment-methods',
@@ -59,7 +63,7 @@ export default function RoomBookings({ params }) {
 
   return (
     <>
-      {!data || !menuItems || !paymentMethods ? (
+      {!data || !menuItems || !paymentMethods || !roomInvoices ? (
         <Loader />
       ) : (
         <>
@@ -68,7 +72,7 @@ export default function RoomBookings({ params }) {
               separator={<NavigateNextIcon fontSize="small" />}
               aria-label="breadcrumb"
             >
-              <Link underline="hover" color="inherit" href="/">
+              <Link underline="hover" color="inherit" href="/dashboard">
                 Dashboard
               </Link>
               <Link
@@ -94,8 +98,14 @@ export default function RoomBookings({ params }) {
                   paymentMethods={paymentMethods}
                   menuItems={menuItems}
                   handlePrintBookingSlip={handlePrintBookingSlip}
+                  roomInvoices={roomInvoices}
                 />
-                <PaymentHistoryCard booking={data} />
+                <PaymentHistoryCard booking={data} hotel={hotel} auth={auth} />
+                <InvoiceListCard
+                  booking={data}
+                  roomInvoices={roomInvoices}
+                  hotel={hotel}
+                />
               </Grid>
             </Grid>
           </Box>

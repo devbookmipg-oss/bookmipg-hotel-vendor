@@ -1,17 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Paper,
-  Typography,
-  Grid,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material';
+import { Paper, Typography, Grid, Button } from '@mui/material';
 
 import {
   Print as PrintIcon,
@@ -26,9 +16,19 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 
-import { ManageFood, ManagePayments, ManageServices } from './forms';
+import {
+  CreateInvoiceModal,
+  ManageFood,
+  ManagePayments,
+  ManageRoomTariff,
+  ManageServices,
+} from './forms';
 import { UpdateData } from '@/utils/ApiFunctions';
 import CancelBookingDialog from './CancelBookingDialog';
+
+import { SuccessToast } from '@/utils/GenerateToast';
+import CheckoutDialog from './CheckoutDialog';
+import CheckinDialog from './CheckinDialog';
 
 export default function BookingServiceActionsCard({
   booking,
@@ -36,20 +36,26 @@ export default function BookingServiceActionsCard({
   paymentMethods,
   menuItems,
   handlePrintBookingSlip,
+  roomInvoices,
 }) {
+  const [invoiceModel, setInvoiceModel] = useState(false);
   const [serviceModel, setServiceModel] = useState(false);
   const [paymentModel, setPaymentModel] = useState(false);
   const [foodModel, setFoodModel] = useState(false);
+  const [roomTariffDialog, setRoomTariffDialog] = useState(false);
   const [cancelDialog, setCancelDialog] = useState(false);
+  const [checkinDialogOpen, setCheckinDialogOpen] = useState(false);
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
 
-  const handleManageService = async (services) => {
-    const cleanedServiceItems = services.map(({ id, ...rest }) => rest);
+  // update service tokens
+  const handleManageService = async (service) => {
+    const prevServices = booking?.service_tokens || [];
     try {
       const res = await UpdateData({
         endPoint: 'room-bookings',
         auth,
         id: booking?.documentId,
-        payload: { data: { service_billing: cleanedServiceItems } },
+        payload: { data: { service_tokens: [...prevServices, service] } },
       });
       return res;
     } catch (err) {
@@ -57,14 +63,15 @@ export default function BookingServiceActionsCard({
     }
   };
 
-  const handleManagePayments = async (payments) => {
-    const cleanedPaymemtsItems = payments.map(({ id, ...rest }) => rest);
+  // update food tokens
+  const handleManageFood = async (food) => {
+    const prevFoods = booking?.food_tokens || [];
     try {
       const res = await UpdateData({
         endPoint: 'room-bookings',
         auth,
         id: booking?.documentId,
-        payload: { data: { payment_tokens: cleanedPaymemtsItems } },
+        payload: { data: { food_tokens: [...prevFoods, food] } },
       });
       return res;
     } catch (err) {
@@ -72,19 +79,32 @@ export default function BookingServiceActionsCard({
     }
   };
 
-  const handleManageFood = async (foods) => {
-    const cleanedFoodItems = foods.map(({ id, ...rest }) => rest);
+  const handleManageRoomTariff = async (roomTokens) => {
+    const cleanedRoomTokens = roomTokens.map(({ id, ...rest }) => rest);
     try {
       const res = await UpdateData({
         endPoint: 'room-bookings',
         auth,
         id: booking?.documentId,
-        payload: { data: { food_items: cleanedFoodItems } },
+        payload: { data: { room_tokens: cleanedRoomTokens } },
       });
       return res;
     } catch (err) {
       console.log(err);
     }
+  };
+
+  const handleManagePayments = async (payment) => {
+    const prevPayments = booking?.payment_tokens || [];
+    const newPaymentArray = [...prevPayments, payment];
+    const cleanedPaymemtsItems = newPaymentArray.map(({ id, ...rest }) => rest);
+    const res = await UpdateData({
+      endPoint: 'room-bookings',
+      auth,
+      id: booking?.documentId,
+      payload: { data: { payment_tokens: cleanedPaymemtsItems } },
+    });
+    return res;
   };
 
   const handleCancelBooking = async () => {
@@ -101,6 +121,26 @@ export default function BookingServiceActionsCard({
     }
   };
 
+  const handleCheckin = async () => {
+    await UpdateData({
+      endPoint: 'room-bookings',
+      auth,
+      id: booking?.documentId,
+      payload: { data: { checked_in: true } },
+    });
+    setCheckinDialogOpen(false);
+    SuccessToast('Checked In Successfully');
+  };
+  const handleCheckout = async () => {
+    await UpdateData({
+      endPoint: 'room-bookings',
+      auth,
+      id: booking?.documentId,
+      payload: { data: { checked_out: true } },
+    });
+    setCheckoutDialogOpen(false);
+    SuccessToast('Checked Out Successfully');
+  };
   return (
     <>
       <Paper
@@ -125,11 +165,13 @@ export default function BookingServiceActionsCard({
           {/* Edit */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Button
+              href={`/front-office/room-booking/edit-booking?bookingId=${booking?.documentId}`}
               fullWidth
               variant="outlined"
               color="inherit"
               startIcon={<EditIcon />}
               sx={{ textTransform: 'none' }}
+              disabled={booking.booking_status === 'Cancelled'}
             >
               Edit Booking
             </Button>
@@ -144,7 +186,11 @@ export default function BookingServiceActionsCard({
               startIcon={<CancelIcon />}
               sx={{ textTransform: 'none' }}
               onClick={() => setCancelDialog(true)}
-              disabled={booking.booking_status === 'Cancelled'}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.checked_in === true ||
+                booking.checked_out == true
+              }
             >
               Cancel Booking
             </Button>
@@ -157,7 +203,11 @@ export default function BookingServiceActionsCard({
                 color="success"
                 startIcon={<LoginIcon />}
                 sx={{ textTransform: 'none' }}
-                disabled={booking.booking_status === 'Cancelled'}
+                disabled={
+                  booking.booking_status === 'Cancelled' ||
+                  booking.booking_status === 'Blocked'
+                }
+                onClick={() => setCheckinDialogOpen(true)}
               >
                 Mark Check-In
               </Button>
@@ -173,6 +223,8 @@ export default function BookingServiceActionsCard({
                   color="error"
                   startIcon={<LogoutIcon />}
                   sx={{ textTransform: 'none' }}
+                  onClick={() => setCheckoutDialogOpen(true)}
+                  disabled={booking.booking_status === 'Blocked'}
                 >
                   Mark Check-Out
                 </Button>
@@ -191,6 +243,10 @@ export default function BookingServiceActionsCard({
               startIcon={<PrintIcon />}
               sx={{ textTransform: 'none' }}
               onClick={handlePrintBookingSlip}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Print Booking Slip
             </Button>
@@ -205,6 +261,10 @@ export default function BookingServiceActionsCard({
               startIcon={<RoomServiceIcon />}
               onClick={() => setServiceModel(true)}
               sx={{ textTransform: 'none' }}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Manage Services
             </Button>
@@ -219,6 +279,10 @@ export default function BookingServiceActionsCard({
               startIcon={<FastfoodIcon />}
               onClick={() => setFoodModel(true)}
               sx={{ textTransform: 'none' }}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Manage Food
             </Button>
@@ -233,6 +297,10 @@ export default function BookingServiceActionsCard({
               startIcon={<PaymentIcon />}
               onClick={() => setPaymentModel(true)}
               sx={{ textTransform: 'none' }}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Manage Payment
             </Button>
@@ -244,7 +312,12 @@ export default function BookingServiceActionsCard({
               variant="outlined"
               color="warning"
               startIcon={<HotelIcon />}
+              onClick={() => setRoomTariffDialog(true)}
               sx={{ textTransform: 'none' }}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Manage Room Tariff
             </Button>
@@ -257,6 +330,11 @@ export default function BookingServiceActionsCard({
               color="error"
               startIcon={<ReceiptIcon />}
               sx={{ textTransform: 'none' }}
+              onClick={() => setInvoiceModel(true)}
+              disabled={
+                booking.booking_status === 'Cancelled' ||
+                booking.booking_status === 'Blocked'
+              }
             >
               Create Invoice
             </Button>
@@ -285,12 +363,35 @@ export default function BookingServiceActionsCard({
         handleManageFood={handleManageFood}
         menuItems={menuItems}
       />
+      <ManageRoomTariff
+        open={roomTariffDialog}
+        setOpen={setRoomTariffDialog}
+        booking={booking}
+        handleManageRoomTariff={handleManageRoomTariff}
+      />
+      <CreateInvoiceModal
+        open={invoiceModel}
+        setOpen={setInvoiceModel}
+        booking={booking}
+        roomInvoices={roomInvoices}
+        paymentMethods={paymentMethods}
+      />
 
       {/* Cancel Booking Confirmation Dialog */}
       <CancelBookingDialog
         cancelDialog={cancelDialog}
         setCancelDialog={setCancelDialog}
         handleCancelBooking={handleCancelBooking}
+      />
+      <CheckinDialog
+        open={checkinDialogOpen}
+        setOpen={setCheckinDialogOpen}
+        handleSave={handleCheckin}
+      />
+      <CheckoutDialog
+        open={checkoutDialogOpen}
+        setOpen={setCheckoutDialogOpen}
+        handleSave={handleCheckout}
       />
     </>
   );

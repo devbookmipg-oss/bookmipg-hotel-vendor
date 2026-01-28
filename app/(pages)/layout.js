@@ -100,17 +100,10 @@ const menuLinks = [
         label: 'Room Booking',
         url: '/front-office/room-booking',
       },
-      {
-        label: 'Online Booking Request',
-        url: '/front-office/online-booking',
-      },
+
       {
         label: 'Room Invoice',
         url: '/front-office/room-invoice',
-      },
-      {
-        label: 'Checkout Report',
-        url: '/front-office/checkout-report',
       },
       {
         label: 'Invoice Report',

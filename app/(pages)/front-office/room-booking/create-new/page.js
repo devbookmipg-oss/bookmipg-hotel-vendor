@@ -41,7 +41,7 @@ const steps = [
 
 const generateNextBookingId = (bookings) => {
   if (!bookings || bookings.length === 0) {
-    return 'INV-1';
+    return 'SOLV-1';
   }
 
   // Extract all numbers from booking_id like "INV-12" -> 12
@@ -57,8 +57,9 @@ const generateNextBookingId = (bookings) => {
 export default function BookingForm() {
   const router = useRouter();
   const { auth } = useAuth();
-  const todaysdate = new Date();
-  let tomorrow = new Date();
+  const today = GetTodaysDate().dateString;
+  const todaysdate = new Date(today);
+  let tomorrow = new Date(today);
   tomorrow.setDate(todaysdate.getDate() + 1);
   const formatDate = (date) => date.toISOString().split('T')[0];
 
@@ -83,6 +84,7 @@ export default function BookingForm() {
   // Shared state
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [bookingDetails, setBookingDetails] = useState({
+    booking_type: 'FIT',
     booking_status: 'Confirmed',
     checkin_date: formatDate(todaysdate),
     checkout_date: formatDate(tomorrow),
@@ -100,21 +102,35 @@ export default function BookingForm() {
 
   const validateStep = () => {
     setError(''); // clear previous errors
+
+    // STEP 0 → Guest selection
     if (activeStep === 0 && !selectedGuest) {
       setError('Please select or add a guest before continuing.');
       return false;
     }
-    if (
-      activeStep === 1 &&
-      (!bookingDetails.checkin_date || !bookingDetails.checkout_date)
-    ) {
-      setError('Please provide valid booking dates.');
-      return false;
+
+    // STEP 1 → Booking details
+    if (activeStep === 1) {
+      const { checkin_date, checkout_date } = bookingDetails;
+
+      if (!checkin_date || !checkout_date) {
+        setError('Please provide valid booking dates.');
+        return false;
+      }
+
+      // ❌ Validation: Check-in must not be after Check-out
+      if (checkin_date > checkout_date) {
+        setError('Check-in date cannot be later than the check-out date.');
+        return false;
+      }
     }
+
+    // STEP 2 → Rooms selection
     if (activeStep === 2 && selectedRooms.length === 0) {
       setError('Please select a room.');
       return false;
     }
+
     return true;
   };
 
@@ -135,12 +151,18 @@ export default function BookingForm() {
       return newStep;
     });
   };
+  const totalAmount = roomTokens.reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const handleSubmitBooking = async () => {
     if (!validateStep()) return;
     const rooms = selectedRooms.map((r) => {
       return r.documentId;
     });
+
+    if (paymentDetails.amount > totalAmount) {
+      setError('Advance payment cannot be more than total amount.');
+      return;
+    }
     try {
       setLoading(true);
       const newBookingId = generateNextBookingId(bookings);
@@ -172,7 +194,7 @@ export default function BookingForm() {
     <>
       <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
-          <Link underline="hover" color="inherit" href="/">
+          <Link underline="hover" color="inherit" href="/dashboard">
             Dashboard
           </Link>
           <Typography color="text.primary">New Revervation</Typography>

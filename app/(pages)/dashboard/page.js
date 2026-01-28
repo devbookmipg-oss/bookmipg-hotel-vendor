@@ -1,42 +1,82 @@
 'use client';
-import { Box, Breadcrumbs, Typography, Card, CardContent } from '@mui/material';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-export default function Home() {
+import { useState } from 'react';
+
+import { useAuth } from '@/context';
+import { GetDataList } from '@/utils/ApiFunctions';
+import { GetTodaysDate } from '@/utils/DateFetcher';
+
+import {
+  BookingList,
+  OverviewStats,
+  RoomGridLayout,
+} from '@/component/dashboardComp';
+import { Loader } from '@/component/common';
+
+const Page = () => {
+  const { auth } = useAuth();
+  const todaysDate = GetTodaysDate().dateString;
+  const today = new Date(todaysDate);
+  const [selectedDate, setSelectedDate] = useState(today);
+
+  // Fetch all bookings
+  const bookings = GetDataList({
+    auth,
+    endPoint: 'room-bookings',
+  });
+  const rooms = GetDataList({
+    auth,
+    endPoint: 'rooms',
+  });
+
+  // 🔹 Filter Logic
+  const stayOver = bookings?.filter((bk) => {
+    const checkIn = new Date(bk.checkin_date);
+    const checkOut = new Date(bk.checkout_date);
+    return (
+      bk.checked_in === true &&
+      bk.checked_out !== true &&
+      selectedDate > checkIn &&
+      selectedDate < checkOut
+    );
+  });
+
+  const expectedCheckin = bookings?.filter((bk) => {
+    const checkIn = new Date(bk.checkin_date);
+    return (
+      bk.checked_in !== true &&
+      bk.checked_out !== true &&
+      checkIn.toDateString() === selectedDate.toDateString() &&
+      bk.booking_status === 'Confirmed'
+    );
+  });
+
+  const expectedCheckout = bookings?.filter((bk) => {
+    const checkOut = new Date(bk.checkout_date);
+    return (
+      bk.checked_in === true &&
+      bk.checked_out !== true &&
+      checkOut.toDateString() === selectedDate.toDateString() &&
+      bk.booking_status === 'Confirmed'
+    );
+  });
+
+  if (!bookings || !rooms) {
+    return <Loader />;
+  }
+
   return (
     <>
-      {/* Breadcrumb Header */}
-      <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
-        <Breadcrumbs
-          separator={<NavigateNextIcon fontSize="small" />}
-          aria-label="breadcrumb"
-        >
-          <Typography color="text.primary">Dashboard</Typography>
-        </Breadcrumbs>
-      </Box>
-
-      {/* Welcome Card */}
-      <Box sx={{ px: 3, py: 3 }}>
-        <Card
-          elevation={0}
-          sx={{
-            borderRadius: 2,
-            background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
-            color: '#fff',
-          }}
-        >
-          <CardContent>
-            <Typography variant="h5" fontWeight={600} gutterBottom>
-              Welcome to Bookmipg Vendor Dashboard 👋
-            </Typography>
-
-            <Typography variant="body1" sx={{ opacity: 0.95 }}>
-              Manage your hotel listings, room availability, bookings, pricing,
-              and performance — all from one place.
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
+      <OverviewStats bookings={bookings} rooms={rooms} />
+      <RoomGridLayout bookings={bookings} rooms={rooms} />
+      <BookingList
+        expectedCheckin={expectedCheckin}
+        expectedCheckout={expectedCheckout}
+        stayOver={stayOver}
+        selectedDate={selectedDate}
+      />
     </>
   );
-}
+};
+
+export default Page;

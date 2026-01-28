@@ -17,9 +17,11 @@ import { CalculateDays } from '@/utils/CalculateDays';
 import { amountToWords } from '@/utils/AmountToWords';
 
 // Replace theme colors with fixed hex values
-
+const HEADER_BG_COLOR = '#1976d2'; // blue
+const HEADER_TEXT_COLOR = '#ffffff'; // white
 const TABLE_HEAD_BG = '#e0f7fa'; // light cyan
 const ROW_ODD_BG = '#f5f5f5'; // light grey
+const INFO_BG = '#f9f9f9'; // very light grey
 const HIGHLIGHT_COLOR = '#1976d2'; // blue
 
 const HeaderBox = styled(Box)({
@@ -27,24 +29,9 @@ const HeaderBox = styled(Box)({
   padding: '16px',
 });
 
-const Highlight = styled(Typography)({
-  color: HIGHLIGHT_COLOR,
-  fontWeight: 600,
-});
+const PaymentSlip = React.forwardRef((props, ref) => {
+  const { booking, hotel, data } = props;
 
-const BookingSlip = React.forwardRef((props, ref) => {
-  const { booking, hotel } = props;
-
-  const roomTokens = booking?.room_tokens || [];
-  const totalRoomAmount = roomTokens?.reduce(
-    (sum, r) => sum + (r.amount || 0),
-    0
-  );
-
-  const totalDays = CalculateDays({
-    checkin: booking?.checkin_date,
-    checkout: booking?.checkout_date,
-  });
   return (
     <Box
       ref={ref}
@@ -125,7 +112,7 @@ const BookingSlip = React.forwardRef((props, ref) => {
           flexDirection: { xs: 'column', sm: 'row' },
         }}
       >
-        <Box sx={{ flex: 2, border: '1px solid #747474ff', p: 2 }}>
+        <Box sx={{ flex: 1, border: '1px solid #747474ff', p: 2 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
             Guest Information
           </Typography>
@@ -155,9 +142,6 @@ const BookingSlip = React.forwardRef((props, ref) => {
           <Typography>
             <b>Check‑Out:</b> {GetCustomDate(booking?.checkout_date)}
           </Typography>
-          {/* <Typography>
-            <b>Type:</b> {booking?.booking_type}
-          </Typography> */}
 
           <Typography>
             <b>No. of Nights:</b>{' '}
@@ -167,72 +151,56 @@ const BookingSlip = React.forwardRef((props, ref) => {
             })}
           </Typography>
           <Typography>
-            <b>No. of Guest:</b> {booking?.adult || '0'} Adults,{' '}
-            {booking?.child || '0'} Child
+            <b>No. of Guest:</b> {booking?.adult || 0} Adults,{' '}
+            {booking?.child || 0} Child
           </Typography>
-          <Typography>
-            <b>Meal Plan:</b> {booking?.meal_plan || '-'}
+          <Typography
+            sx={{
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              maxWidth: '100%',
+            }}
+          >
+            <b>Rooms:</b>{' '}
+            {booking?.rooms?.map((room) => room.room_no).join(', ')}
           </Typography>
-        </Box>
-      </Box>
-
-      {/* Payment & Requests */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-        }}
-      >
-        <Box sx={{ flex: 2, border: '1px solid #747474ff', p: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Payment Summary
-          </Typography>
-          <Typography>
-            <b>Total Amount:</b> <Highlight>₹{totalRoomAmount}/‑</Highlight> (
-            {amountToWords(totalRoomAmount)})
-          </Typography>
-          <Typography>
-            <b>Advance Paid:</b>{' '}
-            <Highlight>₹{booking.advance_payment?.amount || 0}/‑</Highlight>(
-            {amountToWords(booking.advance_payment?.amount || 0)})
-          </Typography>
-        </Box>
-        <Box sx={{ flex: 1, border: '1px solid #747474ff', p: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Guest Requests / Notes
-          </Typography>
-          <Typography whiteSpace="pre-line">{booking.remarks}</Typography>
         </Box>
       </Box>
 
       {/* Rooms Table */}
       <Box sx={{ my: 2, pb: 2 }}>
+        <Typography
+          variant="h6"
+          textAlign={'center'}
+          sx={{ mt: 1, fontWeight: 600 }}
+        >
+          Payment Details
+        </Typography>
         <Table
           size="small"
-          sx={{ borderCollapse: 'separate', borderSpacing: '0', width: '100%' }}
+          sx={{
+            borderCollapse: 'separate',
+            borderSpacing: '0',
+            width: '100%',
+          }}
         >
           <TableHead>
             <TableRow sx={{ backgroundColor: TABLE_HEAD_BG }}>
-              <TableCell sx={{ fontWeight: 'bold' }}>Details</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Days</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Tariff</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>GST</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Mode Of Payment</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Remark</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {roomTokens?.map((room, idx) => (
-              <TableRow
-                key={idx}
-                sx={{ '&:nth-of-type(odd)': { backgroundColor: ROW_ODD_BG } }}
-              >
-                <TableCell>{room?.item}</TableCell>
-                <TableCell>{totalDays}</TableCell>
-                <TableCell>₹{room?.rate}</TableCell>
-                <TableCell>{room?.gst}%</TableCell>
-                <TableCell>₹{room?.amount}</TableCell>
-              </TableRow>
-            ))}
+            <TableRow
+              sx={{ '&:nth-of-type(odd)': { backgroundColor: ROW_ODD_BG } }}
+            >
+              <TableCell>{GetCustomDate(data?.date)}</TableCell>
+              <TableCell>₹{data?.amount}</TableCell>
+              <TableCell>{data?.mode}</TableCell>
+              <TableCell>{data?.remark}</TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </Box>
@@ -240,24 +208,15 @@ const BookingSlip = React.forwardRef((props, ref) => {
       <Divider />
 
       {/* Footer notes & signature */}
-      <Box sx={{ p: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{ fontStyle: 'italic', color: '#666', mb: 3 }}
-        >
-          • {hotel?.hotel_terms || 'N/A'}
+      <Box sx={{ p: 1, textAlign: 'end', mt: 10 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+          Cashier / Front Office Signature
         </Typography>
-
-        <Box textAlign="right">
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-            Cashier / Front Office Signature
-          </Typography>
-        </Box>
       </Box>
     </Box>
   );
 });
 
-BookingSlip.displayName = 'BookingSlip';
+PaymentSlip.displayName = 'PaymentSlip';
 
-export { BookingSlip };
+export { PaymentSlip };

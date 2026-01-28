@@ -15,7 +15,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useAuth } from '@/context';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, wrap } from 'framer-motion';
 import {
   Bed,
   Hotel,
@@ -75,6 +75,7 @@ const RoomAvailabilityStep = ({
   setSelectedRooms,
   roomTokens,
   setRoomTokens,
+  bookingData,
 }) => {
   const { auth } = useAuth();
   const totalDays = CalculateDays({
@@ -87,18 +88,15 @@ const RoomAvailabilityStep = ({
   const categories = GetDataList({ auth, endPoint: 'room-categories' });
   const rooms = GetDataList({ auth, endPoint: 'rooms' });
 
-  // Check if a room is available for given bookingDetails
   const isRoomAvailable = (room, bookingDetails) => {
-    const { checkin_date, checkout_date } = bookingDetails;
+    const { checkin_date, checkout_date } = bookingDetails; // include id of current booking
 
     if (!room.room_bookings || room.room_bookings.length === 0) return true;
 
     return !room.room_bookings.some((booking) => {
-      // Ignore bookings that do NOT block the room
-      if (booking.checked_out) return false;
+      // Skip the booking currently being updated
+      if (booking.documentId === bookingData.documentId) return false;
       if (booking.booking_status === 'Cancelled') return false; // ✅ NEW
-
-      // Check date overlap
       return (
         (checkin_date >= booking.checkin_date &&
           checkin_date < booking.checkout_date) ||
