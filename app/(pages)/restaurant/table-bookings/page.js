@@ -204,6 +204,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
@@ -298,7 +299,7 @@ const Page = () => {
                     <CardActions>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="warning"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >

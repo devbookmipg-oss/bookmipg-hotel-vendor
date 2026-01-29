@@ -118,11 +118,11 @@ const Page = () => {
         item.date === formData.date &&
         item.time === formData.time &&
         item.table_no === formData.table_no &&
-        (!editing || item.documentId !== formData.documentId)
+        (!editing || item.documentId !== formData.documentId),
     );
     if (duplicate) {
       WarningToast(
-        `⚠️ Table ${formData.table_no} is already booked for that slot.`
+        `⚠️ Table ${formData.table_no} is already booked for that slot.`,
       );
       return;
     }
@@ -211,6 +211,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
@@ -305,7 +306,7 @@ const Page = () => {
                     <CardActions>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="warning"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >

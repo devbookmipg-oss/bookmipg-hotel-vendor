@@ -82,7 +82,7 @@ const Page = () => {
   const filteredData = useMemo(() => {
     if (!data) return [];
     return data.filter((item) =>
-      item.title?.toLowerCase().includes(search.toLowerCase())
+      item.title?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
 
@@ -188,6 +188,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}

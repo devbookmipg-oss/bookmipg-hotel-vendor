@@ -152,7 +152,7 @@ const Page = () => {
   const filteredData = useMemo(() => {
     if (!data) return [];
     return data.filter((item) =>
-      item.invoice_no?.toLowerCase().includes(search.toLowerCase())
+      item.invoice_no?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
 
@@ -195,17 +195,17 @@ const Page = () => {
     // recalc before save
     const totalAmount = formData.menu_items.reduce(
       (acc, cur) => acc + cur.rate * cur.qty,
-      0
+      0,
     );
     const tax = formData.menu_items.reduce(
       (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-      0
+      0,
     );
     const payable = totalAmount + tax;
 
     // ✅ Clean menu_items (remove id/documentId/etc.)
     const cleanedMenuItems = formData.menu_items.map(
-      ({ id, documentId, ...rest }) => rest
+      ({ id, documentId, ...rest }) => rest,
     );
 
     const finalData = {
@@ -306,6 +306,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
@@ -361,7 +362,7 @@ const Page = () => {
 
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="warning"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -524,7 +525,7 @@ const Page = () => {
                       getOptionLabel={(option) => option?.name || ''}
                       value={
                         menuItems?.find(
-                          (item) => item.documentId === selectedItem
+                          (item) => item.documentId === selectedItem,
                         ) || null
                       }
                       onChange={(event, newValue) => {
@@ -698,7 +699,7 @@ const Page = () => {
                               color="error"
                               onClick={() => {
                                 const updated = formData.menu_items.filter(
-                                  (_, i) => i !== idx
+                                  (_, i) => i !== idx,
                                 );
                                 setFormData({
                                   ...formData,

@@ -182,6 +182,7 @@ const Page = () => {
             <Button
               href="/front-office/room-booking/create-new"
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
             >
@@ -222,7 +223,7 @@ const Page = () => {
                       hover
                       onClick={() =>
                         router.push(
-                          `/front-office/room-booking/${row.documentId}`
+                          `/front-office/room-booking/${row.documentId}`,
                         )
                       }
                       sx={{
@@ -308,7 +309,7 @@ const Page = () => {
                           <IconButton
                             onClick={() =>
                               router.push(
-                                `/front-office/room-booking/${row.documentId}`
+                                `/front-office/room-booking/${row.documentId}`,
                               )
                             }
                             size="small"

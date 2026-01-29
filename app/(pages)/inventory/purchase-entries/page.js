@@ -105,7 +105,7 @@ const Page = () => {
   const filteredData = useMemo(() => {
     if (!data) return [];
     return data.filter((item) =>
-      item.invoice_no?.toLowerCase().includes(search.toLowerCase())
+      item.invoice_no?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
 
@@ -218,6 +218,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
@@ -379,7 +380,7 @@ const Page = () => {
                     value={formData.inventory_item || ''}
                     onChange={(e) => {
                       const selected = inventoryItemList.find(
-                        (item) => item?.documentId == e.target.value
+                        (item) => item?.documentId == e.target.value,
                       );
                       setFormData({
                         ...formData,

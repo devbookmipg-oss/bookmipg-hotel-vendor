@@ -88,7 +88,7 @@ export default function ManageFood({
     for (let f of foods) {
       if (!f.item || !f.rate || !f.qty) {
         WarningToast(
-          'Please fill Item, Rate, and Qty for all rows before saving.'
+          'Please fill Item, Rate, and Qty for all rows before saving.',
         );
         return;
       }
@@ -104,7 +104,7 @@ export default function ManageFood({
 
     const total_amount = foods.reduce(
       (acc, item) => acc + (parseFloat(item.amount) || 0),
-      0
+      0,
     );
 
     // Compute total GST accurately
@@ -241,7 +241,7 @@ export default function ManageFood({
                         value={food.item}
                         onChange={(e) => {
                           const item = menuItems.find(
-                            (m) => m.item === e.target.value
+                            (m) => m.item === e.target.value,
                           );
                           if (item) {
                             handleInlineChange(index, 'item', item.item);
@@ -346,6 +346,7 @@ export default function ManageFood({
                 <TableCell colSpan={7} align="center">
                   <Button
                     variant="text"
+                    color="success"
                     startIcon={<AddIcon />}
                     onClick={handleAddRow}
                   >

@@ -188,6 +188,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               onClick={handleCreate}
               sx={{ borderRadius: 2 }}

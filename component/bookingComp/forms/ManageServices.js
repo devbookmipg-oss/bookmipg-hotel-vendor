@@ -81,7 +81,7 @@ export default function ManageServices({
     for (let s of services) {
       if (!s.item || !s.rate || !s.gst) {
         WarningToast(
-          'Please fill Room, Item, and Rate for all rows before saving.'
+          'Please fill Room, Item, and Rate for all rows before saving.',
         );
         return;
       }
@@ -103,7 +103,7 @@ export default function ManageServices({
 
     const total_amount = services.reduce(
       (acc, item) => acc + (parseFloat(item.amount) || 0),
-      0
+      0,
     );
 
     const payload = {
@@ -296,6 +296,7 @@ export default function ManageServices({
                 <TableCell colSpan={6} align="center">
                   <Button
                     variant="text"
+                    color="success"
                     startIcon={<AddIcon />}
                     onClick={handleAddRow}
                   >

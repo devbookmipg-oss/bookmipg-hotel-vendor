@@ -5,7 +5,6 @@ import {
   CardContent,
   Typography,
   Box,
-  Divider,
   Grid,
   Table,
   TableHead,
@@ -14,16 +13,19 @@ import {
   TableBody,
   Paper,
   IconButton,
+  Stack,
+  useTheme,
 } from '@mui/material';
 import RoomIcon from '@mui/icons-material/MeetingRoom';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
-import { Delete } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 import { UpdateData } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 
 export default function BillingSummaryCard({ booking }) {
+  const theme = useTheme();
   const { auth } = useAuth();
   const roomTokens = booking?.room_tokens || [];
   const services = booking?.service_tokens || [];
@@ -32,22 +34,22 @@ export default function BillingSummaryCard({ booking }) {
   // ---- Summary calculations ----
   const totalRoomAmount = roomTokens.reduce(
     (sum, r) => sum + (parseFloat(r.total_amount) || r.amount || 0),
-    0
+    0,
   );
   const totalServiceAmount = services.reduce(
     (sum, s) => sum + (parseFloat(s.total_amount) || 0),
-    0
+    0,
   );
   const totalFoodAmount = foodItems.reduce(
     (sum, f) => sum + (parseFloat(f.total_amount) || 0),
-    0
+    0,
   );
   const grandTotal = totalRoomAmount + totalServiceAmount + totalFoodAmount;
 
   const deleteServices = async (id) => {
     const filteredServices = services.filter((_, index) => index !== id);
     try {
-      const res = await UpdateData({
+      await UpdateData({
         endPoint: 'room-bookings',
         auth,
         id: booking?.documentId,
@@ -89,277 +91,302 @@ export default function BillingSummaryCard({ booking }) {
       ErrorToast('Failed to delete food item');
     }
   };
-  return (
-    <Card sx={{ borderRadius: 4, p: 2 }}>
-      {/* ---- Header Summary ---- */}
-      <CardContent sx={{ mb: 3 }}>
+
+  const SummaryCard = ({ icon: Icon, label, amount, bgColor, borderColor }) => (
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 1.5,
+        background: `linear-gradient(135deg, ${bgColor}15 0%, ${bgColor}05 100%)`,
+        border: `2px solid ${bgColor}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `0 4px 12px ${bgColor}30`,
+        },
+      }}
+    >
+      <Box
+        sx={{
+          p: 1,
+          borderRadius: 1,
+          background: bgColor,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+        }}
+      >
+        <Icon sx={{ fontSize: '1.5rem' }} />
+      </Box>
+      <Stack spacing={0.3} flex={1}>
         <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ mb: 2, color: 'primary.main' }}
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
+          }}
         >
-          📃 Billing Summary
+          {label}
         </Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
+          ₹{parseFloat(amount).toFixed(2)}
+        </Typography>
+      </Stack>
+    </Box>
+  );
 
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#e3f2fd' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Room Tokens
-              </Typography>
-              <Typography variant="h6" fontWeight="bold">
-                ₹ {totalRoomAmount.toFixed(2)}
-              </Typography>
-            </Box>
+  const TokenTable = ({
+    title,
+    icon: Icon,
+    tokens,
+    bgColor,
+    onDelete,
+    isDeletable = false,
+  }) => {
+    if (tokens.length === 0) return null;
+
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          sx={{ mb: 2, ml: 0.5 }}
+        >
+          <Box sx={{ color: bgColor }}>
+            <Icon sx={{ fontSize: '1.4rem' }} />
+          </Box>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, letterSpacing: '0.3px' }}
+          >
+            {title} ({tokens.length})
+          </Typography>
+        </Stack>
+
+        <Paper
+          sx={{
+            borderRadius: 1,
+            overflow: 'hidden',
+            border: `1px solid ${bgColor}30`,
+            boxShadow: 'none',
+          }}
+        >
+          <Table size="small">
+            <TableHead>
+              <TableRow
+                sx={{
+                  backgroundColor: `${bgColor}10`,
+                  '& .MuiTableCell-head': {
+                    borderColor: `${bgColor}20`,
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    color: bgColor,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.3px',
+                  },
+                }}
+              >
+                <TableCell>Item</TableCell>
+                <TableCell align="right">Qty/Days</TableCell>
+                <TableCell align="right">Rate</TableCell>
+                <TableCell align="right">Total (₹)</TableCell>
+                {isDeletable && (
+                  <TableCell align="center" sx={{ width: '60px' }}>
+                    Action
+                  </TableCell>
+                )}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tokens.map((token, index) => (
+                <TableRow
+                  key={index}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: `${bgColor}08`,
+                    },
+                    '& .MuiTableCell-body': {
+                      borderColor: `${bgColor}10`,
+                      fontSize: '0.8125rem',
+                      py: 1,
+                    },
+                  }}
+                >
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {token.item || token.service_name || token.room || 'N/A'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    {token.days || token.qty || '—'}
+                  </TableCell>
+                  <TableCell align="right">
+                    ₹{parseFloat(token.rate || 0).toFixed(2)}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>
+                    ₹
+                    {parseFloat(
+                      token.total_amount || token.amount || 0,
+                    ).toFixed(2)}
+                  </TableCell>
+                  {isDeletable && (
+                    <TableCell align="center">
+                      <IconButton
+                        color="error"
+                        size="small"
+                        onClick={() => onDelete(index, token?.order_id)}
+                        sx={{ padding: '4px' }}
+                      >
+                        <DeleteIcon sx={{ fontSize: '0.9rem' }} />
+                      </IconButton>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
+      </Box>
+    );
+  };
+
+  return (
+    <Card
+      sx={{
+        borderRadius: 2,
+        border: '1px solid #e8e8e8',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+        },
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+          color: '#fff',
+          p: 2.5,
+        }}
+      >
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Box sx={{ fontSize: '1.4rem' }}>💰</Box>
+          <Stack spacing={0.3} flex={1}>
+            <Typography
+              variant="h6"
+              sx={{ fontWeight: 700, fontSize: '1.1rem' }}
+            >
+              Billing Summary
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.9 }}>
+              Complete breakdown of room, services & food charges
+            </Typography>
+          </Stack>
+        </Stack>
+      </Box>
+
+      <CardContent>
+        {/* Summary Cards Grid */}
+        <Grid container spacing={1.5} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <SummaryCard
+              icon={RoomIcon}
+              label="Room Charges"
+              amount={totalRoomAmount}
+              bgColor="#3498db"
+            />
           </Grid>
-
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#fff0f1' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Services
-              </Typography>
-              <Typography variant="h6" fontWeight="bold">
-                ₹ {totalServiceAmount.toFixed(2)}
-              </Typography>
-            </Box>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <SummaryCard
+              icon={LocalMallIcon}
+              label="Services"
+              amount={totalServiceAmount}
+              bgColor="#e74c3c"
+            />
           </Grid>
-
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#f0fff4' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Food Items
-              </Typography>
-              <Typography variant="h6" fontWeight="bold">
-                ₹ {totalFoodAmount.toFixed(2)}
-              </Typography>
-            </Box>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <SummaryCard
+              icon={RestaurantIcon}
+              label="Food & Beverage"
+              amount={totalFoodAmount}
+              bgColor="#27ae60"
+            />
           </Grid>
-
-          <Grid size={{ xs: 12, md: 3 }}>
-            <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#fff8e1' }}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Grand Total
-              </Typography>
-              <Typography variant="h6" fontWeight="bold" color="primary.main">
-                ₹ {grandTotal.toFixed(2)}
-              </Typography>
-            </Box>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <SummaryCard
+              icon={() => <Box sx={{ fontSize: '1.5rem' }}>💳</Box>}
+              label="Grand Total"
+              amount={grandTotal}
+              bgColor="#c20f12"
+            />
           </Grid>
         </Grid>
-      </CardContent>
 
-      {/* ---- ROOM TOKENS TABLE ---- */}
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <RoomIcon color="primary" />
-          <Typography variant="subtitle1" fontWeight="bold">
-            Room Tokens
-          </Typography>
+        {/* Divider */}
+        <Box
+          sx={{
+            height: '1px',
+            background:
+              'linear-gradient(to right, transparent, #ddd, transparent)',
+            my: 3,
+          }}
+        />
+
+        {/* Token Tables */}
+        <Box>
+          <TokenTable
+            title="Room Charges"
+            icon={RoomIcon}
+            tokens={roomTokens}
+            bgColor="#3498db"
+            isDeletable={false}
+          />
+
+          <TokenTable
+            title="Additional Services"
+            icon={LocalMallIcon}
+            tokens={services}
+            bgColor="#e74c3c"
+            onDelete={deleteServices}
+            isDeletable={true}
+          />
+
+          <TokenTable
+            title="Food & Beverages"
+            icon={RestaurantIcon}
+            tokens={foodItems}
+            bgColor="#27ae60"
+            onDelete={deleteFoodItems}
+            isDeletable={true}
+          />
+
+          {roomTokens.length === 0 &&
+            services.length === 0 &&
+            foodItems.length === 0 && (
+              <Box
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: 2,
+                  border: '1px dashed #ddd',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  No charges added yet. Start by adding room, service, or food
+                  items.
+                </Typography>
+              </Box>
+            )}
         </Box>
-        {roomTokens.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No room tokens found.
-          </Typography>
-        ) : (
-          <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                  <TableCell>
-                    <b>Room No</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Items</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>SGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>CGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>Total (₹)</b>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {roomTokens.map((room, index) => {
-                  const rate = room.rate * room.days;
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{room.room || room.room_no}</TableCell>
-                      <TableCell>{room.item}</TableCell>
-                      <TableCell align="right">
-                        {parseFloat((room.amount - rate) / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat((room.amount - rate) / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat(room.amount || 0).toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Paper>
-        )}
-      </CardContent>
-
-      <Divider sx={{ my: 2 }} />
-
-      {/* ---- SERVICES TABLE ---- */}
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <LocalMallIcon color="secondary" />
-          <Typography variant="subtitle1" fontWeight="bold">
-            Services
-          </Typography>
-        </Box>
-        {services.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No service tokens found.
-          </Typography>
-        ) : (
-          <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                  <TableCell>
-                    <b>Room No</b>
-                  </TableCell>
-                  <TableCell>
-                    <b>Items</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>SGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>CGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>Total (₹)</b>
-                  </TableCell>
-                  <TableCell align="right"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {services.map((service, index) => {
-                  const itemsString =
-                    service.items?.map((i) => i.item).join(', ') || '—';
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{service.room_no}</TableCell>
-                      <TableCell>{itemsString}</TableCell>
-                      <TableCell align="right">
-                        {parseFloat(service.total_gst / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat(service.total_gst / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat(service.total_amount || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          disabled={service?.invoice}
-                          size="small"
-                          color="error"
-                          onClick={() => deleteServices(index)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Paper>
-        )}
-      </CardContent>
-
-      <Divider sx={{ my: 2 }} />
-
-      {/* ---- FOOD TABLE ---- */}
-      <CardContent>
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <RestaurantIcon color="success" />
-          <Typography variant="subtitle1" fontWeight="bold">
-            Food Items
-          </Typography>
-        </Box>
-        {foodItems.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No food tokens found.
-          </Typography>
-        ) : (
-          <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                  <TableCell>
-                    <b>Room No</b>
-                  </TableCell>
-                  {/* <TableCell>
-                    <b>Items</b>
-                  </TableCell> */}
-                  <TableCell>
-                    <b>Items</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>SGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>CGST (₹)</b>
-                  </TableCell>
-                  <TableCell align="right">
-                    <b>Total (₹)</b>
-                  </TableCell>
-                  <TableCell align="right"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {foodItems.map((food, index) => {
-                  const itemsString =
-                    food.items?.map((i) => i.item).join(', ') || '—';
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{food.room_no}</TableCell>
-                      <TableCell>{itemsString}</TableCell>
-                      {/* <TableCell>{food.type}</TableCell> */}
-                      <TableCell align="right">
-                        {parseFloat(food.total_gst / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat(food.total_gst / 2 || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {parseFloat(food.total_amount || 0).toFixed(2)}
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton
-                          disabled={food?.invoice}
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            deleteFoodItems({
-                              id: index,
-                              orderId: food.orderId,
-                            })
-                          }
-                        >
-                          <Delete />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Paper>
-        )}
       </CardContent>
     </Card>
   );

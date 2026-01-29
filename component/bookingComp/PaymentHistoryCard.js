@@ -1,13 +1,10 @@
 'use client';
 
 import {
-  Paper,
-  Typography,
-  Grid,
   Card,
   CardContent,
+  Typography,
   Box,
-  Divider,
   IconButton,
   Dialog,
   DialogTitle,
@@ -15,15 +12,19 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Stack,
+  Chip,
 } from '@mui/material';
 import {
   CurrencyRupee as RupeeIcon,
-  CalendarTodayOutlined,
-  Notes as NotesIcon,
   Payment as PaymentIcon,
-  Delete,
+  Delete as DeleteIcon,
+  Print as PrintIcon,
+  CheckCircle as CheckCircleIcon,
+  AccessTime as AccessTimeIcon,
 } from '@mui/icons-material';
-import PrintIcon from '@mui/icons-material/Print';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import NotesIcon from '@mui/icons-material/Notes';
 import { GetCustomDate } from '@/utils/DateFetcher';
 import { PaymentSlip } from '../printables/PaymentSlip';
 import { useRef, useState } from 'react';
@@ -44,21 +45,21 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
   // ---- Summary calculations ----
   const totalAmount = payments.reduce(
     (sum, p) => sum + (Number(p.amount) || 0),
-    0
+    0,
   );
   const advancePayment = booking?.advance_payment || null;
   const advanceAmount = advancePayment?.amount || 0;
   const totalRoomAmount = roomTokens.reduce(
     (sum, r) => sum + (parseFloat(r.total_amount) || r.amount || 0),
-    0
+    0,
   );
   const totalServiceAmount = services.reduce(
     (sum, s) => sum + (parseFloat(s.total_amount) || 0),
-    0
+    0,
   );
   const totalFoodAmount = foodItems.reduce(
     (sum, f) => sum + (parseFloat(f.total_amount) || 0),
-    0
+    0,
   );
   const grandTotal = totalRoomAmount + totalServiceAmount + totalFoodAmount;
   const amountPayed = totalAmount + advanceAmount;
@@ -85,10 +86,10 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
     if (!paymentToDelete) return;
     try {
       const filteredPayments = payments.filter(
-        (p) => p.id !== paymentToDelete.id
+        (p) => p.id !== paymentToDelete.id,
       );
       const cleanedPaymentsItems = filteredPayments.map(
-        ({ id, ...rest }) => rest
+        ({ id, ...rest }) => rest,
       );
 
       await UpdateData({
@@ -108,190 +109,352 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
     }
   };
 
+  const SummaryBox = ({ icon: Icon, label, amount, color, bgColor }) => (
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 1.5,
+        background: `linear-gradient(135deg, ${bgColor}15 0%, ${bgColor}05 100%)`,
+        border: `2px solid ${bgColor}`,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `0 4px 12px ${bgColor}30`,
+        },
+      }}
+    >
+      <Box
+        sx={{
+          p: 0.8,
+          borderRadius: 1,
+          background: bgColor,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#fff',
+        }}
+      >
+        <Icon sx={{ fontSize: '1.3rem' }} />
+      </Box>
+      <Stack spacing={0.3} flex={1}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.3px',
+          }}
+        >
+          {label}
+        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a' }}>
+          ₹{parseFloat(amount).toFixed(2)}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+
+  const PaymentCard = ({ payment, index }) => {
+    const paymentDate = GetCustomDate(payment.date);
+    const modeIcon = {
+      Cash: '💵',
+      Card: '💳',
+      Cheque: '✓',
+      UPI: '📱',
+      'Bank Transfer': '🏦',
+    };
+
+    return (
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 1.5,
+          border: '1px solid #e8e8e8',
+          background: '#fafafa',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          '&:hover': {
+            backgroundColor: '#f5f5f5',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+            transform: 'translateX(4px)',
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '4px',
+            borderRadius: '4px 0 0 4px',
+            background: 'linear-gradient(180deg, #27ae60, #2ecc71)',
+          },
+        }}
+      >
+        {/* Header: Mode & Actions */}
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 1.5 }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box sx={{ fontSize: '1.3rem' }}>
+              {modeIcon[payment.mode] || '💰'}
+            </Box>
+            <Stack spacing={0.3}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 700, color: '#1a1a1a' }}
+              >
+                {payment.mode || 'Unknown'}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#999' }}>
+                Payment #{index + 1}
+              </Typography>
+            </Stack>
+          </Stack>
+          <Stack direction="row" spacing={0.5}>
+            <IconButton
+              size="small"
+              color="success"
+              onClick={() => handlePrint(payment)}
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                },
+              }}
+            >
+              <PrintIcon sx={{ fontSize: '1rem' }} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => handleOpenDeleteDialog(payment)}
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                },
+              }}
+            >
+              <DeleteIcon sx={{ fontSize: '1rem' }} />
+            </IconButton>
+          </Stack>
+        </Stack>
+
+        {/* Amount */}
+        <Box
+          sx={{
+            p: 1.5,
+            borderRadius: 1,
+            backgroundColor: 'rgba(194, 15, 18, 0.05)',
+            border: '1px solid rgba(194, 15, 18, 0.1)',
+            mb: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>
+            Amount Paid
+          </Typography>
+          <Stack direction="row" spacing={0.3} alignItems="center">
+            <RupeeIcon sx={{ fontSize: '1rem', color: '#c20f12' }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#c20f12' }}>
+              {payment.amount}
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Details Grid */}
+        <Stack spacing={1} sx={{ mb: 1.5 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <CalendarMonthIcon sx={{ fontSize: '1rem', color: '#3498db' }} />
+            <Stack spacing={0.3} flex={1}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  color: '#999',
+                  textTransform: 'uppercase',
+                  fontSize: '0.7rem',
+                }}
+              >
+                Date
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: '#1a1a1a' }}
+              >
+                {paymentDate || '—'}
+              </Typography>
+            </Stack>
+          </Stack>
+
+          {payment.remark && (
+            <Stack direction="row" spacing={1} alignItems="flex-start">
+              <NotesIcon sx={{ fontSize: '1rem', color: '#f39c12', mt: 0.5 }} />
+              <Stack spacing={0.3} flex={1}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: '#999',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Remarks
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 500,
+                    color: '#1a1a1a',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {payment.remark}
+                </Typography>
+              </Stack>
+            </Stack>
+          )}
+        </Stack>
+
+        {/* Status Badge */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Chip
+            icon={<CheckCircleIcon />}
+            label="Completed"
+            color="success"
+            variant="outlined"
+            size="small"
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.7rem',
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  };
+
   return (
     <>
-      <Paper
-        elevation={4}
+      <Card
         sx={{
-          borderRadius: 4,
-          p: 3,
-          mb: 3,
-          background: 'linear-gradient(135deg, #fafafa, #ffffff)',
+          borderRadius: 2,
+          border: '1px solid #e8e8e8',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+          },
         }}
       >
         {/* Header */}
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ mb: 3, color: 'primary.main' }}
-        >
-          💳 Payment History
-        </Typography>
-
-        {/* Summary */}
-        <Card
-          elevation={4}
+        <Box
           sx={{
-            borderRadius: 3,
-            py: 0.5,
-            px: 2,
-            mb: 3,
-            background: 'linear-gradient(135deg, #e0f7fa, #ffffff)',
+            background: 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
+            color: '#fff',
+            p: 2.5,
           }}
         >
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="primary" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Grand Total
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="primary.main"
-                    >
-                      {parseFloat(grandTotal).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="success" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Total Paid
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="success.main"
-                    >
-                      {parseFloat(amountPayed).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="error" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Due Payment
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="error.main"
-                    >
-                      {parseFloat(dueAmount).toFixed(2) || '—'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Box sx={{ fontSize: '1.4rem' }}>💳</Box>
+            <Stack spacing={0.3} flex={1}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, fontSize: '1.1rem' }}
+              >
+                Payment History
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                Track all payments & outstanding balance
+              </Typography>
+            </Stack>
+          </Stack>
+        </Box>
 
-        {/* Payment Cards */}
-        <Grid container spacing={2}>
-          {payments?.length > 0 ? (
-            payments.map((p, index) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={index}>
-                <Card
-                  elevation={3}
-                  sx={{
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #fdfbfb, #ebedee)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: '0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CardContent sx={{ p: 2.5 }}>
-                    <Box display="flex" justifyContent={'space-between'}>
-                      <Box display="flex" alignItems="center" gap={1.2}>
-                        <PaymentIcon color="primary" />
-                        <Typography variant="subtitle1" fontWeight="bold">
-                          {p.mode}
-                        </Typography>
-                      </Box>
-
-                      <Box>
-                        <IconButton size="small" onClick={() => handlePrint(p)}>
-                          <PrintIcon fontSize="inherit" color="success" />
-                        </IconButton>
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={() => handleOpenDeleteDialog(p)}
-                        >
-                          <Delete fontSize="inherit" />
-                        </IconButton>
-                      </Box>
-                    </Box>
-
-                    <Divider sx={{ my: 1 }} />
-
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      mb={1.5}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        Amount
-                      </Typography>
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        color="secondary.main"
-                      >
-                        <RupeeIcon fontSize="small" sx={{ mr: 0.5 }} />
-                        <Typography variant="h6" fontWeight="bold">
-                          {p.amount}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <CalendarTodayOutlined fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {GetCustomDate(p.date) || '—'}
-                      </Typography>
-                    </Box>
-
-                    {p.remark && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <NotesIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          {p.remark}
-                        </Typography>
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))
-          ) : (
+        <CardContent>
+          {/* Summary Section */}
+          <Stack spacing={1.5} sx={{ mb: 3 }}>
             <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign="center"
-              py={2}
+              variant="subtitle2"
+              sx={{ fontWeight: 700, color: '#666' }}
             >
-              No payment records found.
+              📊 Payment Summary
             </Typography>
-          )}
-        </Grid>
-      </Paper>
+            <Stack spacing={1}>
+              <SummaryBox
+                icon={RupeeIcon}
+                label="Grand Total"
+                amount={grandTotal}
+                bgColor="#c20f12"
+              />
+              <SummaryBox
+                icon={CheckCircleIcon}
+                label="Total Paid"
+                amount={amountPayed}
+                bgColor="#27ae60"
+              />
+              <SummaryBox
+                icon={AccessTimeIcon}
+                label="Due Amount"
+                amount={dueAmount}
+                bgColor="#e74c3c"
+              />
+            </Stack>
+          </Stack>
+
+          {/* Divider */}
+          <Box
+            sx={{
+              height: '1px',
+              background:
+                'linear-gradient(to right, transparent, #ddd, transparent)',
+              my: 3,
+            }}
+          />
+
+          {/* Payment List */}
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 700, color: '#666', mb: 1.5 }}
+            >
+              📋 Payment Records ({payments.length})
+            </Typography>
+
+            {payments.length > 0 ? (
+              <Stack spacing={1.5}>
+                {payments.map((payment, index) => (
+                  <PaymentCard key={index} payment={payment} index={index} />
+                ))}
+              </Stack>
+            ) : (
+              <Box
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: 2,
+                  border: '1px dashed #ddd',
+                }}
+              >
+                <Box sx={{ fontSize: '2rem', mb: 1 }}>💼</Box>
+                <Typography variant="body2" color="text.secondary">
+                  No payment records found. Start by adding payment details.
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Hidden Printable Component */}
       <div style={{ display: 'none' }}>

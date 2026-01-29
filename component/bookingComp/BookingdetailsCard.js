@@ -1,6 +1,6 @@
 'use client';
 
-import { Paper, Typography, Stack, Divider, Box, Chip } from '@mui/material';
+import { Card, Typography, Stack, Box, Chip, Avatar } from '@mui/material';
 import {
   CalendarMonth,
   Bed,
@@ -19,178 +19,291 @@ const getStatusConfig = (status) => {
   switch (status) {
     case 'Confirmed':
       return {
-        icon: <CheckCircleIcon />,
+        icon: <CheckCircleIcon sx={{ fontSize: '1.2rem' }} />,
         color: 'success',
         label: 'Confirmed',
+        bg: 'rgba(39, 174, 96, 0.1)',
       };
     case 'Blocked':
       return {
-        icon: <BlockIcon />,
+        icon: <BlockIcon sx={{ fontSize: '1.2rem' }} />,
         color: 'warning',
         label: 'Blocked',
+        bg: 'rgba(243, 156, 18, 0.1)',
       };
     case 'Cancelled':
       return {
-        icon: <CancelIcon />,
+        icon: <CancelIcon sx={{ fontSize: '1.2rem' }} />,
         color: 'error',
         label: 'Cancelled',
+        bg: 'rgba(231, 76, 60, 0.1)',
       };
     default:
       return {
         icon: null,
         color: 'default',
         label: 'Booking',
+        bg: '#f8f9fa',
       };
   }
 };
 
 export default function BookingDetailsCard({ booking }) {
   const statusConfig = getStatusConfig(booking?.booking_status);
-  return (
-    <Paper
-      elevation={4}
+
+  const InfoItem = ({ icon, label, value, color = 'primary' }) => (
+    <Stack
+      direction="row"
+      spacing={1.5}
+      alignItems="flex-start"
       sx={{
-        borderRadius: 4,
+        p: 1.5,
+        borderRadius: 1,
+        backgroundColor: 'rgba(194, 15, 18, 0.03)',
+        border: '1px solid rgba(194, 15, 18, 0.1)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          backgroundColor: 'rgba(194, 15, 18, 0.06)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        },
+      }}
+    >
+      <Box
+        sx={{
+          color: color,
+          display: 'flex',
+          pt: 0.3,
+          minWidth: 'fit-content',
+        }}
+      >
+        {icon}
+      </Box>
+      <Stack spacing={0.3} flex={1}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
+          {label}
+        </Typography>
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+          {value}
+        </Typography>
+      </Stack>
+    </Stack>
+  );
+
+  return (
+    <Card
+      sx={{
+        borderRadius: 2,
         overflow: 'hidden',
         mb: 3,
         background: '#fff',
+        border: '1px solid #e8e8e8',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+        },
       }}
     >
-      {/* Header */}
+      {/* Modern Header */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+          background: 'linear-gradient(135deg, #c20f12 0%, #e63946 100%)',
           color: 'white',
-          p: 2,
+          p: 2.5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Typography variant="h6" fontWeight="bold">
-            Booking ID: {booking?.booking_id}
-          </Typography>
-          <Chip
-            label={statusConfig.label}
-            icon={statusConfig.icon}
-            color={statusConfig.color}
-            variant="outlined"
+        <Stack spacing={0.5}>
+          <Typography
+            variant="h6"
             sx={{
-              fontWeight: 'bold',
-              px: 1,
-              backgroundColor: '#fff',
+              fontWeight: 700,
+              fontSize: '1.1rem',
+              letterSpacing: '-0.3px',
             }}
-          />
+          >
+            Booking #{booking?.booking_id}
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.9 }}>
+            Guest Information & Dates
+          </Typography>
         </Stack>
+        <Box
+          sx={{
+            background: statusConfig.bg,
+            px: 1.5,
+            py: 1,
+            borderRadius: 2,
+            border: `1px solid`,
+            borderColor: statusConfig.color,
+          }}
+        >
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {statusConfig.icon}
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 700, color: statusConfig.color }}
+            >
+              {statusConfig.label}
+            </Typography>
+          </Stack>
+        </Box>
       </Box>
 
-      {/* Body */}
-      <Box sx={{ p: 2 }}>
-        <Stack spacing={1} divider={<Divider />}>
-          {/* Dates & Contact */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <CalendarMonth color="success" />
-              <Typography variant="body2">
-                <strong>Check-In:</strong>{' '}
-                {GetCustomDate(booking?.checkin_date)}
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <CalendarMonth color="error" />
-              <Typography variant="body2">
-                <strong>Check-Out:</strong>{' '}
-                {GetCustomDate(booking?.checkout_date)}
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <CalendarMonth color="primary" />
-              <Typography variant="body2">
-                <strong>Booked On:</strong> {GetCustomDate(booking?.createdAt)}
-              </Typography>
+      {/* Content */}
+      <Box sx={{ p: 2.5 }}>
+        <Stack spacing={2}>
+          {/* Guest Information Section */}
+          <Stack spacing={1.5}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                color: '#666',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                ml: 0.5,
+              }}
+            >
+              👤 Guest Details
+            </Typography>
+            <Stack spacing={1}>
+              <InfoItem
+                icon={<SupervisedUserCircle />}
+                label="Guest Name"
+                value={booking?.guest_name || 'N/A'}
+                color="primary"
+              />
+              <InfoItem
+                icon={<Phone />}
+                label="Phone"
+                value={booking?.phone || 'N/A'}
+              />
+              <InfoItem
+                icon={<Email />}
+                label="Email"
+                value={booking?.email || 'N/A'}
+              />
             </Stack>
           </Stack>
 
-          {/* Booking Meta */}
-          <Stack direction="row" flexWrap="wrap" spacing={2}>
-            <Typography variant="body2">
-              <strong>Booking Type:</strong> {booking?.booking_type || 'N/A'}
+          {/* Booking Dates Section */}
+          <Stack spacing={1.5}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                color: '#666',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                ml: 0.5,
+              }}
+            >
+              📅 Stay Duration
             </Typography>
-            <Typography variant="body2">
-              <strong>Reference:</strong> {booking?.booking_referance || 'N/A'}
-            </Typography>
-            <Typography variant="body2">
-              <strong>Ref No:</strong> {booking?.reference_no || 'N/A'}
-            </Typography>
-
-            <Typography variant="body2">
-              <strong>Meal Plan:</strong> {booking?.meal_plan}
-            </Typography>
-          </Stack>
-
-          {/* Guests */}
-          <Stack spacing={3} direction="row">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <SupervisedUserCircle color="warning" />
-              <Typography variant="body2">
-                <strong>Name:</strong> {booking?.customer?.name}
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Phone color="primary" />
-              <Typography variant="body2">
-                <strong>Phone:</strong> {booking?.customer?.mobile}
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Email color="success" />
-              <Typography variant="body2">
-                <strong>Email:</strong> {booking?.customer?.email || 'N/A'}
-              </Typography>
+            <Stack spacing={1}>
+              <InfoItem
+                icon={<CalendarMonth sx={{ color: '#27ae60' }} />}
+                label="Check-In"
+                value={GetCustomDate(booking?.checkin_date)}
+                color="#27ae60"
+              />
+              <InfoItem
+                icon={<CalendarMonth sx={{ color: '#e74c3c' }} />}
+                label="Check-Out"
+                value={GetCustomDate(booking?.checkout_date)}
+                color="#e74c3c"
+              />
+              <InfoItem
+                icon={<CalendarMonth sx={{ color: '#3498db' }} />}
+                label="Booked On"
+                value={GetCustomDate(booking?.createdAt)}
+                color="#3498db"
+              />
             </Stack>
           </Stack>
 
-          {/* Notes */}
-          <Stack spacing={3} direction="row">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <People color="primary" />
-              <Typography variant="body2">
-                <strong>Guests:</strong> {booking?.adult} Adult,{' '}
-                {booking?.children} Child
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Notes color="secondary" />
-              <Typography variant="body2">
-                <strong>Notes:</strong> {booking?.remarks || '—'}
-              </Typography>
+          {/* Room & Booking Details */}
+          <Stack spacing={1.5}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 700,
+                color: '#666',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                ml: 0.5,
+              }}
+            >
+              🏨 Booking Details
+            </Typography>
+            <Stack spacing={1}>
+              <InfoItem
+                icon={<Bed />}
+                label="Room Number"
+                value={booking?.room_no || 'N/A'}
+              />
+              <InfoItem
+                icon={<People />}
+                label="Guests"
+                value={booking?.num_guests || 'N/A'}
+              />
+              <InfoItem
+                icon={<Bed />}
+                label="Room Type"
+                value={booking?.room_type?.room_type || 'N/A'}
+              />
+              <InfoItem
+                icon={<Notes />}
+                label="Booking Type"
+                value={booking?.booking_type || 'N/A'}
+              />
             </Stack>
           </Stack>
 
-          {/* Rooms */}
-          <Stack spacing={1}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              <Bed sx={{ mr: 1, verticalAlign: 'middle' }} /> Rooms Booked
-            </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {booking?.rooms?.map((room, index) => (
-                <Chip
-                  key={index}
-                  label={`${room?.room_no}`}
-                  size="small"
-                  color="primary"
+          {/* Special Requests */}
+          {booking?.special_request && (
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 1.5,
+                backgroundColor: '#fff3cd',
+                borderLeft: '4px solid #f39c12',
+              }}
+            >
+              <Stack spacing={0.5}>
+                <Typography
+                  variant="caption"
                   sx={{
-                    fontWeight: 'bold',
-                    borderRadius: '12px',
+                    fontWeight: 700,
+                    color: '#856404',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
                   }}
-                />
-              ))}
-            </Stack>
-          </Stack>
+                >
+                  ⭐ Special Requests
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: '#856404', lineHeight: 1.5 }}
+                >
+                  {booking?.special_request}
+                </Typography>
+              </Stack>
+            </Box>
+          )}
         </Stack>
       </Box>
-    </Paper>
+    </Card>
   );
 }

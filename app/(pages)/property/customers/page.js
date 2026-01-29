@@ -173,6 +173,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
+              color="success"
               startIcon={<AddIcon />}
               onClick={handleCreate}
               sx={{ borderRadius: 2 }}
@@ -213,7 +214,7 @@ const Page = () => {
                     <TableCell>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="warning"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
