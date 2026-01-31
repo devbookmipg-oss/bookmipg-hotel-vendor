@@ -199,11 +199,9 @@ const Page = () => {
                     '#ID',
                     'Guest',
                     'Room No',
-                    'Check In/Out',
-                    'Booked On',
+                    'Check-In',
+                    'Check-Out',
                     'No. Of Guest',
-                    'Meal Plan',
-                    'Notes',
                     'Status',
                     'Actions',
                   ].map((item, index) => (
@@ -237,11 +235,7 @@ const Page = () => {
                       }}
                     >
                       <TableCell>{row.booking_id}</TableCell>
-                      <TableCell>
-                        {row?.customer?.name}
-                        <br />
-                        {row?.customer?.mobile}
-                      </TableCell>
+                      <TableCell>{row?.customer?.name}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} flexWrap="wrap">
                           {row.rooms?.map((room, index) => (
@@ -260,37 +254,14 @@ const Page = () => {
                           ))}
                         </Stack>
                       </TableCell>
-                      <TableCell>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}
-                        >
-                          <LoginIcon fontSize="small" color="success" />
-                          {GetCustomDate(row.checkin_date)}
-                        </div>
-
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}
-                        >
-                          <LogoutIcon fontSize="small" color="error" />
-                          {GetCustomDate(row.checkout_date)}
-                        </div>
-                      </TableCell>
-                      <TableCell>{GetCustomDate(row.createdAt)}</TableCell>
+                      <TableCell>{GetCustomDate(row.checkin_date)}</TableCell>
+                      <TableCell>{GetCustomDate(row.checkout_date)}</TableCell>
                       <TableCell>
                         Adult: {row?.adult}
                         <br />
                         Child: {row?.children}
                       </TableCell>
-                      <TableCell>{row.meal_plan}</TableCell>
-                      <TableCell>{row.remarks}</TableCell>
+
                       <TableCell>
                         <Chip
                           label={currentStatus?.status}

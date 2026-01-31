@@ -241,10 +241,10 @@ export default function ManageFood({
                         value={food.item}
                         onChange={(e) => {
                           const item = menuItems.find(
-                            (m) => m.item === e.target.value,
+                            (m) => m.name === e.target.value,
                           );
                           if (item) {
-                            handleInlineChange(index, 'item', item.item);
+                            handleInlineChange(index, 'item', item.name);
                             handleInlineChange(index, 'hsn', item.hsn || '');
                             handleInlineChange(index, 'rate', item.rate || 0);
                             handleInlineChange(index, 'gst', item.gst || 0);
@@ -255,8 +255,8 @@ export default function ManageFood({
                         fullWidth
                       >
                         {menuItems.map((m) => (
-                          <MenuItem key={m.documentId} value={m.item}>
-                            {m.item}
+                          <MenuItem key={m.documentId} value={m.name}>
+                            {m.name}
                           </MenuItem>
                         ))}
                       </TextField>

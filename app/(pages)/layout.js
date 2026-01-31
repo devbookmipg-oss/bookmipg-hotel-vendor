@@ -105,10 +105,6 @@ const menuLinks = [
         label: 'Room Invoice',
         url: '/front-office/room-invoice',
       },
-      {
-        label: 'Invoice Report',
-        url: '/front-office/room-invoice-report',
-      },
     ],
   },
   {
@@ -137,10 +133,6 @@ const menuLinks = [
         label: 'Tables',
         url: '/restaurant/tables',
       },
-      {
-        label: 'Invoice Report',
-        url: '/restaurant/invoice-report',
-      },
     ],
   },
   {
@@ -164,10 +156,6 @@ const menuLinks = [
       {
         label: 'Sales Item',
         url: '/inventory/sales-entries',
-      },
-      {
-        label: 'Stock Report',
-        url: '/inventory/stock-report',
       },
     ],
   },

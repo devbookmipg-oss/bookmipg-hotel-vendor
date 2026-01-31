@@ -28,7 +28,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
   const data = GetDataList({ auth, endPoint: 'customers' });
 
   const [search, setSearch] = useState(
-    selectedGuest ? selectedGuest?.mobile : ''
+    selectedGuest ? selectedGuest?.mobile : '',
   );
   const [searchClicked, setSearchClicked] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -47,11 +47,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
       gst_no: '',
       id_type: '',
       id_number: '',
-      passport_issue_date: null,
-      passport_exp_date: null,
-      visa_number: '',
-      visa_issue_date: null,
-      visa_exp_date: null,
+
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
@@ -70,7 +66,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
     let list = data.filter(
       (item) =>
         item.mobile?.toLowerCase().includes(lowerSearch) ||
-        item.name?.toLowerCase().includes(lowerSearch)
+        item.name?.toLowerCase().includes(lowerSearch),
     );
 
     if (
@@ -89,19 +85,6 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
     if (!formData.mobile) newErrors.mobile = 'Mobile is required';
     else if (!/^[0-9]{10}$/.test(formData.mobile))
       newErrors.mobile = 'Enter valid 10-digit number';
-
-    if (formData.id_type === 'Passport') {
-      if (!formData.passport_issue_date)
-        newErrors.passport_issue_date = 'Passport Issue Date is required';
-      if (!formData.passport_exp_date)
-        newErrors.passport_exp_date = 'Passport Expiry Date is required';
-      if (!formData.visa_number)
-        newErrors.visa_number = 'Visa Number is required';
-      if (!formData.visa_issue_date)
-        newErrors.visa_issue_date = 'Visa Issue Date is required';
-      if (!formData.visa_exp_date)
-        newErrors.visa_exp_date = 'Visa Expiry Date is required';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -252,52 +235,6 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
                           <Typography variant="body2" sx={{ color: '#555' }}>
                             🪪 {guest.id_type}: {guest.id_number || '-'}
                           </Typography>
-                        )}
-
-                        {/* Passport + Visa Section */}
-                        {guest.id_type === 'Passport' && (
-                          <>
-                            {guest.passport_issue_date && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: '#555' }}
-                              >
-                                📘 Passport Issue: {guest.passport_issue_date}
-                              </Typography>
-                            )}
-                            {guest.passport_exp_date && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: '#555' }}
-                              >
-                                📘 Passport Expiry: {guest.passport_exp_date}
-                              </Typography>
-                            )}
-                            {guest.visa_number && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: '#555' }}
-                              >
-                                🛂 Visa No: {guest.visa_number}
-                              </Typography>
-                            )}
-                            {guest.visa_issue_date && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: '#555' }}
-                              >
-                                🛂 Visa Issue: {guest.visa_issue_date}
-                              </Typography>
-                            )}
-                            {guest.visa_exp_date && (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: '#555' }}
-                              >
-                                🛂 Visa Expiry: {guest.visa_exp_date}
-                              </Typography>
-                            )}
-                          </>
                         )}
                       </CardContent>
 
@@ -462,94 +399,6 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
                 helperText={errors.id_number}
               />
             </Grid>
-
-            {formData.id_type === 'Passport' && (
-              <>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Passport Issue Date"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.passport_issue_date}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        passport_issue_date: e.target.value,
-                      })
-                    }
-                    error={!!errors.passport_issue_date}
-                    helperText={errors.passport_issue_date}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Passport Expiry Date"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.passport_exp_date}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        passport_exp_date: e.target.value,
-                      })
-                    }
-                    error={!!errors.passport_exp_date}
-                    helperText={errors.passport_exp_date}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    label="Visa Number"
-                    value={formData.visa_number}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        visa_number: e.target.value,
-                      })
-                    }
-                    error={!!errors.visa_number}
-                    helperText={errors.visa_number}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Visa Expiry Date"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.visa_issue_date}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        visa_issue_date: e.target.value,
-                      })
-                    }
-                    error={!!errors.visa_issue_date}
-                    helperText={errors.visa_issue_date}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    label="Visa Expiry Date"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.visa_exp_date}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        visa_exp_date: e.target.value,
-                      })
-                    }
-                    error={!!errors.visa_exp_date}
-                    helperText={errors.visa_exp_date}
-                  />
-                </Grid>
-              </>
-            )}
           </Grid>
         </DialogContent>
         <DialogActions>
