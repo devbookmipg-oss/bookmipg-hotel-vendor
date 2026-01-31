@@ -191,9 +191,6 @@ const menuLinks = [
 
 const filterMenuByAccess = (menuLinks, access = []) => {
   return menuLinks.filter((menu) => {
-    // Always visible
-    if (!menu.access) return true;
-
     // Restricted
     return access.includes(menu.access);
   });
