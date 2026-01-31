@@ -16,11 +16,8 @@ import {
   Typography,
   Paper,
   Table,
-  Stack,
-  Divider,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 
 const CreateNewOrder = ({
   formOpen,
@@ -87,164 +84,103 @@ const CreateNewOrder = ({
     setFormData({ ...formData, food_items: updated });
   };
 
-  // Calculate summary
-  const totalAmount = formData.food_items.reduce(
-    (acc, cur) => acc + cur.rate * cur.qty,
-    0,
-  );
-  const tax = formData.food_items.reduce(
-    (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-    0,
-  );
-  const payable = totalAmount + tax;
-
   return (
-    <Dialog
-      open={formOpen}
-      onClose={() => setFormOpen(false)}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 },
-      }}
-    >
-      {/* Dialog Header */}
-      <DialogTitle
-        sx={{
-          background: 'linear-gradient(135deg, #c20f12 0%, #e63946 100%)',
-          color: '#fff',
-          fontWeight: 700,
-          fontSize: '1.1rem',
-          pb: 2,
-        }}
+    <>
+      <Dialog
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        maxWidth="md"
+        fullWidth
       >
-        {editing ? '✏️ Edit Order' : '🍽️ New Order'}
-      </DialogTitle>
-
-      <DialogContent dividers sx={{ pt: 2.5 }}>
-        {/* Table Selection */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#333' }}>
-            📍 Select Table
-          </Typography>
-          <TextField
-            select
-            margin="dense"
-            label="Table"
-            size="small"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={formData.table || ''}
-            onChange={(e) =>
-              setFormData({ ...formData, table: e.target.value })
-            }
-            SelectProps={{ native: true }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 1.5,
-              },
-            }}
-          >
-            <option value="">-- Select Table --</option>
-            {tables?.map((table) => (
-              <option key={table.documentId} value={table.documentId}>
-                Table {table?.table_no}
-              </option>
-            ))}
-          </TextField>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Menu Items Section */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}>
-            🍴 Add Menu Items
-          </Typography>
-
-          <Stack spacing={1.5} direction={{ xs: 'column', sm: 'row' }} alignItems="flex-end">
+        <DialogTitle>{editing ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ mb: 2, width: '250px' }}>
             <TextField
               select
               margin="dense"
-              label="Menu Item"
+              label="Select Table"
               size="small"
               fullWidth
               InputLabelProps={{ shrink: true }}
-              value={selectedItem || ''}
-              onChange={(e) => setSelectedItem(e.target.value)}
+              value={formData.table || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, table: e.target.value })
+              }
               SelectProps={{ native: true }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1.5,
-                },
-              }}
             >
-              <option value="">-- Select Item --</option>
-              {menuItems?.map((cat) => (
-                <option key={cat.documentId} value={cat.documentId}>
-                  {cat?.item} (₹{cat?.rate})
+              <option value="">-- Select --</option>
+              {tables?.map((table) => (
+                <option key={table.documentId} value={table.documentId}>
+                  {table?.table_no}
                 </option>
               ))}
             </TextField>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<AddIcon />}
-              onClick={handleItemSelect}
-              sx={{
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: 1.5,
-                py: 1,
-              }}
-            >
-              Add Item
-            </Button>
-          </Stack>
-        </Box>
+          </Box>
 
-        {/* Items Table */}
-        {formData.food_items?.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <TableContainer component={Paper} sx={{ borderRadius: 1.5, border: '1px solid #e0e0e0' }}>
+          {/* Items Section */}
+          <Typography variant="h6" gutterBottom>
+            Items
+          </Typography>
+
+          <Grid container spacing={2} alignItems="center" mb={2}>
+            <Grid item size={{ xs: 10 }}>
+              <TextField
+                select
+                margin="dense"
+                label="Select Menu Item"
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={selectedItem || ''}
+                onChange={(e) => setSelectedItem(e.target.value)}
+                SelectProps={{ native: true }}
+              >
+                <option value="">-- Select --</option>
+                {menuItems?.map((cat) => (
+                  <option key={cat.documentId} value={cat.documentId}>
+                    {cat?.item}
+                  </option>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item size={{ xs: 2 }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={handleItemSelect}
+              >
+                Add
+              </Button>
+            </Grid>
+          </Grid>
+
+          {formData.food_items?.length > 0 && (
+            <TableContainer component={Paper} sx={{ borderRadius: 1, mb: 3 }}>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      Item
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      Rate
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      Qty
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      GST %
-                    </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      Total
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
-                      Action
-                    </TableCell>
+                  <TableRow>
+                    {[
+                      'Name',
+                      'HSN',
+                      'Rate',
+                      'Qty',
+                      'GST %',
+                      'Total',
+                      'Actions',
+                    ].map((h) => (
+                      <TableCell key={h}>{h}</TableCell>
+                    ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {formData.food_items.map((item, idx) => (
-                    <TableRow
-                      key={idx}
-                      sx={{
-                        '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                        '&:hover': { backgroundColor: '#f5f5f5' },
-                      }}
-                    >
-                      <TableCell sx={{ fontSize: '0.85rem' }}>
-                        <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                          {item.item}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
+                    <TableRow key={idx}>
+                      <TableCell>{item.item}</TableCell>
+                      <TableCell>{item.hsn}</TableCell>
+
+                      {/* Rate */}
+                      <TableCell>
                         <TextField
                           type="number"
                           size="small"
@@ -252,15 +188,12 @@ const CreateNewOrder = ({
                           onChange={(e) =>
                             handleItemChange(idx, 'rate', e.target.value)
                           }
-                          sx={{
-                            width: 70,
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 1,
-                            },
-                          }}
+                          sx={{ width: 80 }}
                         />
                       </TableCell>
-                      <TableCell align="center">
+
+                      {/* Qty */}
+                      <TableCell>
                         <TextField
                           type="number"
                           size="small"
@@ -268,15 +201,12 @@ const CreateNewOrder = ({
                           onChange={(e) =>
                             handleItemChange(idx, 'qty', e.target.value)
                           }
-                          sx={{
-                            width: 60,
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 1,
-                            },
-                          }}
+                          sx={{ width: 60 }}
                         />
                       </TableCell>
-                      <TableCell align="center">
+
+                      {/* GST */}
+                      <TableCell>
                         <TextField
                           type="number"
                           size="small"
@@ -284,15 +214,12 @@ const CreateNewOrder = ({
                           onChange={(e) =>
                             handleItemChange(idx, 'gst', e.target.value)
                           }
-                          sx={{
-                            width: 60,
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 1,
-                            },
-                          }}
+                          sx={{ width: 60 }}
                         />
                       </TableCell>
-                      <TableCell align="right">
+
+                      {/* Total (Editable for reverse calc) */}
+                      <TableCell>
                         <TextField
                           type="number"
                           size="small"
@@ -300,32 +227,26 @@ const CreateNewOrder = ({
                           onChange={(e) =>
                             handleItemChange(idx, 'amount', e.target.value)
                           }
-                          sx={{
-                            width: 80,
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 1,
-                            },
-                          }}
+                          sx={{ width: 100 }}
                         />
                       </TableCell>
-                      <TableCell align="center">
+
+                      {/* Delete */}
+                      <TableCell>
                         <IconButton
                           color="error"
-                          size="small"
                           onClick={() => {
                             const updated = formData.food_items.filter(
-                              (_, i) => i !== idx,
+                              (_, i) => i !== idx
                             );
                             setFormData({
                               ...formData,
                               food_items: updated,
                             });
                           }}
-                          sx={{
-                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.08)' },
-                          }}
+                          size="small"
                         >
-                          <DeleteIcon fontSize="small" />
+                          <DeleteIcon fontSize="inherit" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -333,144 +254,57 @@ const CreateNewOrder = ({
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
-        )}
+          )}
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Summary Section */}
-        <Box sx={{ mb: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}>
-            💰 Order Summary
+          {/* Summary Section */}
+          <Typography variant="h6" gutterBottom>
+            Summary
           </Typography>
-          <Grid container spacing={1.5}>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant="caption" sx={{ color: '#999', display: 'block' }}>
-                  Subtotal
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: '#333',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{totalAmount.toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant="caption" sx={{ color: '#999', display: 'block' }}>
-                  SGST
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: '#333',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{(tax / 2).toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant="caption" sx={{ color: '#999', display: 'block' }}>
-                  CGST
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: '#333',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{(tax / 2).toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  background: 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                  color: '#fff',
-                }}
-              >
-                <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-                  Total
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{payable.toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-      </DialogContent>
+          {(() => {
+            const totalAmount = formData.food_items.reduce(
+              (acc, cur) => acc + cur.rate * cur.qty,
+              0
+            );
+            const tax = formData.food_items.reduce(
+              (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
+              0
+            );
+            const payable = totalAmount + tax;
 
-      {/* Dialog Actions */}
-      <DialogActions sx={{ p: 2, backgroundColor: '#f9f9f9' }}>
-        <Button
-          onClick={() => setFormOpen(false)}
-          sx={{
-            fontWeight: 600,
-            textTransform: 'none',
-            borderRadius: 1.5,
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          color="success"
-          sx={{
-            fontWeight: 600,
-            textTransform: 'none',
-            borderRadius: 1.5,
-            px: 3,
-          }}
-        >
-          {editing ? '✏️ Update Order' : '➕ Create Order'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+            return (
+              <Grid container spacing={2} mb={2}>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    Total: <b>{totalAmount.toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    SGST: <b>{(tax / 2).toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    CGST: <b>{(tax / 2).toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    Payable: <b>{payable.toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+              </Grid>
+            );
+          })()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setFormOpen(false)}>Cancel</Button>
+          <Button onClick={handleSave} variant="contained">
+            {editing ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

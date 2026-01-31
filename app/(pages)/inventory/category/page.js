@@ -278,7 +278,7 @@ const Page = () => {
                 : 'Create Inventory Category'}
             </DialogTitle>
             <DialogContent>
-              <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid container spacing={2} sx={{ mb: 2, mt: 3 }}>
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     margin="dense"
@@ -294,7 +294,7 @@ const Page = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={handleSave} variant="contained" color="success">
                 {editing ? 'Update' : 'Create'}
               </Button>
             </DialogActions>

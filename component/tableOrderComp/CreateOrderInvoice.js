@@ -18,9 +18,6 @@ import {
   TableRow,
   TextField,
   Typography,
-  Box,
-  Divider,
-  Stack,
 } from '@mui/material';
 import React, { useState } from 'react';
 
@@ -60,17 +57,17 @@ const CreateOrderInvoice = ({
     // recalc before save
     const totalAmount = selectedRow.food_items.reduce(
       (acc, cur) => acc + cur.rate * cur.qty,
-      0,
+      0
     );
     const tax = selectedRow.food_items.reduce(
       (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-      0,
+      0
     );
     const payable = totalAmount + tax;
 
     // ✅ Clean menu_items (remove id/documentId/etc.)
     const cleanedMenuItems = selectedRow.food_items.map(
-      ({ id, documentId, room, ...rest }) => rest,
+      ({ id, documentId, room, ...rest }) => rest
     );
     const newInvoiceNO = generateNextInvoiceNo();
     const time = GetCurrentTime();
@@ -120,53 +117,18 @@ const CreateOrderInvoice = ({
     });
     setSelectedRow(null);
   };
-
-  // Calculate summary
-  const totalAmount =
-    selectedRow?.food_items?.reduce(
-      (acc, cur) => acc + cur.rate * cur.qty,
-      0,
-    ) || 0;
-  const tax =
-    selectedRow?.food_items?.reduce(
-      (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-      0,
-    ) || 0;
-  const payable = totalAmount + tax;
-
   return (
-    <Dialog
-      open={invoiceOpen}
-      onClose={() => setInvoiceOpen(false)}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 },
-      }}
-    >
-      {/* Dialog Header */}
-      <DialogTitle
-        sx={{
-          background: 'linear-gradient(135deg, #c20f12 0%, #e63946 100%)',
-          color: '#fff',
-          fontWeight: 700,
-          fontSize: '1.1rem',
-          pb: 2,
-        }}
+    <>
+      {/* Create/Edit Dialog */}
+      <Dialog
+        open={invoiceOpen}
+        onClose={() => setInvoiceOpen(false)}
+        maxWidth="md"
+        fullWidth
       >
-        🧾 Create Invoice
-      </DialogTitle>
-
-      <DialogContent dividers sx={{ pt: 2.5 }}>
-        {/* Customer Information */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}
-          >
-            👤 Customer Information
-          </Typography>
-          <Grid container spacing={1.5}>
+        <DialogTitle>Create Invoice</DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={1} mb={2}>
             <Grid item size={{ xs: 12, sm: 6 }}>
               <TextField
                 margin="dense"
@@ -180,17 +142,12 @@ const CreateOrderInvoice = ({
                     customer_name: e.target.value,
                   })
                 }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                  },
-                }}
               />
             </Grid>
             <Grid item size={{ xs: 12, sm: 6 }}>
               <TextField
                 margin="dense"
-                label="Phone Number"
+                label="Phone"
                 size="small"
                 fullWidth
                 value={formData.customer_phone}
@@ -200,28 +157,18 @@ const CreateOrderInvoice = ({
                     customer_phone: e.target.value,
                   })
                 }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                  },
-                }}
               />
             </Grid>
             <Grid item size={{ xs: 12, sm: 6 }}>
               <TextField
                 margin="dense"
-                label="GST Number"
+                label="GST No"
                 size="small"
                 fullWidth
                 value={formData.customer_gst}
                 onChange={(e) =>
                   setFormData({ ...formData, customer_gst: e.target.value })
                 }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                  },
-                }}
               />
             </Grid>
             <Grid item size={{ xs: 12, sm: 6 }}>
@@ -230,8 +177,6 @@ const CreateOrderInvoice = ({
                 label="Address"
                 size="small"
                 fullWidth
-                multiline
-                rows={2}
                 value={formData.customer_address}
                 onChange={(e) =>
                   setFormData({
@@ -239,292 +184,136 @@ const CreateOrderInvoice = ({
                     customer_address: e.target.value,
                   })
                 }
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1.5,
-                  },
-                }}
               />
             </Grid>
           </Grid>
-        </Box>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Items Section */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}
-          >
-            🍽️ Order Items
+          {/* Items Section */}
+          <Typography variant="h6" gutterBottom>
+            Items
           </Typography>
 
           {selectedRow?.food_items?.length > 0 && (
-            <TableContainer
-              component={Paper}
-              sx={{ borderRadius: 1.5, border: '1px solid #e0e0e0' }}
-            >
+            <TableContainer component={Paper} sx={{ borderRadius: 1, mb: 3 }}>
               <Table size="small">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell
-                      sx={{
-                        fontWeight: 700,
-                        color: '#333',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Item
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{
-                        fontWeight: 700,
-                        color: '#333',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Rate
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{
-                        fontWeight: 700,
-                        color: '#333',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Qty
-                    </TableCell>
-                    <TableCell
-                      align="center"
-                      sx={{
-                        fontWeight: 700,
-                        color: '#333',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      GST %
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      sx={{
-                        fontWeight: 700,
-                        color: '#333',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Total
-                    </TableCell>
+                  <TableRow>
+                    {[
+                      'Name',
+                      'HSN',
+                      'Rate',
+                      'Qty',
+                      'SGST %',
+                      'CGST %',
+                      'Total',
+                    ].map((h) => (
+                      <TableCell key={h}>{h}</TableCell>
+                    ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {selectedRow?.food_items.map((item, idx) => (
-                    <TableRow
-                      key={idx}
-                      sx={{
-                        '&:nth-of-type(odd)': { backgroundColor: '#fafafa' },
-                        '&:hover': { backgroundColor: '#f5f5f5' },
-                      }}
-                    >
-                      <TableCell sx={{ fontSize: '0.85rem' }}>
-                        <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                          {item.item}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>
-                        ₹{item.rate.toFixed(2)}
-                      </TableCell>
-                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>
-                        {item.qty}
-                      </TableCell>
-                      <TableCell align="center" sx={{ fontSize: '0.85rem' }}>
-                        {item.gst}%
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        sx={{ fontSize: '0.85rem', fontWeight: 600 }}
-                      >
-                        ₹{item.amount.toFixed(2)}
-                      </TableCell>
+                    <TableRow key={idx}>
+                      <TableCell>{item.item}</TableCell>
+                      <TableCell>{item.hsn}</TableCell>
+                      <TableCell>{item.rate}</TableCell>
+                      <TableCell>{item.qty}</TableCell>
+                      <TableCell>{item.gst / 2}</TableCell>
+                      <TableCell>{item.gst / 2}</TableCell>
+                      <TableCell>{item.amount}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
           )}
-        </Box>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Summary Section */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}
-          >
-            💰 Invoice Summary
+          {/* Summary Section */}
+          <Typography variant="h6" gutterBottom>
+            Summary
           </Typography>
-          <Grid container spacing={1.5}>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                }}
+          {(() => {
+            const totalAmount = selectedRow?.food_items?.reduce(
+              (acc, cur) => acc + cur.rate * cur.qty,
+              0
+            );
+            const tax = selectedRow?.food_items?.reduce(
+              (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
+              0
+            );
+            const payable = totalAmount + tax;
+
+            return (
+              <Grid container spacing={2} mb={2}>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    Total: <b>{totalAmount?.toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    SGST: <b>{tax?.toFixed(2) / 2}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    CGST: <b>{tax?.toFixed(2) / 2}</b>
+                  </Typography>
+                </Grid>
+                <Grid item size={{ xs: 12, sm: 3 }}>
+                  <Typography>
+                    Payable: <b>{payable?.toFixed(2)}</b>
+                  </Typography>
+                </Grid>
+              </Grid>
+            );
+          })()}
+
+          {/* Payment Section */}
+          <Typography variant="h6" gutterBottom>
+            Payment
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item size={{ xs: 12 }}>
+              <TextField
+                select
+                margin="dense"
+                label="Mode Of Payment"
+                size="small"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={formData.mop}
+                onChange={(e) =>
+                  setFormData({ ...formData, mop: e.target.value })
+                }
+                SelectProps={{ native: true }}
               >
-                <Typography
-                  variant="caption"
-                  sx={{ color: '#999', display: 'block' }}
-                >
-                  Subtotal
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: '#333',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{totalAmount.toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{ color: '#999', display: 'block' }}
-                >
-                  Tax
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    color: '#333',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{tax.toFixed(2)}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box
-                sx={{
-                  background:
-                    'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  textAlign: 'center',
-                  color: '#fff',
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{ display: 'block', opacity: 0.9 }}
-                >
-                  Total Amount Payable
-                </Typography>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: '1.2rem',
-                    mt: 0.3,
-                  }}
-                >
-                  ₹{payable.toFixed(2)}
-                </Typography>
-              </Box>
+                <option value="">-- Select --</option>
+                {paymentMethods?.map((cat) => (
+                  <option key={cat.documentId} value={cat.name}>
+                    {cat?.name}
+                  </option>
+                ))}
+              </TextField>
             </Grid>
           </Grid>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Payment Section */}
-        <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{ fontWeight: 700, mb: 1.5, color: '#333' }}
-          >
-            💳 Payment Method
-          </Typography>
-          <TextField
-            select
-            margin="dense"
-            label="Mode Of Payment"
-            size="small"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={formData.mop}
-            onChange={(e) => setFormData({ ...formData, mop: e.target.value })}
-            SelectProps={{ native: true }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 1.5,
-              },
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setInvoiceOpen(false);
+              setFormData({});
+              setSelectedRow(null);
             }}
           >
-            <option value="">-- Select Payment Method --</option>
-            {paymentMethods?.map((cat) => (
-              <option key={cat.documentId} value={cat.name}>
-                {cat?.name}
-              </option>
-            ))}
-          </TextField>
-        </Box>
-      </DialogContent>
-
-      {/* Dialog Actions */}
-      <DialogActions sx={{ p: 2, backgroundColor: '#f9f9f9' }}>
-        <Button
-          onClick={() => {
-            setInvoiceOpen(false);
-            setFormData({
-              customer_name: '',
-              customer_phone: '',
-              customer_gst: '',
-              customer_address: '',
-              mop: '',
-            });
-            setSelectedRow(null);
-          }}
-          sx={{
-            fontWeight: 600,
-            textTransform: 'none',
-            borderRadius: 1.5,
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          color="success"
-          sx={{
-            fontWeight: 600,
-            textTransform: 'none',
-            borderRadius: 1.5,
-            px: 3,
-          }}
-        >
-          ✓ Create Invoice
-        </Button>
-      </DialogActions>
-    </Dialog>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} variant="contained">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

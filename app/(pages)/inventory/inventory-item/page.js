@@ -41,6 +41,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { SuccessToast } from '@/utils/GenerateToast';
+import ACTION_COLORS from '@/utils/buttonColors';
 
 import { Loader } from '@/component/common';
 
@@ -70,7 +71,7 @@ const Page = () => {
       code: '',
       group: '',
       name: '',
-      auditable: '',
+      auditable: 'Yes',
       tax: '',
       unit: 'Pcs',
       category: null,
@@ -188,7 +189,7 @@ const Page = () => {
             />
             <Button
               variant="contained"
-              color="success"
+              color={ACTION_COLORS.create}
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
@@ -232,7 +233,7 @@ const Page = () => {
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color={ACTION_COLORS.edit}
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -241,7 +242,7 @@ const Page = () => {
                       </Tooltip>
                       <Tooltip title="Delete">
                         <IconButton
-                          color="error"
+                          color={ACTION_COLORS.delete}
                           onClick={() => handleDeleteClick(row)}
                           size="small"
                         >
@@ -279,10 +280,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete}>Cancel</Button>
+              <Button onClick={handleCancelDelete} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color={ACTION_COLORS.delete}
                 variant="contained"
               >
                 Delete
@@ -402,33 +405,16 @@ const Page = () => {
                     }
                   />
                 </Grid>
-
-                {/* Auditable */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={
-                          formData.auditable === true ||
-                          formData.auditable === 'Yes'
-                        }
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            auditable: e.target.checked ? 'Yes' : 'No',
-                          })
-                        }
-                      />
-                    }
-                    label="Auditable"
-                  />
-                </Grid>
               </Grid>
             </DialogContent>
 
             <DialogActions>
               <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button
+                onClick={handleSave}
+                variant="contained"
+                color={editing ? ACTION_COLORS.edit : ACTION_COLORS.create}
+              >
                 {editing ? 'Update' : 'Create'}
               </Button>
             </DialogActions>
