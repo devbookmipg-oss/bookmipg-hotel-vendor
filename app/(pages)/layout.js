@@ -32,6 +32,7 @@ const menuLinks = [
     label: 'Dashboard',
     url: '/dashboard',
     icon: <Dashboard sx={{ fontSize: 18 }} />,
+    public: true,
   },
   {
     key: 'online-bookings',
@@ -96,6 +97,10 @@ const menuLinks = [
     icon: <AirplayOutlined sx={{ fontSize: 18 }} />,
     access: 'frontoffice',
     children: [
+      {
+        label: 'Overview',
+        url: '/front-office/dashboard',
+      },
       {
         label: 'Room Booking',
         url: '/front-office/room-booking',
@@ -191,8 +196,13 @@ const menuLinks = [
 
 const filterMenuByAccess = (menuLinks, access = []) => {
   return menuLinks.filter((menu) => {
-    // Restricted
-    return access.includes(menu.access);
+    // Only dashboard (or explicitly public menus)
+    if (menu.public) return true;
+
+    // Everything else needs access
+    if (!menu.access) return false;
+
+    return access.includes(menu.key);
   });
 };
 

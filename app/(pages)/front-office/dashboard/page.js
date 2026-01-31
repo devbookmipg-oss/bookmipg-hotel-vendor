@@ -12,7 +12,6 @@ import {
   RoomGridLayout,
 } from '@/component/dashboardComp';
 import { Loader } from '@/component/common';
-import { Typography } from '@mui/material';
 
 const Page = () => {
   const { auth } = useAuth();
@@ -68,9 +67,14 @@ const Page = () => {
 
   return (
     <>
-      <Typography variant="h5" fontWeight={600} mb={3}>
-        Dashboard
-      </Typography>
+      <OverviewStats bookings={bookings} rooms={rooms} />
+      <RoomGridLayout bookings={bookings} rooms={rooms} />
+      <BookingList
+        expectedCheckin={expectedCheckin}
+        expectedCheckout={expectedCheckout}
+        stayOver={stayOver}
+        selectedDate={selectedDate}
+      />
     </>
   );
 };
