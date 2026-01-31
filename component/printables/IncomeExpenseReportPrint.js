@@ -204,7 +204,7 @@ const IncomeExpenseReportPrint = React.forwardRef((props, ref) => {
         </Typography>
       </Box>
       <Typography variant="body2" mt={2}>
-        Report generate from: www.solvotel.com
+        Report generate from: www.bookmipghotel.com
       </Typography>
     </Box>
   );

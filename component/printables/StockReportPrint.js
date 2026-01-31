@@ -91,7 +91,7 @@ const StockReportPrint = React.forwardRef((props, ref) => {
         </Table>
       </CustomTableContainer>
       <Typography variant="body2" mt={2}>
-        Report generate from: www.solvotel.com
+        Report generate from: www.bookmipghotel.com
       </Typography>
     </Box>
   );

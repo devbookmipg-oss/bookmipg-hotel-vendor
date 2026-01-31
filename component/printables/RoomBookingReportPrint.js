@@ -79,19 +79,19 @@ const RoomBookingReportPrint = React.forwardRef((props, ref) => {
               const serviceTokens = row?.service_tokens || [];
               const totalRoomAmount = row?.room_tokens.reduce(
                 (sum, r) => sum + (parseFloat(r.total_amount) || r.amount || 0),
-                0
+                0,
               );
               const totalServiceAmount = serviceTokens.reduce(
                 (sum, s) => sum + (parseFloat(s.total_amount) || 0),
-                0
+                0,
               );
               const totalFoodAmount = foodTokens.reduce(
                 (sum, f) => sum + (parseFloat(f.total_amount) || 0),
-                0
+                0,
               );
               const totalAmount = row?.payment_tokens.reduce(
                 (sum, p) => sum + (Number(p.amount) || 0),
-                0
+                0,
               );
               const advancePayment = row?.advance_payment || null;
               const advanceAmount = advancePayment?.amount || 0;
@@ -121,7 +121,7 @@ const RoomBookingReportPrint = React.forwardRef((props, ref) => {
         </Table>
       </CustomTableContainer>
       <Typography variant="body2" mt={2}>
-        Report generate from: www.solvotel.com
+        Report generate from: www.bookmipghotel.com
       </Typography>
     </Box>
   );

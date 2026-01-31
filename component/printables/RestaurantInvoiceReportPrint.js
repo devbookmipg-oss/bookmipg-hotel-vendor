@@ -36,7 +36,7 @@ const RestaurantInvoiceReportPrint = React.forwardRef((props, ref) => {
   const totalGst = filteredData?.reduce((sum, i) => sum + i.tax, 0);
   const totalPayable = filteredData?.reduce(
     (sum, i) => sum + i.payable_amount,
-    0
+    0,
   );
   return (
     <Box
@@ -106,7 +106,7 @@ const RestaurantInvoiceReportPrint = React.forwardRef((props, ref) => {
         </Table>
       </CustomTableContainer>
       <Typography variant="body2" mt={2}>
-        Report generate from: www.solvotel.com
+        Report generate from: www.bookmipghotel.com
       </Typography>
     </Box>
   );
