@@ -105,10 +105,14 @@ const Page = () => {
             group: inv.group,
             unit: inv.unit,
             totalQty: 0,
+            totalValue: 0,
           };
         }
 
-        groups[inv.name].totalQty += item?.qty || 0;
+        const qty = item?.qty || 0;
+        const rate = item?.rate || 0;
+        groups[inv.name].totalQty += qty;
+        groups[inv.name].totalValue += qty * rate;
       });
 
       return groups;
@@ -127,14 +131,25 @@ const Page = () => {
       const purchase = purchaseTotals[name] || {};
       const sales = salesTotals[name] || {};
 
+      const purchaseQty = purchase.totalQty || 0;
+      const salesQty = sales.totalQty || 0;
+      const availableQty = purchaseQty - salesQty;
+
+      const purchaseValue = purchase.totalValue || 0;
+      const salesValue = sales.totalValue || 0;
+      const availableValue = purchaseValue - salesValue;
+
       return {
         code: purchase.code || sales.code,
         name,
         group: purchase.group || sales.group,
         unit: purchase.unit || sales.unit,
-        purchaseQty: purchase.totalQty || 0,
-        salesQty: sales.totalQty || 0,
-        availableQty: purchase.totalQty - sales.totalQty || 0,
+        purchaseQty,
+        salesQty,
+        availableQty,
+        purchaseValue,
+        salesValue,
+        availableValue,
       };
     });
 
@@ -225,9 +240,12 @@ const Page = () => {
                       'Name',
                       'Group',
                       'Unit',
-                      'Stock In',
-                      'Stock Out',
-                      'Stock Available',
+                      'Stock In (Qty)',
+                      'Stock In (Value)',
+                      'Stock Out (Qty)',
+                      'Stock Out (Value)',
+                      'Stock Available (Qty)',
+                      'Stock Available (Value)',
                     ].map((item, index) => (
                       <TableCell key={index} sx={{ fontWeight: 'bold' }}>
                         {item}
@@ -243,13 +261,16 @@ const Page = () => {
                       <TableCell>{row.group}</TableCell>
                       <TableCell>{row.unit}</TableCell>
                       <TableCell>{row.purchaseQty}</TableCell>
+                      <TableCell>{row.purchaseValue?.toFixed(2)}</TableCell>
                       <TableCell>{row.salesQty}</TableCell>
+                      <TableCell>{row.salesValue?.toFixed(2)}</TableCell>
                       <TableCell>{row.availableQty}</TableCell>
+                      <TableCell>{row.availableValue?.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                   {filteredData?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={10} align="center">
                         No stock report found
                       </TableCell>
                     </TableRow>

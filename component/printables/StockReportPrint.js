@@ -61,9 +61,12 @@ const StockReportPrint = React.forwardRef((props, ref) => {
                 'Name',
                 'Group',
                 'Unit',
-                'Stock In',
-                'Stock Out',
-                'Stock Available',
+                'Stock In (Qty)',
+                'Stock In (Value)',
+                'Stock Out (Qty)',
+                'Stock Out (Value)',
+                'Stock Available (Qty)',
+                'Stock Available (Value)',
               ].map((item, index) => (
                 <HeadingCell key={index} sx={{ fontWeight: 'bold' }}>
                   {item}
@@ -77,8 +80,11 @@ const StockReportPrint = React.forwardRef((props, ref) => {
                 <BodyCell>{row.group}</BodyCell>
                 <BodyCell>{row.unit}</BodyCell>
                 <BodyCell>{row.purchaseQty}</BodyCell>
+                <BodyCell>{row.purchaseValue?.toFixed(2)}</BodyCell>
                 <BodyCell>{row.salesQty}</BodyCell>
+                <BodyCell>{row.salesValue?.toFixed(2)}</BodyCell>
                 <BodyCell>{row.availableQty}</BodyCell>
+                <BodyCell>{row.availableValue?.toFixed(2)}</BodyCell>
               </TableRow>
             ))}
           </TableBody>
