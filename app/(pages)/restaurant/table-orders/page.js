@@ -10,10 +10,11 @@ import {
 } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { GetCurrentTime } from '@/utils/Timefetcher';
 import { GetTodaysDate } from '@/utils/DateFetcher';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
+import { useReactToPrint } from 'react-to-print';
 import {
   CreateNewOrder,
   CreateOrderInvoice,
@@ -22,6 +23,7 @@ import {
   TableGrid,
   TransferOrder,
 } from '@/component/tableOrderComp';
+import { KotPrint } from '@/component/printables/KotPrint';
 
 const generateNextOrderNo = (orders) => {
   if (!orders || orders.length === 0) {
@@ -46,6 +48,7 @@ const Page = () => {
     auth,
     endPoint: 'restaurant-menus',
   });
+  console.log('menuItems', menuItems);
   const bookings = GetDataList({
     auth,
     endPoint: 'room-bookings',
@@ -78,7 +81,7 @@ const Page = () => {
       bk.rooms?.map((room) => ({
         booking_id: bk.documentId,
         room_no: room.room_no,
-      })) || []
+      })) || [],
   );
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -88,6 +91,7 @@ const Page = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [formData, setFormData] = useState({
     food_items: [],
+    notes: '',
     hotel_id: auth?.user?.hotel_id || '',
   });
   const [editing, setEditing] = useState(false);
@@ -98,6 +102,28 @@ const Page = () => {
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState('');
+
+  // KOT print state
+  const [kotOpen, setKotOpen] = useState(false);
+  const [kotData, setKotData] = useState(null);
+  const kotComponentRef = useRef(null);
+
+  // Get restaurant profile
+  const profile = GetDataList({
+    auth,
+    endPoint: 'restaurant-profiles',
+  });
+  const myProfile = profile?.[0];
+
+  const handleKOT = (order) => {
+    setKotData(order);
+    setKotOpen(true);
+  };
+
+  const handleKOTPrint = useReactToPrint({
+    contentRef: kotComponentRef,
+    documentTitle: `KOT-${kotData?.order_id}`,
+  });
 
   const handleTransferOrder = (order) => {
     setSelectedRow(order);
@@ -120,8 +146,10 @@ const Page = () => {
     setEditing(false);
     setFormData({
       food_items: [],
+      notes: '',
       hotel_id: auth?.user?.hotel_id || '',
       table: tableId,
+      token_status: 'Open',
     });
     setFormOpen(true);
   };
@@ -129,7 +157,7 @@ const Page = () => {
   const handleSave = async () => {
     // ✅ Clean food_items (remove id/documentId/etc.)
     const cleanedMenuItems = formData.food_items.map(
-      ({ id, documentId, ...rest }) => rest
+      ({ id, documentId, ...rest }) => rest,
     );
 
     const finalData = {
@@ -214,6 +242,7 @@ const Page = () => {
               handleTransferOrder={handleTransferOrder}
               handleOrderInvoice={handleOrderInvoice}
               handleEdit={handleEdit}
+              handleKOT={handleKOT}
             />
           </Grid>
 
@@ -276,6 +305,90 @@ const Page = () => {
         invoices={invoices}
         paymentMethods={paymentMethods}
       />
+
+      {/* KOT Print (Hidden) */}
+      <Box sx={{ display: 'none' }}>
+        {kotData && (
+          <KotPrint
+            ref={kotComponentRef}
+            order={kotData}
+            profile={myProfile}
+            size="58mm"
+          />
+        )}
+      </Box>
+
+      {/* KOT Print Dialog */}
+      {kotData && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: kotOpen ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1300,
+          }}
+          onClick={() => setKotOpen(false)}
+        >
+          <Box
+            sx={{
+              backgroundColor: 'white',
+              p: 3,
+              borderRadius: 2,
+              boxShadow: 3,
+              textAlign: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              KOT - {kotData?.order_id}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 3, color: 'grey.600' }}>
+              Table No: {kotData?.table?.table_no}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Box
+                component="button"
+                onClick={() => setKotOpen(false)}
+                sx={{
+                  flex: 1,
+                  py: 1,
+                  px: 2,
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #ddd',
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: '#eeeeee' },
+                }}
+              >
+                Close
+              </Box>
+              <Box
+                component="button"
+                onClick={handleKOTPrint}
+                sx={{
+                  flex: 1,
+                  py: 1,
+                  px: 2,
+                  backgroundColor: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: '#1565c0' },
+                }}
+              >
+                Print KOT
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      )}
     </>
   );
 };

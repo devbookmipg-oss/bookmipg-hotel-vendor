@@ -41,7 +41,7 @@ const CreateNewOrder = ({
     const amount = rate + (rate * gstPercent) / 100;
 
     const newItem = {
-      item: itemObj.item,
+      item: itemObj.name,
       hsn: itemObj.hsn || '',
       rate,
       qty: 1,
@@ -117,6 +117,22 @@ const CreateNewOrder = ({
             </TextField>
           </Box>
 
+          {/* Notes Section */}
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              margin="dense"
+              label="Special Notes / Instructions"
+              multiline
+              rows={3}
+              fullWidth
+              placeholder="e.g., No salt, extra spice, allergies, etc."
+              value={formData.notes || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+            />
+          </Box>
+
           {/* Items Section */}
           <Typography variant="h6" gutterBottom>
             Items
@@ -138,7 +154,7 @@ const CreateNewOrder = ({
                 <option value="">-- Select --</option>
                 {menuItems?.map((cat) => (
                   <option key={cat.documentId} value={cat.documentId}>
-                    {cat?.item}
+                    {cat?.name}
                   </option>
                 ))}
               </TextField>
@@ -237,7 +253,7 @@ const CreateNewOrder = ({
                           color="error"
                           onClick={() => {
                             const updated = formData.food_items.filter(
-                              (_, i) => i !== idx
+                              (_, i) => i !== idx,
                             );
                             setFormData({
                               ...formData,
@@ -263,11 +279,11 @@ const CreateNewOrder = ({
           {(() => {
             const totalAmount = formData.food_items.reduce(
               (acc, cur) => acc + cur.rate * cur.qty,
-              0
+              0,
             );
             const tax = formData.food_items.reduce(
               (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-              0
+              0,
             );
             const payable = totalAmount + tax;
 

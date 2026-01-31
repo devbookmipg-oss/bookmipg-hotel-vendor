@@ -68,7 +68,7 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
             {orders.map((order) => {
               const totalAmount = order.food_items?.reduce(
                 (sum, item) => sum + item.amount,
-                0
+                0,
               );
 
               return (
@@ -91,8 +91,8 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
                         order.token_status === 'Closed'
                           ? 'secondary'
                           : order.token_status === 'Open'
-                          ? 'success'
-                          : 'warning'
+                            ? 'success'
+                            : 'warning'
                       }
                       size="small"
                     />
@@ -107,7 +107,7 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
                             href={
                               order?.room_booking
                                 ? `/front-office/room-booking/${order.room_booking.documentId}`
-                                : `/restaurant/invoices/${order.restaurant_invoice.documentId}`
+                                : `/restaurant/invoices`
                             }
                             style={{
                               fontSize: 10,
@@ -126,13 +126,16 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
                   </TableCell>
                   <TableCell>₹{totalAmount.toFixed(2) || 0}</TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      size="small"
-                      onClick={() => handleEdit(order)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
+                    {order?.token_status !== 'Closed' && (
+                      <IconButton
+                        color="primary"
+                        size="small"
+                        onClick={() => handleEdit(order)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    )}
+
                     <IconButton
                       color="error"
                       size="small"

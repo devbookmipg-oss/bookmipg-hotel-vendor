@@ -57,17 +57,17 @@ const CreateOrderInvoice = ({
     // recalc before save
     const totalAmount = selectedRow.food_items.reduce(
       (acc, cur) => acc + cur.rate * cur.qty,
-      0
+      0,
     );
     const tax = selectedRow.food_items.reduce(
       (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-      0
+      0,
     );
     const payable = totalAmount + tax;
 
     // ✅ Clean menu_items (remove id/documentId/etc.)
     const cleanedMenuItems = selectedRow.food_items.map(
-      ({ id, documentId, room, ...rest }) => rest
+      ({ id, documentId, room, ...rest }) => rest,
     );
     const newInvoiceNO = generateNextInvoiceNo();
     const time = GetCurrentTime();
@@ -80,6 +80,7 @@ const CreateOrderInvoice = ({
       tax,
       payable_amount: payable,
       menu_items: cleanedMenuItems,
+      hotel_id: auth?.user?.hotel_id || '',
     };
 
     const res = await CreateNewData({
@@ -235,11 +236,11 @@ const CreateOrderInvoice = ({
           {(() => {
             const totalAmount = selectedRow?.food_items?.reduce(
               (acc, cur) => acc + cur.rate * cur.qty,
-              0
+              0,
             );
             const tax = selectedRow?.food_items?.reduce(
               (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-              0
+              0,
             );
             const payable = totalAmount + tax;
 

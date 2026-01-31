@@ -8,6 +8,7 @@ const TableGrid = ({
   handleEdit,
   handleTransferOrder,
   handleOrderInvoice,
+  handleKOT,
 }) => {
   return (
     <>
@@ -32,7 +33,8 @@ const TableGrid = ({
           {tables?.map((table) => {
             const activeOrder = orders?.find(
               (o) =>
-                o.table?.table_no == table.table_no && o.token_status === 'Open'
+                o.table?.table_no == table.table_no &&
+                o.token_status === 'Open',
             );
             const isAvailable = !activeOrder;
 
@@ -96,7 +98,8 @@ const TableGrid = ({
                     <Box
                       sx={{
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
                         alignItems: 'center',
                         gap: 0.5,
                       }}
@@ -108,14 +111,30 @@ const TableGrid = ({
                         color="success"
                         // startIcon={<EditIcon sx={{ fontSize: 15 }} />}
                         sx={{
-                          fontSize: 12,
+                          fontSize: 11,
                           borderRadius: 2,
                           textTransform: 'none',
-                          px: 1.5,
+                          px: 0.5,
                           py: 0.3,
                         }}
                       >
                         Update
+                      </Button>
+                      <Button
+                        onClick={() => handleKOT(activeOrder)}
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        // startIcon={<EditIcon sx={{ fontSize: 15 }} />}
+                        sx={{
+                          fontSize: 11,
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          px: 0.5,
+                          py: 0.3,
+                        }}
+                      >
+                        KOT
                       </Button>
 
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -125,10 +144,10 @@ const TableGrid = ({
                           variant="contained"
                           color="secondary"
                           sx={{
-                            fontSize: 12,
+                            fontSize: 11,
                             borderRadius: 2,
                             textTransform: 'none',
-                            px: 1.5,
+                            px: 0.5,
                             py: 0.3,
                           }}
                         >
@@ -140,10 +159,10 @@ const TableGrid = ({
                           variant="contained"
                           color="error"
                           sx={{
-                            fontSize: 12,
+                            fontSize: 11,
                             borderRadius: 2,
                             textTransform: 'none',
-                            px: 1.5,
+                            px: 0.5,
                             py: 0.3,
                           }}
                         >
