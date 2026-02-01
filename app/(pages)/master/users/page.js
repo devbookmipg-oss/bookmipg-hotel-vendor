@@ -36,6 +36,9 @@ import {
   Grid,
   MenuItem,
   Chip,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -285,7 +288,7 @@ const Page = () => {
                         <>
                           <Tooltip title="Edit">
                             <IconButton
-                              color="primary"
+                              color="secondary"
                               onClick={() => handleEdit(row)}
                               size="small"
                             >
@@ -385,48 +388,50 @@ const Page = () => {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Access"
-                    SelectProps={{ multiple: true }}
-                    value={formData.access}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        access:
-                          typeof e.target.value === 'string'
-                            ? e.target.value.split(',')
-                            : e.target.value,
-                      })
-                    }
-                  >
-                    <MenuItem value="admin">Admin</MenuItem>
-                    <MenuItem value="frontoffice">Frontoffice</MenuItem>
-                    <MenuItem value="property">Property</MenuItem>
-                    <MenuItem value="housekeeping">Housekeeping</MenuItem>
-                    <MenuItem value="restaurant">Restaurant</MenuItem>
-                    <MenuItem value="inventory">Inventory</MenuItem>
-                    <MenuItem value="accounts">Accounts</MenuItem>
-                  </TextField>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Access</InputLabel>
+                    <Select
+                      multiple
+                      label="Access"
+                      value={formData.access}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          access:
+                            typeof e.target.value === 'string'
+                              ? e.target.value.split(',')
+                              : e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="frontoffice">Frontoffice</MenuItem>
+                      <MenuItem value="property">Property</MenuItem>
+                      <MenuItem value="housekeeping">Housekeeping</MenuItem>
+                      <MenuItem value="restaurant">Restaurant</MenuItem>
+                      <MenuItem value="inventory">Inventory</MenuItem>
+                      <MenuItem value="accounts">Accounts</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label="Status"
-                    value={formData.blocked}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        blocked: e.target.value,
-                      })
-                    }
-                  >
-                    <MenuItem value={false}>🟢 Active</MenuItem>
-                    <MenuItem value={true}>🔴 Deactive</MenuItem>
-                  </TextField>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      label="Status"
+                      value={formData.blocked}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          blocked: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value={false}>🟢 Active</MenuItem>
+                      <MenuItem value={true}>🔴 Deactive</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </DialogContent>

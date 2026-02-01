@@ -1,7 +1,7 @@
 // Central mapping of semantic actions to MUI color names
 export const ACTION_COLORS = {
   create: 'success',
-  edit: 'warning',
+  edit: 'secondary',
   delete: 'error',
 };
 

@@ -362,7 +362,7 @@ const Page = () => {
 
                       <Tooltip title="Edit">
                         <IconButton
-                          color="warning"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >

@@ -289,11 +289,11 @@ const Page = () => {
                               width: 32,
                               height: 32,
                               backgroundColor: (theme) =>
-                                theme.palette.warning.main,
+                                theme.palette.secondary.main,
                               color: '#fff',
                               '&:hover': {
                                 backgroundColor: (theme) =>
-                                  theme.palette.warning.dark,
+                                  theme.palette.secondary.dark,
                               },
                             }}
                           >

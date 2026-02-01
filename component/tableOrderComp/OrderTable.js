@@ -128,7 +128,7 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
                   <TableCell align="center">
                     {order?.token_status !== 'Closed' && (
                       <IconButton
-                        color="primary"
+                        color="secondary"
                         size="small"
                         onClick={() => handleEdit(order)}
                       >

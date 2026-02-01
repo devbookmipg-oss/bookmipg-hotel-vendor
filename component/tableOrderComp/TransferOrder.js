@@ -8,6 +8,10 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 
 const TransferOrder = ({
@@ -46,21 +50,21 @@ const TransferOrder = ({
 
       const total_rate = selectedRow.food_items.reduce(
         (acc, item) => acc + item.rate * item.qty,
-        0
+        0,
       );
 
       // recalc before save
 
       const total_amount = selectedRow.food_items.reduce(
         (acc, item) => acc + item.amount,
-        0
+        0,
       );
 
       const total_gst = total_amount - total_rate;
 
       // ✅ Clean menu_items (remove id/documentId/etc.)
       const cleanedMenuItems = selectedRow.food_items.map(
-        ({ id, documentId, room, ...rest }) => rest
+        ({ id, documentId, room, ...rest }) => rest,
       );
       const prevFood = booking?.food_tokens || [];
       await UpdateData({
@@ -109,35 +113,32 @@ const TransferOrder = ({
         <DialogTitle id="transfer-dialog-title">Transfer Order</DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 2, width: '250px' }}>
-            <TextField
-              select
-              margin="dense"
-              label="Select Room No"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={
-                selectedBooking && selectedRoom
-                  ? `${selectedBooking}|${selectedRoom}`
-                  : ''
-              }
-              onChange={(e) => {
-                const [booking_id, roomNo] = e.target.value.split('|');
-                setSelectedBooking(booking_id);
-                setSelectedRoom(roomNo);
-              }}
-              SelectProps={{ native: true }}
-            >
-              <option value="">-- Select --</option>
-              {activeRooms?.map((room, index) => (
-                <option
-                  key={`${room.booking_id}-${room.room_no}-${index}`}
-                  value={`${room.booking_id}|${room.room_no}`}
-                >
-                  {room.room_no}
-                </option>
-              ))}
-            </TextField>
+            <FormControl fullWidth margin="dense" size="small">
+              <InputLabel>Select Room No</InputLabel>
+              <Select
+                label="Select Room No"
+                value={
+                  selectedBooking && selectedRoom
+                    ? `${selectedBooking}|${selectedRoom}`
+                    : ''
+                }
+                onChange={(e) => {
+                  const [booking_id, roomNo] = e.target.value.split('|');
+                  setSelectedBooking(booking_id);
+                  setSelectedRoom(roomNo);
+                }}
+              >
+                <MenuItem value="">-- Select --</MenuItem>
+                {activeRooms?.map((room, index) => (
+                  <MenuItem
+                    key={`${room.booking_id}-${room.room_no}-${index}`}
+                    value={`${room.booking_id}|${room.room_no}`}
+                  >
+                    {room.room_no}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>

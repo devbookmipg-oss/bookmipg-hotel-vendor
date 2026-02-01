@@ -35,6 +35,10 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -203,6 +207,7 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Date',
                     'Title',
                     'Description',
@@ -217,8 +222,9 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{GetCustomDate(row.date)}</TableCell>
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.description}</TableCell>
@@ -228,7 +234,7 @@ const Page = () => {
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -349,26 +355,23 @@ const Page = () => {
                 </Grid>
                 {/* Category */}
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Mode Of Payment"
-                    fullWidth
-                    value={formData.mop || ''}
-                    onChange={(e) => {
-                      setFormData({ ...formData, mop: e.target.value });
-                    }}
-                    SelectProps={{
-                      native: true,
-                    }}
-                  >
-                    <option value="">-- Select --</option>
-                    {paymentMethods?.map((cat) => (
-                      <option key={cat.documentId} value={cat.name}>
-                        {cat?.name}
-                      </option>
-                    ))}
-                  </TextField>
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Mode Of Payment</InputLabel>
+                    <Select
+                      label="Mode Of Payment"
+                      value={formData.mop || ''}
+                      onChange={(e) => {
+                        setFormData({ ...formData, mop: e.target.value });
+                      }}
+                    >
+                      <MenuItem value="">-- Select --</MenuItem>
+                      {paymentMethods?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.name}>
+                          {cat?.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </DialogContent>

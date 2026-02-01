@@ -16,6 +16,10 @@ import {
   TableContainer,
   Divider,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import { UpdateData } from '@/utils/ApiFunctions';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
@@ -135,22 +139,22 @@ export default function EditRoomInvoiceDialog({
     const serviceAndFood = [...foodTokens, ...serviceTokens];
     const totalRoomRate = roomTokens.reduce(
       (sum, item) => sum + (parseFloat(item.rate * item.days) || 0),
-      0
+      0,
     );
 
     const totalRoomAmount = roomTokens.reduce(
       (sum, item) => sum + (parseFloat(item.amount) || 0),
-      0
+      0,
     );
     const totalRoomGst = totalRoomAmount - totalRoomRate;
 
     const totalOtherAmount = serviceAndFood.reduce(
       (sum, item) => sum + (parseFloat(item.total_amount) || 0),
-      0
+      0,
     );
     const totalOtherGst = serviceAndFood.reduce(
       (sum, item) => sum + (parseFloat(item.total_gst) || 0),
-      0
+      0,
     );
 
     const totalGst = totalRoomGst + totalOtherGst;
@@ -249,22 +253,23 @@ export default function EditRoomInvoiceDialog({
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label="Mode of Payment"
-              value={invData?.mop || ''}
-              onChange={(e) => setInvData({ ...invData, mop: e.target.value })}
-              SelectProps={{ native: true }}
-            >
-              <option value="">-- Select --</option>
-              {paymentMethods?.map((pm) => (
-                <option key={pm.documentId} value={pm.name}>
-                  {pm.name}
-                </option>
-              ))}
-            </TextField>
+            <FormControl fullWidth size="small">
+              <InputLabel>Mode of Payment</InputLabel>
+              <Select
+                label="Mode of Payment"
+                value={invData?.mop || ''}
+                onChange={(e) =>
+                  setInvData({ ...invData, mop: e.target.value })
+                }
+              >
+                <MenuItem value="">-- Select --</MenuItem>
+                {paymentMethods?.map((pm) => (
+                  <MenuItem key={pm.documentId} value={pm.name}>
+                    {pm.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
         </Grid>
 
@@ -364,7 +369,7 @@ export default function EditRoomInvoiceDialog({
                               ti,
                               ii,
                               'rate',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           sx={{ width: 80 }}
@@ -380,7 +385,7 @@ export default function EditRoomInvoiceDialog({
                               ti,
                               ii,
                               'gst',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           sx={{ width: 60 }}
@@ -396,7 +401,7 @@ export default function EditRoomInvoiceDialog({
                               ti,
                               ii,
                               'amount',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           sx={{ width: 80 }}
@@ -476,7 +481,7 @@ export default function EditRoomInvoiceDialog({
                               ti,
                               ii,
                               'amount',
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           sx={{ width: 80 }}

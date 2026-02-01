@@ -32,6 +32,10 @@ import {
   TableRow,
   Paper,
   Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -266,7 +270,7 @@ const Page = () => {
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="warning"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -361,28 +365,23 @@ const Page = () => {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Room Category"
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
-                    }
-                    error={!!formErrors.category}
-                    helperText={formErrors.category}
-                    SelectProps={{
-                      native: true,
-                    }}
-                  >
-                    <option value="">-- Select Category --</option>
-                    {roomCategories?.map((cat) => (
-                      <option key={cat.documentId} value={cat.documentId}>
-                        {cat?.name}
-                      </option>
-                    ))}
+                  <FormControl fullWidth margin="dense" size="small" error={!!formErrors.category}>
+                    <InputLabel>Room Category</InputLabel>
+                    <Select
+                      label="Room Category"
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                    >
+                      <MenuItem value="">-- Select Category --</MenuItem>
+                      {roomCategories?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.documentId}>
+                          {cat?.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   </TextField>
                 </Grid>
               </Grid>

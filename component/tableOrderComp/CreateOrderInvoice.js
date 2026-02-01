@@ -18,6 +18,10 @@ import {
   TableRow,
   TextField,
   Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import React, { useState } from 'react';
 
@@ -276,26 +280,23 @@ const CreateOrderInvoice = ({
           </Typography>
           <Grid container spacing={2}>
             <Grid item size={{ xs: 12 }}>
-              <TextField
-                select
-                margin="dense"
-                label="Mode Of Payment"
-                size="small"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={formData.mop}
-                onChange={(e) =>
-                  setFormData({ ...formData, mop: e.target.value })
-                }
-                SelectProps={{ native: true }}
-              >
-                <option value="">-- Select --</option>
-                {paymentMethods?.map((cat) => (
-                  <option key={cat.documentId} value={cat.name}>
-                    {cat?.name}
-                  </option>
-                ))}
-              </TextField>
+              <FormControl fullWidth margin="dense" size="small">
+                <InputLabel>Mode Of Payment</InputLabel>
+                <Select
+                  label="Mode Of Payment"
+                  value={formData.mop}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mop: e.target.value })
+                  }
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {paymentMethods?.map((cat) => (
+                    <MenuItem key={cat.documentId} value={cat.name}>
+                      {cat?.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>

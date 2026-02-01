@@ -16,6 +16,10 @@ import {
   Typography,
   Paper,
   Table,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -95,26 +99,23 @@ const CreateNewOrder = ({
         <DialogTitle>{editing ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ mb: 2, width: '250px' }}>
-            <TextField
-              select
-              margin="dense"
-              label="Select Table"
-              size="small"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              value={formData.table || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, table: e.target.value })
-              }
-              SelectProps={{ native: true }}
-            >
-              <option value="">-- Select --</option>
-              {tables?.map((table) => (
-                <option key={table.documentId} value={table.documentId}>
-                  {table?.table_no}
-                </option>
-              ))}
-            </TextField>
+            <FormControl fullWidth margin="dense" size="small">
+              <InputLabel>Select Table</InputLabel>
+              <Select
+                label="Select Table"
+                value={formData.table || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, table: e.target.value })
+                }
+              >
+                <MenuItem value="">-- Select --</MenuItem>
+                {tables?.map((table) => (
+                  <MenuItem key={table.documentId} value={table.documentId}>
+                    {table?.table_no}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
 
           {/* Notes Section */}
@@ -140,24 +141,21 @@ const CreateNewOrder = ({
 
           <Grid container spacing={2} alignItems="center" mb={2}>
             <Grid item size={{ xs: 10 }}>
-              <TextField
-                select
-                margin="dense"
-                label="Select Menu Item"
-                size="small"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={selectedItem || ''}
-                onChange={(e) => setSelectedItem(e.target.value)}
-                SelectProps={{ native: true }}
-              >
-                <option value="">-- Select --</option>
-                {menuItems?.map((cat) => (
-                  <option key={cat.documentId} value={cat.documentId}>
-                    {cat?.name}
-                  </option>
-                ))}
-              </TextField>
+              <FormControl fullWidth margin="dense" size="small">
+                <InputLabel>Select Menu Item</InputLabel>
+                <Select
+                  label="Select Menu Item"
+                  value={selectedItem || ''}
+                  onChange={(e) => setSelectedItem(e.target.value)}
+                >
+                  <MenuItem value="">-- Select --</MenuItem>
+                  {menuItems?.map((cat) => (
+                    <MenuItem key={cat.documentId} value={cat.documentId}>
+                      {cat?.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item size={{ xs: 2 }}>
               <Button

@@ -35,6 +35,10 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  FormControl,
+  Select,
+  InputLabel,
+  MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -44,6 +48,7 @@ import { SuccessToast } from '@/utils/GenerateToast';
 import ACTION_COLORS from '@/utils/buttonColors';
 
 import { Loader } from '@/component/common';
+import { Shrink } from 'lucide-react';
 
 const Page = () => {
   const { auth } = useAuth();
@@ -166,7 +171,8 @@ const Page = () => {
           <Link underline="hover" color="inherit" href="/">
             Dashboard
           </Link>
-          <Typography color="text.primary">Inventory Item</Typography>
+          <Typography color="text.primary">Invertory</Typography>
+          <Typography color="text.primary">Item</Typography>
         </Breadcrumbs>
       </Box>
       {!data ? (
@@ -204,14 +210,12 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Code',
                     'Name',
                     'category',
                     'Unit',
-                    'group',
-                    'Auditable',
-                    'Gst',
-
+                    'Gst(%)',
                     'Actions',
                   ].map((item, index) => (
                     <TableCell key={index} sx={{ fontWeight: 'bold' }}>
@@ -221,14 +225,14 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.code}</TableCell>
                     <TableCell>{row.name}</TableCell>
                     <TableCell>{row.category?.name}</TableCell>
                     <TableCell>{row.unit}</TableCell>
-                    <TableCell>{row.group}</TableCell>
-                    <TableCell>{row.auditable}</TableCell>
+
                     <TableCell>{row.tax}</TableCell>
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
@@ -304,7 +308,7 @@ const Page = () => {
               {editing ? 'Edit Inventory Item' : 'Create Inventory Item'}
             </DialogTitle>
             <DialogContent>
-              <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid container spacing={2} sx={{ mb: 2, mt: 3 }}>
                 {/* Code */}
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
@@ -332,64 +336,51 @@ const Page = () => {
                 </Grid>
 
                 {/* Category */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Category"
-                    fullWidth
-                    value={formData.category || ''}
-                    onChange={(e) => {
-                      setFormData({ ...formData, category: e.target.value });
-                    }}
-                    SelectProps={{
-                      native: true,
-                    }}
-                  >
-                    <option value="">-- Select Category --</option>
-                    {categoryList?.map((cat) => (
-                      <option key={cat.documentId} value={cat.documentId}>
-                        {cat?.name}
-                      </option>
-                    ))}
-                  </TextField>
-                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="category-label">Category</InputLabel>
 
-                {/* Group */}
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    margin="dense"
-                    label="Group"
-                    fullWidth
-                    value={formData.group}
-                    onChange={(e) =>
-                      setFormData({ ...formData, group: e.target.value })
-                    }
-                  />
+                    <Select
+                      InputLabel={{ Shrink: true }}
+                      labelId="category-label"
+                      label="Category"
+                      value={formData.category || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                    >
+                      <MenuItem value="">
+                        <em>-- Select Category --</em>
+                      </MenuItem>
+
+                      {categoryList?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.documentId}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
 
                 {/* Unit */}
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Unit"
-                    fullWidth
-                    value={formData.unit || ''}
-                    onChange={(e) => {
-                      setFormData({ ...formData, unit: e.target.value });
-                    }}
-                    SelectProps={{
-                      native: true,
-                    }}
-                  >
-                    <option value="">-- Select Unit --</option>
-                    {['Pcs', 'Kg', 'Gm']?.map((item, index) => (
-                      <option key={index} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                  </TextField>
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Unit</InputLabel>
+                    <Select
+                      label="Unit"
+                      value={formData.unit || ''}
+                      onChange={(e) => {
+                        setFormData({ ...formData, unit: e.target.value });
+                      }}
+                    >
+                      <MenuItem value="">-- Select Unit --</MenuItem>
+                      {['Pcs', 'Kg', 'Gm']?.map((item, index) => (
+                        <MenuItem key={index} value={item}>
+                          {item}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
 
                 {/* Tax */}

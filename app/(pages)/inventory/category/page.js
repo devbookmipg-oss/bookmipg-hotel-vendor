@@ -155,7 +155,8 @@ const Page = () => {
           <Link underline="hover" color="inherit" href="/">
             Dashboard
           </Link>
-          <Typography color="text.primary">Inventory Category</Typography>
+          <Typography color="text.primary">Invertory</Typography>
+          <Typography color="text.primary">Category</Typography>
         </Breadcrumbs>
       </Box>
       {!data ? (
@@ -192,7 +193,7 @@ const Page = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                  {['Name', 'Actions'].map((item, index) => (
+                  {['#', 'Name', 'Actions'].map((item, index) => (
                     <TableCell key={index} sx={{ fontWeight: 'bold' }}>
                       {item}
                     </TableCell>
@@ -200,14 +201,15 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.name}</TableCell>
 
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >

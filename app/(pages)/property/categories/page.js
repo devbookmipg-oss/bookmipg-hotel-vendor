@@ -381,7 +381,7 @@ const Page = () => {
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="warning"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >

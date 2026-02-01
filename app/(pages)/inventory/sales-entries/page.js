@@ -33,6 +33,10 @@ import {
   Paper,
   Grid,
   Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -196,7 +200,8 @@ const Page = () => {
           <Link underline="hover" color="inherit" href="/">
             Dashboard
           </Link>
-          <Typography color="text.primary">Inventory Sales</Typography>
+          <Typography color="text.primary">Invertory</Typography>
+          <Typography color="text.primary">Sales Entry</Typography>
         </Breadcrumbs>
       </Box>
       {!data ? (
@@ -234,9 +239,10 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
-                    '#Order Id',
-                    '#Invoice No',
+                    '#',
                     'Date',
+                    'Order Id',
+                    'Invoice No',
                     'Name',
                     'Unit',
                     'QTY',
@@ -252,11 +258,12 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{GetCustomDate(row.date)}</TableCell>
                     <TableCell>{row.order_id}</TableCell>
                     <TableCell>{row.invoice_no}</TableCell>
-                    <TableCell>{GetCustomDate(row.date)}</TableCell>
                     <TableCell>{row.inventory_item?.name}</TableCell>
                     <TableCell>{row.inventory_item?.unit}</TableCell>
                     <TableCell>{row.qty}</TableCell>
@@ -266,7 +273,7 @@ const Page = () => {
                     <TableCell sx={{ width: '100px' }}>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="primary"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -370,34 +377,30 @@ const Page = () => {
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Inventory Item"
-                    InputLabelProps={{ shrink: true }}
-                    fullWidth
-                    value={formData.inventory_item || ''}
-                    onChange={(e) => {
-                      const selected = inventoryItemList.find(
-                        (item) => item?.documentId == e.target.value,
-                      );
-                      setFormData({
-                        ...formData,
-                        inventory_item: selected?.documentId,
-                        tax: selected?.tax || 0,
-                      });
-                    }}
-                    SelectProps={{
-                      native: true,
-                    }}
-                  >
-                    <option value="">-- Select --</option>
-                    {inventoryItemList?.map((cat) => (
-                      <option key={cat.documentId} value={cat.documentId}>
-                        {cat?.name}
-                      </option>
-                    ))}
-                  </TextField>
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Inventory Item</InputLabel>
+                    <Select
+                      label="Inventory Item"
+                      value={formData.inventory_item || ''}
+                      onChange={(e) => {
+                        const selected = inventoryItemList.find(
+                          (item) => item?.documentId == e.target.value,
+                        );
+                        setFormData({
+                          ...formData,
+                          inventory_item: selected?.documentId,
+                          tax: selected?.tax || 0,
+                        });
+                      }}
+                    >
+                      <MenuItem value="">-- Select --</MenuItem>
+                      {inventoryItemList?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.documentId}>
+                          {cat?.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField

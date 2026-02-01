@@ -121,7 +121,7 @@ const Page = () => {
                     hover
                     onClick={() =>
                       router.push(
-                        `/front-office/online-booking/${row.documentId}`
+                        `/front-office/online-booking/${row.documentId}`,
                       )
                     }
                     sx={{
@@ -144,8 +144,8 @@ const Page = () => {
                           row.booking_status === 'Pending Approval'
                             ? 'warning'
                             : row.booking_status === 'Approved'
-                            ? 'success'
-                            : 'error'
+                              ? 'success'
+                              : 'error'
                         }
                       />
                     </TableCell>
@@ -160,7 +160,7 @@ const Page = () => {
                         <IconButton
                           onClick={() =>
                             router.push(
-                              `/front-office/online-booking/${row.documentId}`
+                              `/front-office/online-booking/${row.documentId}`,
                             )
                           }
                           size="small"
@@ -169,11 +169,11 @@ const Page = () => {
                             width: 32,
                             height: 32,
                             backgroundColor: (theme) =>
-                              theme.palette.warning.main,
+                              theme.palette.secondary.main,
                             color: '#fff',
                             '&:hover': {
                               backgroundColor: (theme) =>
-                                theme.palette.warning.dark,
+                                theme.palette.secondary.dark,
                             },
                           }}
                         >

@@ -53,7 +53,7 @@ const menuLinks = [
     access: 'admin',
     children: [
       {
-        label: 'Users',
+        label: 'Users / Accounts',
         url: '/master/users',
       },
       {
@@ -65,7 +65,7 @@ const menuLinks = [
         url: '/master/restaurant-profile',
       },
       {
-        label: 'Guests',
+        label: 'Guests List',
         url: '/property/customers',
       },
     ],
@@ -77,37 +77,37 @@ const menuLinks = [
     access: 'property',
     children: [
       {
-        label: 'Room Categories',
+        label: 'Categories',
         url: '/property/categories',
       },
       {
-        label: 'Room List',
+        label: 'Rooms',
         url: '/property/rooms',
       },
 
       {
-        label: 'Payment Methods',
+        label: 'MOPs',
         url: '/property/payment-methods',
       },
     ],
   },
   {
     key: 'frontoffice',
-    label: 'Frontoffice',
+    label: 'Front Desk',
     icon: <AirplayOutlined sx={{ fontSize: 18 }} />,
     access: 'frontoffice',
     children: [
       {
-        label: 'Overview',
+        label: 'Booking Overview',
         url: '/front-office/dashboard',
       },
       {
-        label: 'Room Booking',
+        label: 'Bookings',
         url: '/front-office/room-booking',
       },
 
       {
-        label: 'Room Invoice',
+        label: 'Invoice Master',
         url: '/front-office/room-invoice',
       },
     ],
@@ -155,18 +155,18 @@ const menuLinks = [
         url: '/inventory/inventory-item',
       },
       {
-        label: 'Purchase Item',
+        label: 'Purchase Entry',
         url: '/inventory/purchase-entries',
       },
       {
-        label: 'Sales Item',
+        label: 'Sales Entry',
         url: '/inventory/sales-entries',
       },
     ],
   },
   {
     key: 'accounts',
-    label: 'Accounts',
+    label: 'Account/Reports',
     icon: <AccountBalance sx={{ fontSize: 18 }} />,
     access: 'accounts',
     children: [

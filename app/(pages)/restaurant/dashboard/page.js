@@ -29,6 +29,10 @@ import {
   Card,
   CardContent,
   CardActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -306,7 +310,7 @@ const Page = () => {
                     <CardActions>
                       <Tooltip title="Edit">
                         <IconButton
-                          color="warning"
+                          color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
                         >
@@ -369,24 +373,23 @@ const Page = () => {
             <DialogContent>
               <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid size={12}>
-                  <TextField
-                    select
-                    margin="dense"
-                    label="Table No"
-                    fullWidth
-                    value={formData.table_no || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, table_no: e.target.value })
-                    }
-                    SelectProps={{ native: true }}
-                  >
-                    <option value="">-- Select --</option>
-                    {tableList?.map((cat) => (
-                      <option key={cat.documentId} value={cat.table_no}>
-                        {cat?.table_no}
-                      </option>
-                    ))}
-                  </TextField>
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Table No</InputLabel>
+                    <Select
+                      label="Table No"
+                      value={formData.table_no || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, table_no: e.target.value })
+                      }
+                    >
+                      <MenuItem value="">-- Select --</MenuItem>
+                      {tableList?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.table_no}>
+                          {cat?.table_no}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
