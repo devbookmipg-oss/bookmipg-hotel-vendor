@@ -206,6 +206,7 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Username',
                     'Email',
                     'Role',
@@ -228,8 +229,9 @@ const Page = () => {
                   ?.filter((row) =>
                     row.username?.toLowerCase().includes(search.toLowerCase()),
                   )
-                  ?.map((row) => (
+                  ?.map((row, index) => (
                     <TableRow key={row.documentId}>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>{row.username}</TableCell>
                       <TableCell>{row.email}</TableCell>
                       <TableCell>

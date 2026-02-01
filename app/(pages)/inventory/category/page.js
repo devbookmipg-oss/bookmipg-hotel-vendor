@@ -256,10 +256,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete}>Cancel</Button>
+              <Button onClick={handleCancelDelete} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color="success"
                 variant="contained"
               >
                 Delete
@@ -295,7 +297,9 @@ const Page = () => {
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setFormOpen(false)}>Cancel</Button>
+              <Button onClick={() => setFormOpen(false)} variant="outlined">
+                Cancel
+              </Button>
               <Button onClick={handleSave} variant="contained" color="success">
                 {editing ? 'Update' : 'Create'}
               </Button>

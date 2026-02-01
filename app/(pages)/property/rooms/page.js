@@ -242,6 +242,7 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Room No',
                     'Floor',
                     'Category',
@@ -258,8 +259,9 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.room_no}</TableCell>
                     <TableCell>{row.floor}</TableCell>
                     <TableCell>{row.category?.name}</TableCell>
@@ -365,7 +367,12 @@ const Page = () => {
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                  <FormControl fullWidth margin="dense" size="small" error={!!formErrors.category}>
+                  <FormControl
+                    fullWidth
+                    margin="dense"
+                    size="small"
+                    error={!!formErrors.category}
+                  >
                     <InputLabel>Room Category</InputLabel>
                     <Select
                       label="Room Category"
@@ -382,7 +389,6 @@ const Page = () => {
                       ))}
                     </Select>
                   </FormControl>
-                  </TextField>
                 </Grid>
               </Grid>
             </DialogContent>

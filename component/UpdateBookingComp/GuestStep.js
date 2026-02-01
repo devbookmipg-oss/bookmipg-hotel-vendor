@@ -28,7 +28,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
   const data = GetDataList({ auth, endPoint: 'customers' });
 
   const [search, setSearch] = useState(
-    selectedGuest ? selectedGuest?.mobile : ''
+    selectedGuest ? selectedGuest?.mobile : '',
   );
   const [searchClicked, setSearchClicked] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -70,7 +70,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
     let list = data.filter(
       (item) =>
         item.mobile?.toLowerCase().includes(lowerSearch) ||
-        item.name?.toLowerCase().includes(lowerSearch)
+        item.name?.toLowerCase().includes(lowerSearch),
     );
 
     if (
@@ -553,16 +553,10 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            sx={{
-              borderRadius: 3,
-              bgcolor: '#6a11cb',
-              '&:hover': { bgcolor: '#2575fc' },
-            }}
-          >
+          <Button onClick={() => setFormOpen(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSave} color="success">
             Save Guest
           </Button>
         </DialogActions>

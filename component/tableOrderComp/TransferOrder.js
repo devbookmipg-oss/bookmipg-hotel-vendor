@@ -147,12 +147,13 @@ const TransferOrder = ({
               setTransferOpen(false);
               setSelectedRow(null);
             }}
+            variant="outlined"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirmTransfer}
-            color="primary"
+            color="success"
             variant="contained"
           >
             Transfer

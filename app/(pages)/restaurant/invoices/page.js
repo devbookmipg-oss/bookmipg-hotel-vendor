@@ -38,6 +38,9 @@ import {
   Grid,
   Autocomplete,
   FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -84,6 +87,11 @@ const Page = () => {
     auth,
     endPoint: 'hotels',
     id: auth?.user?.hotel_id,
+  });
+
+  const paymentMethods = GetDataList({
+    auth,
+    endPoint: 'payment-methods',
   });
 
   const [search, setSearch] = useState('');
@@ -324,10 +332,10 @@ const Page = () => {
                     'Invoice No',
                     'Date',
                     'Customer Name',
-                    'Total Amount',
+                    'Taxable',
                     'GST',
-                    'Payable Amount',
-                    'Payment Method',
+                    'Payable',
+                    'MOP',
                     'Actions',
                   ].map((item, index) => (
                     <TableCell key={index} sx={{ fontWeight: 'bold' }}>
@@ -407,10 +415,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete}>Cancel</Button>
+              <Button onClick={handleCancelDelete} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color="success"
                 variant="contained"
               >
                 Delete
@@ -429,9 +439,6 @@ const Page = () => {
               {editing ? 'Edit Invoice' : 'Create Invoice'}
             </DialogTitle>
             <DialogContent dividers>
-              <Typography variant="h6" gutterBottom>
-                Invoice Info
-              </Typography>
               <Grid container spacing={2} mb={2}>
                 <Grid item size={{ xs: 12, sm: 4 }}>
                   <Typography>
@@ -440,19 +447,15 @@ const Page = () => {
                 </Grid>
                 <Grid item size={{ xs: 12, sm: 4 }}>
                   <Typography>
-                    Date: <b>{GetCustomDate(formData.date)}</b>
-                  </Typography>
-                </Grid>
-                <Grid item size={{ xs: 12, sm: 4 }}>
-                  <Typography>
-                    Time: <b>{formData.time}</b>
+                    Date/Time:{' '}
+                    <b>
+                      {GetCustomDate(formData.date)} {formData.time}
+                    </b>
                   </Typography>
                 </Grid>
               </Grid>
               {/* Customer Info */}
-              <Typography variant="h6" gutterBottom>
-                Customer Info
-              </Typography>
+
               <Grid container spacing={2} mb={2}>
                 <Grid item size={{ xs: 12, sm: 6 }}>
                   <TextField
@@ -768,22 +771,31 @@ const Page = () => {
               {/* Payment Section */}
               <Grid container spacing={2}>
                 <Grid item size={{ xs: 12 }}>
-                  <TextField
-                    margin="dense"
-                    label="Mode of payment"
-                    size="small"
-                    fullWidth
-                    value={formData.mop}
-                    onChange={(e) =>
-                      setFormData({ ...formData, mop: e.target.value })
-                    }
-                  />
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Mode Of Payment</InputLabel>
+                    <Select
+                      label="Mode Of Payment"
+                      value={formData.mop || ''}
+                      onChange={(e) => {
+                        setFormData({ ...formData, mop: e.target.value });
+                      }}
+                    >
+                      <MenuItem value="">-- Select --</MenuItem>
+                      {paymentMethods?.map((cat) => (
+                        <MenuItem key={cat.documentId} value={cat.name}>
+                          {cat?.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={() => setFormOpen(false)} variant="outlined">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} variant="contained" color="success">
                 {editing ? 'Update' : 'Create'}
               </Button>
             </DialogActions>

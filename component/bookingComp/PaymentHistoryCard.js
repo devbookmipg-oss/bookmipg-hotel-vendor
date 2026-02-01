@@ -289,10 +289,12 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteOpen(false)} variant="outlined">
+            Cancel
+          </Button>
           <Button
             onClick={handleConfirmDelete}
-            color="error"
+            color="success"
             variant="contained"
           >
             Delete

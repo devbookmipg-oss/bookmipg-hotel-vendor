@@ -69,7 +69,6 @@ const Page = () => {
       rate: 0,
       gst: 0,
       total: 0,
-
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
@@ -201,9 +200,10 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Name',
                     'Category',
-                    'Segment',
+
                     'HSN/SAC',
                     'Rate',
                     'GST (%)',
@@ -217,11 +217,11 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{row.name}</TableCell>
                     <TableCell>{row.category}</TableCell>
-                    <TableCell>{row.segment}</TableCell>
                     <TableCell>{row.hsn_code}</TableCell>
                     <TableCell>{row.rate}</TableCell>
                     <TableCell>{row.gst}</TableCell>
@@ -274,10 +274,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete}>Cancel</Button>
+              <Button onClick={handleCancelDelete} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color="success"
                 variant="contained"
               >
                 Delete
@@ -296,8 +298,8 @@ const Page = () => {
               {editing ? 'Edit Menu Item' : 'Create Menu Item'}
             </DialogTitle>
             <DialogContent>
-              <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid container spacing={2} sx={{ mb: 2, mt: 3 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField
                     margin="dense"
                     label="Name"
@@ -308,7 +310,7 @@ const Page = () => {
                     }
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <TextField
                     margin="dense"
                     label="Category"
@@ -316,17 +318,6 @@ const Page = () => {
                     value={formData.category}
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField
-                    margin="dense"
-                    label="Segment"
-                    fullWidth
-                    value={formData.segment}
-                    onChange={(e) =>
-                      setFormData({ ...formData, segment: e.target.value })
                     }
                   />
                 </Grid>
@@ -342,7 +333,7 @@ const Page = () => {
                   />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12, sm: 3 }}>
                   <TextField
                     margin="dense"
                     label="HSN/SAC"
@@ -356,7 +347,7 @@ const Page = () => {
                     }
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12, sm: 3 }}>
                   <TextField
                     margin="dense"
                     label="Rate"
@@ -374,7 +365,7 @@ const Page = () => {
                     }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12, sm: 3 }}>
                   <TextField
                     margin="dense"
                     label="GST (%)"
@@ -392,7 +383,7 @@ const Page = () => {
                     }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
+                <Grid size={{ xs: 12, sm: 3 }}>
                   <TextField
                     margin="dense"
                     label="Total"
@@ -405,8 +396,10 @@ const Page = () => {
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} variant="contained">
+              <Button onClick={() => setFormOpen(false)} variant="outlined">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} variant="contained" color="success">
                 {editing ? 'Update' : 'Create'}
               </Button>
             </DialogActions>

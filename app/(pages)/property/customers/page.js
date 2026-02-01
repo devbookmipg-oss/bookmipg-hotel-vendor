@@ -254,10 +254,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
+              <Button onClick={() => setDeleteOpen(false)} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color="success"
                 variant="contained"
               >
                 Delete
@@ -384,8 +386,10 @@ const Page = () => {
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-              <Button variant="contained" onClick={handleSave}>
+              <Button onClick={() => setFormOpen(false)} variant="outlined">
+                Cancel
+              </Button>
+              <Button variant="contained" color="success" onClick={handleSave}>
                 {editing ? 'Update' : 'Create'}
               </Button>
             </DialogActions>

@@ -344,6 +344,7 @@ const Page = () => {
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
                   {[
+                    '#',
                     'Image',
                     'Name',
                     'Bead Type',
@@ -361,8 +362,9 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {filteredData?.map((row, index) => (
                   <TableRow key={row.documentId}>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>
                       <Image
                         src={row?.room_image?.url || '/demo-image.png'}
@@ -426,10 +428,12 @@ const Page = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelDelete}>Cancel</Button>
+              <Button onClick={handleCancelDelete} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleConfirmDelete}
-                color="error"
+                color="success"
                 variant="contained"
               >
                 Delete
@@ -634,10 +638,13 @@ const Page = () => {
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleClose} variant="outlined">
+                Cancel
+              </Button>
               <Button
                 onClick={handleSave}
                 variant="contained"
+                color="success"
                 disabled={loading}
               >
                 {loading ? 'Saving...' : <>{editing ? 'Update' : 'Create'}</>}

@@ -100,7 +100,7 @@ export default function RoomInvoiceViewDialog({
       acc.totalAmount += curr?.amount;
       return acc;
     },
-    { totalSgst: 0, totalCgst: 0, totalAmount: 0 }
+    { totalSgst: 0, totalCgst: 0, totalAmount: 0 },
   );
 
   const booking = roomBookings?.find((item) => {
@@ -175,7 +175,7 @@ export default function RoomInvoiceViewDialog({
                     <TableCell>{token.hsn}</TableCell>
                     <TableCell align="right">
                       {parseFloat(
-                        token?.amount - (token?.cgst + token?.sgst)
+                        token?.amount - (token?.cgst + token?.sgst),
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell align="right">{token?.sgst}</TableCell>
@@ -216,10 +216,12 @@ export default function RoomInvoiceViewDialog({
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setViewOpen(false)}>Close</Button>
+          <Button onClick={() => setViewOpen(false)} variant="outlined">
+            Close
+          </Button>
           <Button
             variant="contained"
-            color="primary"
+            color="success"
             startIcon={<PrintIcon />}
             onClick={handleReactToPrint}
           >

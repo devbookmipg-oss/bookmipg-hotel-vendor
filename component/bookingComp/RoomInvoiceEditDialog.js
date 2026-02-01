@@ -504,8 +504,15 @@ export default function EditRoomInvoiceDialog({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave} disabled={loading}>
+        <Button onClick={() => setEditOpen(false)} variant="outlined">
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          color="success"
+          disabled={loading}
+        >
           {loading ? 'Saving...' : 'Save Changes'}
         </Button>
       </DialogActions>

@@ -19,10 +19,10 @@ const CheckinDialog = ({ open, setopen, handleSave }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setopen(false)} color="inherit">
+          <Button onClick={() => setopen(false)} variant="outlined">
             No
           </Button>
-          <Button onClick={handleSave} color="error" variant="contained">
+          <Button onClick={handleSave} color="success" variant="contained">
             Yes
           </Button>
         </DialogActions>

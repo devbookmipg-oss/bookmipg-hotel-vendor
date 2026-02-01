@@ -24,12 +24,12 @@ const CancelBookingDialog = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialog(false)} color="inherit">
+          <Button onClick={() => setCancelDialog(false)} variant="outlined">
             No
           </Button>
           <Button
             onClick={handleCancelBooking}
-            color="error"
+            color="success"
             variant="contained"
           >
             Yes, Cancel
