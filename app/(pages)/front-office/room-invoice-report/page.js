@@ -181,7 +181,6 @@ const Page = () => {
                       'CGST',
                       'Payable Amount',
                       'Payment Method',
-                      'Action',
                     ].map((item, index) => (
                       <TableCell key={index} sx={{ fontWeight: 'bold' }}>
                         {item}
@@ -204,17 +203,6 @@ const Page = () => {
                         <TableCell>{row.tax / 2}</TableCell>
                         <TableCell>{row.payable_amount.toFixed(2)}</TableCell>
                         <TableCell>{row?.mop}</TableCell>
-                        <TableCell sx={{ width: '150px' }}>
-                          <Tooltip title="View">
-                            <IconButton
-                              color="secondary"
-                              href={`/front-office/room-invoice/${row.documentId}`}
-                              size="small"
-                            >
-                              <VisibilityIcon fontSize="inherit" />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
                       </TableRow>
                     );
                   })}

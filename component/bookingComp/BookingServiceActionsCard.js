@@ -1,20 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Paper, Typography, Grid, Button } from '@mui/material';
-
+import { Paper, Typography, Grid, Button, Stack, Box } from '@mui/material';
 import {
-  Print as PrintIcon,
-  RoomService as RoomServiceIcon,
-  Fastfood as FastfoodIcon,
-  Payment as PaymentIcon,
-  Receipt as ReceiptIcon,
-  Cancel as CancelIcon,
-  Edit as EditIcon,
-  Hotel as HotelIcon,
-  Login as LoginIcon,
-  Logout as LogoutIcon,
-} from '@mui/icons-material';
+  Printer,
+  Utensils,
+  CreditCard,
+  FileText,
+  X,
+  Edit,
+  Hotel,
+  LogIn,
+  LogOut,
+  Package,
+} from 'lucide-react';
 
 import {
   CreateInvoiceModal,
@@ -29,6 +28,55 @@ import CancelBookingDialog from './CancelBookingDialog';
 import { SuccessToast } from '@/utils/GenerateToast';
 import CheckoutDialog from './CheckoutDialog';
 import CheckinDialog from './CheckinDialog';
+
+const ActionButton = ({
+  icon: Icon,
+  label,
+  color = 'primary',
+  disabled = false,
+  ...props
+}) => {
+  const colorMap = {
+    primary: '#c20f12', // Red
+    error: '#e74c3c', // Dark Red
+    success: '#27ae60', // Green
+    info: '#3498db', // Blue
+    warning: '#f39c12', // Orange
+  };
+
+  return (
+    <Button
+      fullWidth
+      variant="contained"
+      disabled={disabled}
+      sx={{
+        backgroundColor: colorMap[color] || colorMap.primary,
+        color: '#fff',
+        fontWeight: 600,
+        fontSize: '0.813rem',
+        textTransform: 'none',
+        padding: '10px 8px',
+        borderRadius: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        '&:hover:not(:disabled)': {
+          opacity: 0.85,
+          transform: 'translateY(-2px)',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+        },
+        '&:disabled': {
+          opacity: 0.5,
+          cursor: 'not-allowed',
+        },
+      }}
+      {...props}
+    >
+      <Icon size={16} />
+      <span style={{ whiteSpace: 'nowrap' }}>{label}</span>
+    </Button>
+  );
+};
 
 export default function BookingServiceActionsCard({
   booking,
@@ -144,202 +192,226 @@ export default function BookingServiceActionsCard({
   return (
     <>
       <Paper
-        elevation={4}
+        elevation={1}
         sx={{
-          borderRadius: 4,
-          p: 2,
+          borderRadius: 1.5,
+          border: '1px solid #e0e0e0',
+          overflow: 'hidden',
           mb: 3,
-          pb: 14,
-          background: 'linear-gradient(135deg, #fafafa, #ffffff)',
+          backgroundColor: '#fafafa',
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ mb: 2, color: 'primary.main' }}
+        {/* Header */}
+        <Box
+          sx={{
+            backgroundColor: '#f5f5f5',
+            borderBottom: '1px solid #e0e0e0',
+            p: 2.5,
+          }}
         >
-          Manage Booking Services
-        </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.938rem',
+              color: '#1a1a1a',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Booking Actions
+          </Typography>
+        </Box>
 
-        <Grid container spacing={2}>
-          {/* Edit */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              href={`/front-office/room-booking/edit-booking?bookingId=${booking?.documentId}`}
-              fullWidth
-              variant="outlined"
-              color="inherit"
-              startIcon={<EditIcon />}
-              sx={{ textTransform: 'none' }}
-              disabled={booking.booking_status === 'Cancelled'}
-            >
-              Edit Booking
-            </Button>
-          </Grid>
-
-          {/* Cancel */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="error"
-              startIcon={<CancelIcon />}
-              sx={{ textTransform: 'none' }}
-              onClick={() => setCancelDialog(true)}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.checked_in === true ||
-                booking.checked_out == true
-              }
-            >
-              Cancel Booking
-            </Button>
-          </Grid>
-          {!booking.checked_in && (
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="success"
-                startIcon={<LoginIcon />}
-                sx={{ textTransform: 'none' }}
-                disabled={
-                  booking.booking_status === 'Cancelled' ||
-                  booking.booking_status === 'Blocked'
-                }
-                onClick={() => setCheckinDialogOpen(true)}
+        {/* Body */}
+        <Box sx={{ p: 2.5 }}>
+          <Stack spacing={2}>
+            {/* Primary Actions */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  color: '#666',
+                  fontWeight: 600,
+                  mb: 1.5,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
               >
-                Mark Check-In
-              </Button>
-            </Grid>
-          )}
+                Primary Actions
+              </Typography>
+              <Stack spacing={1.5}>
+                <ActionButton
+                  icon={Edit}
+                  label="Edit Booking"
+                  color="primary"
+                  href={`/front-office/room-booking/edit-booking?bookingId=${booking?.documentId}`}
+                  component="a"
+                  disabled={booking.booking_status === 'Cancelled'}
+                />
+                {!booking.checked_in && (
+                  <ActionButton
+                    icon={LogIn}
+                    label="Mark Check-In"
+                    color="success"
+                    disabled={
+                      booking.booking_status === 'Cancelled' ||
+                      booking.booking_status === 'Blocked'
+                    }
+                    onClick={() => setCheckinDialogOpen(true)}
+                  />
+                )}
+                {booking.checked_in && !booking.checked_out && (
+                  <ActionButton
+                    icon={LogOut}
+                    label="Mark Check-Out"
+                    color="error"
+                    disabled={booking.booking_status === 'Blocked'}
+                    onClick={() => setCheckoutDialogOpen(true)}
+                  />
+                )}
+              </Stack>
+            </Box>
 
-          {booking.checked_in && !booking.checked_out ? (
-            <>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Button
-                  fullWidth
-                  variant="outlined"
+            {/* Divider */}
+            <Box sx={{ height: '1px', backgroundColor: '#e0e0e0' }} />
+
+            {/* Manage Charges */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  color: '#666',
+                  fontWeight: 600,
+                  mb: 1.5,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Manage Charges
+              </Typography>
+              <Stack spacing={1.5}>
+                <ActionButton
+                  icon={Hotel}
+                  label="Room Tariff"
+                  color="warning"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={() => setRoomTariffDialog(true)}
+                />
+                <ActionButton
+                  icon={Package}
+                  label="Manage Services"
+                  color="warning"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={() => setServiceModel(true)}
+                />
+                <ActionButton
+                  icon={Utensils}
+                  label="Manage Food"
+                  color="warning"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={() => setFoodModel(true)}
+                />
+              </Stack>
+            </Box>
+
+            {/* Divider */}
+            <Box sx={{ height: '1px', backgroundColor: '#e0e0e0' }} />
+
+            {/* Financial */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  color: '#666',
+                  fontWeight: 600,
+                  mb: 1.5,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Financial
+              </Typography>
+              <Stack spacing={1.5}>
+                <ActionButton
+                  icon={CreditCard}
+                  label="Manage Payment"
+                  color="info"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={() => setPaymentModel(true)}
+                />
+                <ActionButton
+                  icon={FileText}
+                  label="Create Invoice"
+                  color="info"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={() => setInvoiceModel(true)}
+                />
+              </Stack>
+            </Box>
+
+            {/* Divider */}
+            <Box sx={{ height: '1px', backgroundColor: '#e0e0e0' }} />
+
+            {/* Other Actions */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  color: '#666',
+                  fontWeight: 600,
+                  mb: 1.5,
+                  fontSize: '0.75rem',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Other Actions
+              </Typography>
+              <Stack spacing={1.5}>
+                <ActionButton
+                  icon={Printer}
+                  label="Print Booking Slip"
+                  color="primary"
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.booking_status === 'Blocked'
+                  }
+                  onClick={handlePrintBookingSlip}
+                />
+                <ActionButton
+                  icon={X}
+                  label="Cancel Booking"
                   color="error"
-                  startIcon={<LogoutIcon />}
-                  sx={{ textTransform: 'none' }}
-                  onClick={() => setCheckoutDialogOpen(true)}
-                  disabled={booking.booking_status === 'Blocked'}
-                >
-                  Mark Check-Out
-                </Button>
-              </Grid>
-            </>
-          ) : (
-            <></>
-          )}
-
-          {/* Print */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="primary"
-              startIcon={<PrintIcon />}
-              sx={{ textTransform: 'none' }}
-              onClick={handlePrintBookingSlip}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Print Booking Slip
-            </Button>
-          </Grid>
-
-          {/* Manage Services */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="secondary"
-              startIcon={<RoomServiceIcon />}
-              onClick={() => setServiceModel(true)}
-              sx={{ textTransform: 'none' }}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Manage Services
-            </Button>
-          </Grid>
-
-          {/* Manage Food */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="success"
-              startIcon={<FastfoodIcon />}
-              onClick={() => setFoodModel(true)}
-              sx={{ textTransform: 'none' }}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Manage Food
-            </Button>
-          </Grid>
-
-          {/* Manage Payment */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="info"
-              startIcon={<PaymentIcon />}
-              onClick={() => setPaymentModel(true)}
-              sx={{ textTransform: 'none' }}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Manage Payment
-            </Button>
-          </Grid>
-          {/* NEW: Manage Room Tariff */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="warning"
-              startIcon={<HotelIcon />}
-              onClick={() => setRoomTariffDialog(true)}
-              sx={{ textTransform: 'none' }}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Manage Room Tariff
-            </Button>
-          </Grid>
-          {/* Create Invoice */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="error"
-              startIcon={<ReceiptIcon />}
-              sx={{ textTransform: 'none' }}
-              onClick={() => setInvoiceModel(true)}
-              disabled={
-                booking.booking_status === 'Cancelled' ||
-                booking.booking_status === 'Blocked'
-              }
-            >
-              Create Invoice
-            </Button>
-          </Grid>
-        </Grid>
+                  disabled={
+                    booking.booking_status === 'Cancelled' ||
+                    booking.checked_in === true ||
+                    booking.checked_out == true
+                  }
+                  onClick={() => setCancelDialog(true)}
+                />
+              </Stack>
+            </Box>
+          </Stack>
+        </Box>
       </Paper>
 
       {/* Dialogs */}

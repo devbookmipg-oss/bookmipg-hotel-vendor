@@ -32,12 +32,12 @@ import { CreateNewData, UpdateData } from '@/utils/ApiFunctions';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 
 const generateNextInvoiceNo = (roomInvoices) => {
-  if (!roomInvoices || roomInvoices.length === 0) return 'SOLVINV-1';
+  if (!roomInvoices || roomInvoices.length === 0) return 'RMINV-1';
   const numbers = roomInvoices
-    .map((inv) => parseInt(inv.invoice_no?.replace('SOLVINV-', ''), 10))
+    .map((inv) => parseInt(inv.invoice_no?.replace('RMINV-', ''), 10))
     .filter((n) => !isNaN(n));
   const maxNumber = Math.max(...numbers);
-  return `SOLVINV-${maxNumber + 1}`;
+  return `RMINV-${maxNumber + 1}`;
 };
 
 export default function CreateInvoiceModal({
@@ -94,28 +94,28 @@ export default function CreateInvoiceModal({
   const handleRoomToggle = (index) =>
     setRoomTokens((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, invoice: !item.invoice } : item
-      )
+        i === index ? { ...item, invoice: !item.invoice } : item,
+      ),
     );
 
   const handleServiceToggle = (index) =>
     setServices((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, invoice: !item.invoice } : item
-      )
+        i === index ? { ...item, invoice: !item.invoice } : item,
+      ),
     );
 
   const handleFoodToggle = (index) =>
     setFoodItems((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, invoice: !item.invoice } : item
-      )
+        i === index ? { ...item, invoice: !item.invoice } : item,
+      ),
     );
 
   // Select / Deselect All - Rooms
   const handleSelectAllRooms = (checked) =>
     setRoomTokens((prev) =>
-      prev.map((item) => ({ ...item, invoice: checked }))
+      prev.map((item) => ({ ...item, invoice: checked })),
     );
 
   // Select / Deselect All - Services
@@ -142,22 +142,22 @@ export default function CreateInvoiceModal({
 
       const totalRoomRate = selectedRooms.reduce(
         (sum, item) => sum + (parseFloat(item.rate * item.days) || 0),
-        0
+        0,
       );
 
       const totalRoomAmount = selectedRooms.reduce(
         (sum, item) => sum + (parseFloat(item.amount) || 0),
-        0
+        0,
       );
       const totalRoomGst = totalRoomAmount - totalRoomRate;
 
       const totalOtherAmount = serviceAndFood.reduce(
         (sum, item) => sum + (parseFloat(item.total_amount) || 0),
-        0
+        0,
       );
       const totalOtherGst = serviceAndFood.reduce(
         (sum, item) => sum + (parseFloat(item.total_gst) || 0),
-        0
+        0,
       );
 
       const totalGst = totalRoomGst + totalOtherGst;
@@ -205,6 +205,7 @@ export default function CreateInvoiceModal({
 
       return res;
     } catch (err) {
+      console.log('Error Create Invoice', err);
       ErrorToast('Failed to create invoice');
       return null;
     }

@@ -44,17 +44,17 @@ const steps = [
 
 const generateNextBookingId = (bookings) => {
   if (!bookings || bookings.length === 0) {
-    return 'SOLV-1';
+    return 'BKNG-1';
   }
 
   // Extract all numbers from booking_id like "INV-12" -> 12
   const numbers = bookings
-    .map((inv) => parseInt(inv.booking_id?.replace('SOLV-', ''), 10))
+    .map((inv) => parseInt(inv.booking_id?.replace('BKNG-', ''), 10))
     .filter((n) => !isNaN(n));
 
   const maxNumber = Math.max(...numbers);
 
-  return `SOLV-${maxNumber + 1}`;
+  return `BKNG-${maxNumber + 1}`;
 };
 
 export default function BookingForm() {

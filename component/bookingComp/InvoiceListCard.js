@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { Box, Typography, Button, Grid, Paper, Stack } from '@mui/material';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import PrintIcon from '@mui/icons-material/Print';
+import { Box, Typography, Button, Paper, Stack } from '@mui/material';
+import { FileText, Printer } from 'lucide-react';
 import { GetCustomDate } from '@/utils/DateFetcher';
 import { useReactToPrint } from 'react-to-print';
 import { RoomInvoicePrint } from '../printables/RoomInvoicePrint';
@@ -25,74 +24,209 @@ const InvoiceListCard = ({ roomInvoices, booking, hotel }) => {
     // wait for re-render to complete
     setTimeout(() => handleReactToPrint(), 100);
   };
+
+  const Section = ({ icon: Icon, title, children }) => (
+    <Box sx={{ mb: 3 }}>
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+        <Box sx={{ color: '#c20f12' }}>
+          <Icon size={20} />
+        </Box>
+        <Typography
+          variant="subtitle2"
+          sx={{
+            fontWeight: 700,
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            color: '#1a1a1a',
+          }}
+        >
+          {title}
+        </Typography>
+      </Stack>
+      <Box>{children}</Box>
+    </Box>
+  );
+
   return (
     <>
       <Paper
-        elevation={4}
+        elevation={1}
         sx={{
-          borderRadius: 4,
-          p: 2,
+          borderRadius: 1.5,
+          border: '1px solid #e0e0e0',
+          overflow: 'hidden',
           mb: 3,
-          pb: 14,
-          background: 'linear-gradient(135deg, #fafafa, #ffffff)',
+          backgroundColor: '#fafafa',
         }}
       >
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ mb: 2, color: 'primary.main' }}
+        {/* Header */}
+        <Box
+          sx={{
+            backgroundColor: '#f5f5f5',
+            borderBottom: '1px solid #e0e0e0',
+            p: 2.5,
+          }}
         >
-          Invoices
-        </Typography>
-        <Grid container spacing={3}>
-          {filteredInvoices?.map((invoice, idx) => (
-            <Grid size={{ xs: 12, sm: 6 }} key={idx}>
-              <Paper
-                elevation={3}
-                sx={{
-                  p: 2,
-                  borderRadius: 3,
-                  background: 'linear-gradient(135deg, #e9ffefff, #e2ffe7ff)',
-                  transition: 'transform 0.2s',
-                  '&:hover': { transform: 'scale(1.02)' },
-                }}
-              >
-                <Stack spacing={1}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.938rem',
+              color: '#1a1a1a',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Room Invoices
+          </Typography>
+        </Box>
+
+        {/* Body */}
+        <Box sx={{ p: 3 }}>
+          <Section icon={FileText} title="Generated Invoices">
+            {filteredInvoices && filteredInvoices.length > 0 ? (
+              <Stack spacing={2}>
+                {filteredInvoices.map((invoice, idx) => (
                   <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
+                    key={idx}
+                    sx={{
+                      backgroundColor: '#f5f5f5',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: 1,
+                      p: 2,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        backgroundColor: '#fff',
+                        borderColor: '#c20f12',
+                      },
+                    }}
                   >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <ReceiptLongIcon color="primary" />
-                      <Typography variant="h6" fontWeight="600">
-                        {invoice.invoice_no}
-                      </Typography>
-                    </Stack>
+                    <Box flex={1}>
+                      <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                        >
+                          <Box sx={{ color: '#c20f12' }}>
+                            <FileText size={18} />
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 700,
+                              color: '#1a1a1a',
+                              fontSize: '0.938rem',
+                            }}
+                          >
+                            {invoice.invoice_no}
+                          </Typography>
+                        </Stack>
+
+                        <Stack
+                          direction="row"
+                          spacing={3}
+                          sx={{ px: 1, mt: 1 }}
+                        >
+                          <Box>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                display: 'block',
+                                color: '#666',
+                                fontWeight: 600,
+                                mb: 0.25,
+                                fontSize: '0.75rem',
+                              }}
+                            >
+                              Amount
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#1a1a1a',
+                                fontWeight: 700,
+                                fontSize: '0.813rem',
+                              }}
+                            >
+                              ₹ {parseFloat(invoice?.payable_amount).toFixed(2)}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                display: 'block',
+                                color: '#666',
+                                fontWeight: 600,
+                                mb: 0.25,
+                                fontSize: '0.75rem',
+                              }}
+                            >
+                              Date
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#1a1a1a',
+                                fontWeight: 600,
+                                fontSize: '0.813rem',
+                              }}
+                            >
+                              {GetCustomDate(invoice.date)}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Stack>
+                    </Box>
+
                     <Button
                       variant="contained"
-                      color="success"
-                      startIcon={<PrintIcon />}
+                      sx={{
+                        backgroundColor: '#c20f12',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: '0.813rem',
+                        textTransform: 'none',
+                        padding: '8px 12px',
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.75,
+                        '&:hover': {
+                          backgroundColor: '#a80d0e',
+                        },
+                      }}
                       size="small"
-                      sx={{ textTransform: 'none' }}
                       onClick={() => handlePrint(invoice)}
                     >
+                      <Printer size={14} />
                       Print
                     </Button>
                   </Box>
-
-                  <Typography variant="body1">
-                    <strong>Amount:</strong> ₹{invoice?.payable_amount}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Date:</strong> {GetCustomDate(invoice.date)}
-                  </Typography>
-                </Stack>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+                ))}
+              </Stack>
+            ) : (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#999',
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  py: 2,
+                }}
+              >
+                No invoices generated yet
+              </Typography>
+            )}
+          </Section>
+        </Box>
       </Paper>
+
       <div style={{ display: 'none' }}>
         <RoomInvoicePrint
           ref={componentRef}

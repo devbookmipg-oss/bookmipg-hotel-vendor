@@ -67,7 +67,14 @@ export default function RoomBookings({ params }) {
         <Loader />
       ) : (
         <>
-          <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              backgroundColor: '#f5f5f5',
+              borderBottom: '1px solid #e0e0e0',
+            }}
+          >
             <Breadcrumbs
               separator={<NavigateNextIcon fontSize="small" />}
               aria-label="breadcrumb"
@@ -85,13 +92,18 @@ export default function RoomBookings({ params }) {
               <Typography color="text.primary">{data?.booking_id}</Typography>
             </Breadcrumbs>
           </Box>
-          <Box p={3}>
-            <Grid container spacing={1}>
-              <Grid size={{ xs: 12, md: 6 }}>
+          <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, lg: 8 }}>
                 <BookingDetailsCard booking={data} />
                 <BillingSummaryCard booking={data} />
+                <InvoiceListCard
+                  booking={data}
+                  roomInvoices={roomInvoices}
+                  hotel={hotel}
+                />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12, lg: 4 }}>
                 <BookingServiceActionsCard
                   booking={data}
                   auth={auth}
@@ -101,14 +113,9 @@ export default function RoomBookings({ params }) {
                   roomInvoices={roomInvoices}
                 />
                 <PaymentHistoryCard booking={data} hotel={hotel} auth={auth} />
-                <InvoiceListCard
-                  booking={data}
-                  roomInvoices={roomInvoices}
-                  hotel={hotel}
-                />
               </Grid>
             </Grid>
-          </Box>
+          </Container>
           <Box sx={{ display: 'none' }}>
             <BookingSlip
               hotel={hotel}

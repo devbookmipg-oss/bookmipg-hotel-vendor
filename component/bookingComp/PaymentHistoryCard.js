@@ -3,9 +3,6 @@
 import {
   Paper,
   Typography,
-  Grid,
-  Card,
-  CardContent,
   Box,
   Divider,
   IconButton,
@@ -15,17 +12,11 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Stack,
+  Grid,
 } from '@mui/material';
-import {
-  CurrencyRupee as RupeeIcon,
-  CalendarTodayOutlined,
-  Notes as NotesIcon,
-  Payment as PaymentIcon,
-  Delete,
-} from '@mui/icons-material';
-import PrintIcon from '@mui/icons-material/Print';
+import { CreditCard, Calendar, FileText, Trash2 } from 'lucide-react';
 import { GetCustomDate } from '@/utils/DateFetcher';
-import { PaymentSlip } from '../printables/PaymentSlip';
 import { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { UpdateData } from '@/utils/ApiFunctions';
@@ -97,191 +88,234 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
     }
   };
 
+  const SummaryBox = ({ label, amount, bgColor, accentColor }) => (
+    <Box sx={{ backgroundColor: bgColor, p: 2, borderRadius: 1 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          color: '#666',
+          fontWeight: 600,
+          mb: 0.5,
+          fontSize: '0.75rem',
+          textTransform: 'uppercase',
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        variant="body1"
+        sx={{
+          fontWeight: 700,
+          color: accentColor,
+          fontSize: '1.125rem',
+        }}
+      >
+        ₹ {amount.toFixed(2)}
+      </Typography>
+    </Box>
+  );
+
   return (
     <>
       <Paper
-        elevation={4}
+        elevation={1}
         sx={{
-          borderRadius: 4,
-          p: 3,
+          borderRadius: 1.5,
+          border: '1px solid #e0e0e0',
+          overflow: 'hidden',
           mb: 3,
-          background: 'linear-gradient(135deg, #fafafa, #ffffff)',
+          backgroundColor: '#fafafa',
         }}
       >
         {/* Header */}
-        <Typography
-          variant="h6"
-          fontWeight="bold"
-          sx={{ mb: 3, color: 'primary.main' }}
-        >
-          💳 Payment History
-        </Typography>
-
-        {/* Summary */}
-        <Card
-          elevation={4}
+        <Box
           sx={{
-            borderRadius: 3,
-            py: 0.5,
-            px: 2,
-            mb: 3,
-            background: 'linear-gradient(135deg, #e0f7fa, #ffffff)',
+            backgroundColor: '#f5f5f5',
+            borderBottom: '1px solid #e0e0e0',
+            p: 2.5,
           }}
         >
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="primary" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Grand Total
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="primary.main"
-                    >
-                      {parseFloat(grandTotal).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="success" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Total Paid
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="success.main"
-                    >
-                      {parseFloat(amountPayed).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <RupeeIcon color="error" />
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Due Payment
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      color="error.main"
-                    >
-                      {parseFloat(dueAmount).toFixed(2) || '—'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.938rem',
+              color: '#1a1a1a',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Payment Status
+          </Typography>
+        </Box>
 
-        {/* Payment Cards */}
-        <Grid container spacing={2}>
+        {/* Summary Boxes */}
+        <Box sx={{ p: 3 }}>
+          <Stack spacing={2}>
+            <SummaryBox
+              label="Grand Total"
+              amount={grandTotal}
+              bgColor="#f0f7ff"
+              accentColor="#c20f12"
+            />
+            <SummaryBox
+              label="Total Paid"
+              amount={amountPayed}
+              bgColor="#f5fff7"
+              accentColor="#27ae60"
+            />
+            <SummaryBox
+              label="Due Amount"
+              amount={Math.max(dueAmount, 0)}
+              bgColor="#fff5f7"
+              accentColor={dueAmount > 0 ? '#e74c3c' : '#27ae60'}
+            />
+          </Stack>
+        </Box>
+
+        <Divider sx={{ borderColor: '#e0e0e0' }} />
+
+        {/* Payment Records */}
+        <Box sx={{ p: 3 }}>
           {payments?.length > 0 ? (
-            payments.map((p, index) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={index}>
-                <Card
-                  elevation={3}
+            <Stack spacing={2}>
+              {payments.map((p, index) => (
+                <Box
+                  key={index}
                   sx={{
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #fdfbfb, #ebedee)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: '0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
-                    },
+                    backgroundColor: '#f5f5f5',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 1,
+                    p: 2,
                   }}
                 >
-                  <CardContent sx={{ p: 2.5 }}>
-                    <Box display="flex" justifyContent={'space-between'}>
-                      <Box display="flex" alignItems="center" gap={1.2}>
-                        <PaymentIcon color="primary" />
-                        <Typography variant="subtitle1" fontWeight="bold">
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                  >
+                    <Box flex={1}>
+                      <Stack
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                        sx={{ mb: 1.5 }}
+                      >
+                        <Box sx={{ color: '#c20f12' }}>
+                          <CreditCard size={18} />
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#1a1a1a',
+                            fontSize: '0.938rem',
+                          }}
+                        >
                           {p.mode}
                         </Typography>
-                      </Box>
+                      </Stack>
 
-                      <Box>
-                        <IconButton
-                          color="error"
-                          size="small"
-                          onClick={() => handleOpenDeleteDialog(p)}
+                      <Stack spacing={1}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          sx={{ px: 1 }}
                         >
-                          <Delete fontSize="inherit" />
-                        </IconButton>
-                      </Box>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#666',
+                              fontWeight: 600,
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            Amount
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#1a1a1a',
+                              fontWeight: 700,
+                              fontSize: '0.813rem',
+                            }}
+                          >
+                            ₹ {parseFloat(p.amount).toFixed(2)}
+                          </Typography>
+                        </Stack>
+
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          sx={{ px: 1 }}
+                        >
+                          <Calendar size={14} style={{ color: '#999' }} />
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#666',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            {GetCustomDate(p.date) || '—'}
+                          </Typography>
+                        </Stack>
+
+                        {p.remark && (
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            sx={{ px: 1 }}
+                          >
+                            <FileText size={14} style={{ color: '#999' }} />
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: '#666',
+                                fontSize: '0.75rem',
+                              }}
+                            >
+                              {p.remark}
+                            </Typography>
+                          </Stack>
+                        )}
+                      </Stack>
                     </Box>
 
-                    <Divider sx={{ my: 1 }} />
-
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      mb={1.5}
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleOpenDeleteDialog(p)}
+                      sx={{ mt: -0.5 }}
                     >
-                      <Typography variant="body2" color="text.secondary">
-                        Amount
-                      </Typography>
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        color="secondary.main"
-                      >
-                        <RupeeIcon fontSize="small" sx={{ mr: 0.5 }} />
-                        <Typography variant="h6" fontWeight="bold">
-                          {p.amount}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <CalendarTodayOutlined fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {GetCustomDate(p.date) || '—'}
-                      </Typography>
-                    </Box>
-
-                    {p.remark && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <NotesIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          {p.remark}
-                        </Typography>
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))
+                      <Trash2 size={16} />
+                    </IconButton>
+                  </Stack>
+                </Box>
+              ))}
+            </Stack>
           ) : (
             <Typography
               variant="body2"
-              color="text.secondary"
-              textAlign="center"
-              py={2}
+              sx={{
+                color: '#999',
+                fontStyle: 'italic',
+                textAlign: 'center',
+                py: 2,
+              }}
             >
-              No payment records found.
+              No payment records
             </Typography>
           )}
-        </Grid>
+        </Box>
       </Paper>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
-        <DialogTitle>Delete Payment</DialogTitle>
+        <DialogTitle>Delete Payment Record</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this payment record of{' '}
@@ -294,7 +328,7 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
           </Button>
           <Button
             onClick={handleConfirmDelete}
-            color="success"
+            color="error"
             variant="contained"
           >
             Delete
