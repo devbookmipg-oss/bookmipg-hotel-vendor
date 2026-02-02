@@ -37,12 +37,19 @@ const BookingForm = () => {
 
   return (
     <>
-      <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          backgroundColor: '#f5f5f5',
+          borderBottom: '1px solid #e0e0e0',
+        }}
+      >
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
           <Link underline="hover" color="inherit" href="/dashboard">
             Dashboard
           </Link>
-          <Typography color="text.primary">Update Revervation</Typography>
+          <Typography color="text.primary">Edit Booking</Typography>
           <Typography color="text.primary">
             {bookingData?.booking_id}
           </Typography>

@@ -7,67 +7,17 @@ import {
   Box,
   Card,
   CardContent,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   Button,
-  Checkbox,
   Chip,
+  Grid,
+  Divider,
 } from '@mui/material';
 import { useAuth } from '@/context';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Bed,
-  Hotel,
-  Tag,
-  Building,
-  ArrowRight,
-  CheckCircle,
-  Users,
-} from 'lucide-react';
+import { Bed, Check, Tag, Grid as GridIcon } from 'lucide-react';
 import { CalculateDays } from '@/utils/CalculateDays';
 
-// Animation variants
-const modalAnimation = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.3, ease: 'easeOut' },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.8,
-    transition: { duration: 0.2 },
-  },
-};
-
-const filterAnimation = {
-  hidden: { opacity: 0, y: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4 },
-  },
-};
-
-const cardAnimation = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.3 },
-  },
-  hover: {
-    scale: 1.02,
-    transition: { duration: 0.2 },
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9,
-    transition: { duration: 0.2 },
-  },
-};
+const MotionCard = motion(Card);
 
 const RoomAvailabilityStep = ({
   bookingDetails,
@@ -82,23 +32,19 @@ const RoomAvailabilityStep = ({
     checkout: bookingDetails.checkout_date,
   });
   const [selectedCategory, setSelectedCategory] = React.useState('all');
-  const [loading, setLoading] = useState(false);
 
   const categories = GetDataList({ auth, endPoint: 'room-categories' });
   const rooms = GetDataList({ auth, endPoint: 'rooms' });
 
-  // Check if a room is available for given bookingDetails
   const isRoomAvailable = (room, bookingDetails) => {
     const { checkin_date, checkout_date } = bookingDetails;
 
     if (!room.room_bookings || room.room_bookings.length === 0) return true;
 
     return !room.room_bookings.some((booking) => {
-      // Ignore bookings that do NOT block the room
       if (booking.checked_out) return false;
-      if (booking.booking_status === 'Cancelled') return false; // ✅ NEW
+      if (booking.booking_status === 'Cancelled') return false;
 
-      // Check date overlap
       return (
         (checkin_date >= booking.checkin_date &&
           checkin_date < booking.checkout_date) ||
@@ -110,7 +56,6 @@ const RoomAvailabilityStep = ({
     });
   };
 
-  // Filter rooms based on selected category AND availability
   const filteredRooms = React.useMemo(() => {
     if (!rooms) return [];
 
@@ -123,17 +68,15 @@ const RoomAvailabilityStep = ({
     });
   }, [rooms, selectedCategory, bookingDetails]);
 
-  // Handle category filter
   const handleCategoryFilter = (categoryId) => {
     setSelectedCategory(categoryId);
   };
 
-  // Handle room selection
   const handleRoomSelection = (room) => {
     const exists = selectedRooms.find((r) => r.documentId === room.documentId);
     if (exists) {
       setSelectedRooms(
-        selectedRooms.filter((r) => r.documentId !== room.documentId)
+        selectedRooms.filter((r) => r.documentId !== room.documentId),
       );
       setRoomTokens(roomTokens.filter((token) => token.room !== room.room_no));
     } else {
@@ -157,204 +100,244 @@ const RoomAvailabilityStep = ({
   };
 
   return (
-    <>
-      <Box>
-        {/* Category Filters */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={filterAnimation}
+    <Box>
+      {/* Category Filter */}
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            color: '#666',
+            display: 'block',
+            mb: 1,
+          }}
         >
-          <Box display="flex" flexWrap="wrap" gap={1} mb={4}>
+          Filter by Category
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            variant={selectedCategory === 'all' ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => handleCategoryFilter('all')}
+            startIcon={<GridIcon size={16} />}
+            sx={{
+              borderRadius: 1.5,
+              textTransform: 'none',
+              fontWeight: 600,
+              bgcolor: selectedCategory === 'all' ? '#c20f12' : 'inherit',
+              borderColor: selectedCategory === 'all' ? '#c20f12' : '#ddd',
+            }}
+          >
+            All Rooms
+          </Button>
+
+          {categories?.map((category) => (
             <Button
-              variant={selectedCategory === 'all' ? 'contained' : 'outlined'}
-              onClick={() => handleCategoryFilter('all')}
-              startIcon={<Building size={16} />}
+              key={category.id}
+              variant={
+                selectedCategory === category.documentId
+                  ? 'contained'
+                  : 'outlined'
+              }
+              size="small"
+              onClick={() => handleCategoryFilter(category.documentId)}
+              startIcon={<Tag size={16} />}
               sx={{
+                borderRadius: 1.5,
                 textTransform: 'none',
-                transition: 'all 0.5s ease-in-out',
-                '&:hover': {
-                  boxShadow: 3,
-                  transform: 'scale(1.02)',
-                },
+                fontWeight: 600,
+                bgcolor:
+                  selectedCategory === category.documentId
+                    ? '#c20f12'
+                    : 'inherit',
+                borderColor:
+                  selectedCategory === category.documentId ? '#c20f12' : '#ddd',
               }}
             >
-              All Rooms
+              {category.name}
             </Button>
-
-            {categories?.map((category) => (
-              <Button
-                key={category.id}
-                variant={
-                  selectedCategory === category.documentId
-                    ? 'contained'
-                    : 'outlined'
-                }
-                onClick={() => handleCategoryFilter(category.documentId)}
-                startIcon={<Tag size={16} />}
-                sx={{
-                  textTransform: 'none',
-                  transition: 'all 0.5s ease-in-out',
-                  '&:hover': {
-                    boxShadow: 3,
-                    transform: 'scale(1.02)',
-                  },
-                }}
-              >
-                {category.name}
-              </Button>
-            ))}
-          </Box>
-        </motion.div>
-
-        {/* Room Grid */}
-        <Box
-          display="grid"
-          gridTemplateColumns={{
-            xs: 'repeat(2, 1fr)',
-            md: 'repeat(3, 1fr)',
-            lg: 'repeat(4, 1fr)',
-            xl: 'repeat(4, 1fr)',
-          }}
-          gap={2}
-        >
-          <AnimatePresence mode="popLayout">
-            {filteredRooms?.map((room, index) => {
-              const isSelected = selectedRooms.some(
-                (r) => r.documentId === room.documentId
-              );
-
-              return (
-                <motion.div
-                  key={room.documentId}
-                  layout
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  whileHover="hover"
-                  variants={cardAnimation}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card
-                    onClick={() => handleRoomSelection(room)}
-                    sx={{
-                      cursor: 'pointer',
-                      border: isSelected ? 2 : 1,
-                      borderColor: isSelected ? 'primary.main' : 'grey.200',
-                      boxShadow: isSelected ? 3 : 1,
-                      transition: 'all 0.3s ease-in-out',
-                      position: 'relative',
-                      overflow: 'visible',
-                      borderRadius: 2,
-                      '&:hover': {
-                        backgroundColor: 'grey.50',
-                        transform: 'scale(1.02)',
-                      },
-                    }}
-                  >
-                    <CardContent sx={{ p: 1.5, position: 'relative' }}>
-                      {/* Room Header */}
-                      <Box
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="flex-start"
-                        mb={0.5}
-                      >
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <motion.div
-                            whileHover={{ rotate: 360 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <Bed size={20} color="#1976d2" />
-                          </motion.div>
-                          <Typography variant="h6" fontWeight="bold">
-                            Room {room.room_no}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Room Details */}
-                      <Box sx={{ space: 2 }}>
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          color="grey.600"
-                          sx={{
-                            '&:hover': {
-                              transform: 'translateX(4px)',
-                              transition: 'transform 0.3s',
-                            },
-                          }}
-                        >
-                          <ArrowRight size={16} style={{ marginRight: 8 }} />
-                          <Typography variant="body2">
-                            Floor {room.floor}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Selection Indicator */}
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                          style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                          }}
-                        >
-                          <CheckCircle size={20} color="#4caf50" />
-                        </motion.div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+          ))}
         </Box>
       </Box>
 
-      {/* Footer */}
-      <Box
-        sx={{
-          mt: 4,
-          p: 3,
-          bgcolor: 'grey.50',
-          borderTop: 1,
-          borderColor: 'grey.200',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-          <Box display="flex" alignItems="center" gap={1} color="grey.600">
-            <Users size={20} />
-            <Typography variant="body1">
-              {selectedRooms.length} rooms selected
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, ml: 3 }}>
+      <Divider sx={{ my: 3 }} />
+
+      {/* Room Grid */}
+      {filteredRooms.length > 0 ? (
+        <Grid container spacing={2}>
+          <AnimatePresence>
+            {filteredRooms?.map((room, index) => {
+              const isSelected = selectedRooms.some(
+                (r) => r.documentId === room.documentId,
+              );
+
+              return (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={room.documentId}>
+                  <MotionCard
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => handleRoomSelection(room)}
+                    whileHover={{ y: -4 }}
+                    sx={{
+                      cursor: 'pointer',
+                      borderRadius: 2,
+                      border: isSelected
+                        ? '2px solid #c20f12'
+                        : '1px solid #e0e0e0',
+                      background: isSelected
+                        ? 'linear-gradient(135deg, #fff5f5, #ffe8e8)'
+                        : '#fff',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      height: '100%',
+                      '&:hover': {
+                        boxShadow: '0 8px 24px rgba(194, 15, 18, 0.12)',
+                      },
+                    }}
+                  >
+                    {/* Selection Indicator Badge */}
+                    {isSelected && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: 0,
+                          right: 0,
+                          bgcolor: '#c20f12',
+                          color: '#fff',
+                          width: 32,
+                          height: 32,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '0 8px 0 8px',
+                        }}
+                      >
+                        <Check size={18} />
+                      </Box>
+                    )}
+
+                    <CardContent sx={{ pb: 2, pt: 2 }}>
+                      {/* Room Number */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 1.5,
+                        }}
+                      >
+                        <Bed size={20} color="#c20f12" />
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 700, color: '#1a1a1a' }}
+                        >
+                          Room {room.room_no}
+                        </Typography>
+                      </Box>
+
+                      {/* Category */}
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+                      >
+                        {room.category?.name}
+                      </Typography>
+
+                      {/* Floor & Occupancy */}
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: 1,
+                          mb: 1.5,
+                        }}
+                      >
+                        <Typography variant="caption" color="textSecondary">
+                          <strong>Floor:</strong> {room.floor}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          <strong>Capacity:</strong>{' '}
+                          {room.occupancy_count || '—'}
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ my: 1.5 }} />
+
+                      {/* Rate */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                        }}
+                      >
+                        <Typography variant="caption" color="textSecondary">
+                          Per Night
+                        </Typography>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700, color: '#c20f12' }}
+                        >
+                          ₹{(room.category?.tariff || 0).toFixed(0)}
+                        </Typography>
+                      </Box>
+
+                      {/* Total for stay */}
+                      <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ display: 'block', textAlign: 'right', mt: 0.5 }}
+                      >
+                        {totalDays} night{totalDays !== 1 ? 's' : ''} ×
+                      </Typography>
+                    </CardContent>
+                  </MotionCard>
+                </Grid>
+              );
+            })}
+          </AnimatePresence>
+        </Grid>
+      ) : (
+        <Box sx={{ py: 5, textAlign: 'center' }}>
+          <Typography color="textSecondary" sx={{ mb: 1 }}>
+            No rooms available for the selected dates
+          </Typography>
+        </Box>
+      )}
+
+      {/* Selected Rooms Summary */}
+      {selectedRooms.length > 0 && (
+        <Box sx={{ mt: 4, p: 3, bgcolor: '#f5f5f5', borderRadius: 2 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 700, mb: 2, color: '#1a1a1a' }}
+          >
+            Selected Rooms ({selectedRooms.length})
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {selectedRooms.map((room) => (
               <Chip
                 key={room?.documentId}
-                label={`Room: ${room?.room_no}`}
-                size="small"
-                color="secondary"
+                label={`Room ${room?.room_no} - ${room?.category?.name}`}
+                onDelete={() => handleRoomSelection(room)}
+                color="primary"
+                variant="outlined"
+                sx={{
+                  borderColor: '#c20f12',
+                  color: '#c20f12',
+                  fontWeight: 600,
+                }}
               />
             ))}
           </Box>
-        </motion.div>
-      </Box>
-    </>
+        </Box>
+      )}
+    </Box>
   );
 };
 

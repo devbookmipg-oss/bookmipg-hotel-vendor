@@ -1,18 +1,20 @@
 'use client';
 import React, { useState } from 'react';
 import {
-  Stepper,
-  Step,
-  StepLabel,
   Button,
   Box,
   Typography,
   Paper,
-  Divider,
   Alert,
   Zoom,
   Breadcrumbs,
   Link,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
+  Divider,
+  Container,
 } from '@mui/material';
 import {
   GuestStep,
@@ -31,12 +33,13 @@ import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 import { useRouter } from 'next/navigation';
+import { Check, AlertCircle } from 'lucide-react';
 
 const steps = [
-  'Guest',
-  'Booking Details',
-  'Room Availability',
-  'Preview & Checkout',
+  { label: 'Guest', icon: '👤' },
+  { label: 'Booking Details', icon: '📅' },
+  { label: 'Room Availability', icon: '🛏️' },
+  { label: 'Review & Confirm', icon: '✓' },
 ];
 
 const generateNextBookingId = (bookings) => {
@@ -192,184 +195,369 @@ export default function BookingForm() {
 
   return (
     <>
-      <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          backgroundColor: '#f5f5f5',
+          borderBottom: '1px solid #e0e0e0',
+        }}
+      >
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
           <Link underline="hover" color="inherit" href="/dashboard">
             Dashboard
           </Link>
-          <Typography color="text.primary">New Revervation</Typography>
+          <Typography color="text.primary">New Booking</Typography>
         </Breadcrumbs>
       </Box>
+
       {!hotelData || !paymentMethods || !bookings ? (
         <Loader />
       ) : (
-        <>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
           <Box
             sx={{
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              p: { xs: 2, md: 4 },
-              bgcolor: 'linear-gradient(135deg, #e3f2fd, #e8f5e9)',
-              minHeight: '100vh',
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '1fr 340px' },
+              gap: 3,
             }}
           >
-            <Paper
-              elevation={8}
-              sx={{
-                width: '100%',
-                maxWidth: 1000,
-                borderRadius: 4,
-                p: { xs: 3, md: 5 },
-                bgcolor: 'white',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s ease-in-out',
-              }}
-            >
-              {/* Stepper */}
-              <Stepper
-                activeStep={activeStep}
-                alternativeLabel
-                sx={{
-                  mb: 5,
-                  '& .MuiStepLabel-root .Mui-completed': {
-                    color: '#4caf50 !important',
-                  },
-                  '& .MuiStepLabel-root .Mui-active': {
-                    color: '#1976d2 !important',
-                  },
-                  '& .MuiStepLabel-label.Mui-active': {
-                    fontWeight: 'bold',
-                  },
-                }}
-              >
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-
-              <Divider sx={{ mb: 3 }} />
-
-              {/* Step Content */}
-              <Box sx={{ minHeight: 300 }}>
-                {activeStep === 0 && (
-                  <GuestStep
-                    selectedGuest={selectedGuest}
-                    setSelectedGuest={setSelectedGuest}
-                  />
-                )}
-                {activeStep === 1 && (
-                  <BookingDetailsStep
-                    bookingDetails={bookingDetails}
-                    setBookingDetails={setBookingDetails}
-                    hotelData={hotelData}
-                  />
-                )}
-                {activeStep === 2 && (
-                  <RoomAvailabilityStep
-                    bookingDetails={bookingDetails}
-                    selectedRooms={selectedRooms}
-                    setSelectedRooms={setSelectedRooms}
-                    roomTokens={roomTokens}
-                    setRoomTokens={setRoomTokens}
-                  />
-                )}
-                {activeStep === 3 && (
-                  <FinalPreviewStep
-                    selectedGuest={selectedGuest}
-                    bookingDetails={bookingDetails}
-                    paymentDetails={paymentDetails}
-                    setPaymentDetails={setPaymentDetails}
-                    onSubmit={handleSubmitBooking}
-                    selectedRooms={selectedRooms}
-                    roomTokens={roomTokens}
-                    setRoomTokens={setRoomTokens}
-                    paymentMethods={paymentMethods}
-                  />
-                )}
-              </Box>
-              {/* Error Handling */}
-              <Zoom in={!!error}>
-                <Alert severity="error" sx={{ mt: 3, borderRadius: 2 }}>
-                  {error}
-                </Alert>
-              </Zoom>
-
-              {/* Navigation */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mt: 5,
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
+            {/* Main Content */}
+            <Box>
+              <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                {/* Tab Navigation */}
+                <Box
                   sx={{
-                    borderRadius: 3,
-                    px: 3,
-                    py: 1.5,
-                    fontWeight: 600,
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      bgcolor: '#fce4ec',
-                      borderColor: '#f06292',
-                    },
+                    borderBottom: '2px solid #e0e0e0',
+                    backgroundColor: '#fafafa',
                   }}
                 >
-                  ⬅ Back
-                </Button>
-
-                {activeStep < steps.length - 1 && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleNext}
+                  <Tabs
+                    value={activeStep}
+                    onChange={(e, newValue) => {
+                      if (newValue < activeStep || validateStep()) {
+                        setActiveStep(newValue);
+                      }
+                    }}
                     sx={{
-                      borderRadius: 3,
-                      px: 4,
-                      py: 1.5,
-                      fontWeight: 700,
-                      boxShadow: '0 6px 16px rgba(25,118,210,0.4)',
-                      transition: 'all 0.3s',
-                      bgcolor: '#1976d2',
-                      '&:hover': { bgcolor: '#1565c0' },
+                      '& .MuiTab-root': {
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '0.95rem',
+                        py: 2,
+                        color: '#666',
+                        transition: 'all 0.3s',
+                      },
+                      '& .MuiTab-root.Mui-selected': {
+                        color: '#c20f12',
+                        fontWeight: 700,
+                      },
+                      '& .MuiTabs-indicator': {
+                        backgroundColor: '#c20f12',
+                        height: 3,
+                      },
                     }}
                   >
-                    Next ➡
-                  </Button>
-                )}
+                    {steps.map((step, idx) => (
+                      <Tab
+                        key={idx}
+                        label={
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}
+                          >
+                            <span>{step.icon}</span>
+                            <span>{step.label}</span>
+                            {idx < activeStep && (
+                              <Check size={16} color="#4caf50" />
+                            )}
+                          </Box>
+                        }
+                        disabled={idx > activeStep}
+                      />
+                    ))}
+                  </Tabs>
+                </Box>
 
-                {activeStep === steps.length - 1 && (
+                {/* Step Content */}
+                <Box sx={{ p: 4, minHeight: 400 }}>
+                  {activeStep === 0 && (
+                    <GuestStep
+                      selectedGuest={selectedGuest}
+                      setSelectedGuest={setSelectedGuest}
+                    />
+                  )}
+                  {activeStep === 1 && (
+                    <BookingDetailsStep
+                      bookingDetails={bookingDetails}
+                      setBookingDetails={setBookingDetails}
+                      hotelData={hotelData}
+                    />
+                  )}
+                  {activeStep === 2 && (
+                    <RoomAvailabilityStep
+                      bookingDetails={bookingDetails}
+                      selectedRooms={selectedRooms}
+                      setSelectedRooms={setSelectedRooms}
+                      roomTokens={roomTokens}
+                      setRoomTokens={setRoomTokens}
+                    />
+                  )}
+                  {activeStep === 3 && (
+                    <FinalPreviewStep
+                      selectedGuest={selectedGuest}
+                      bookingDetails={bookingDetails}
+                      paymentDetails={paymentDetails}
+                      setPaymentDetails={setPaymentDetails}
+                      selectedRooms={selectedRooms}
+                      roomTokens={roomTokens}
+                      setRoomTokens={setRoomTokens}
+                      paymentMethods={paymentMethods}
+                    />
+                  )}
+                </Box>
+
+                {/* Error Alert */}
+                <Zoom in={!!error}>
+                  <Alert
+                    severity="error"
+                    icon={<AlertCircle size={20} />}
+                    sx={{ m: 2, borderRadius: 1 }}
+                  >
+                    {error}
+                  </Alert>
+                </Zoom>
+
+                {/* Action Buttons */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    p: 3,
+                    borderTop: '1px solid #e0e0e0',
+                    backgroundColor: '#fafafa',
+                  }}
+                >
                   <Button
-                    variant="contained"
-                    color="success"
-                    onClick={handleSubmitBooking}
-                    disabled={loading}
+                    variant="outlined"
+                    onClick={handleBack}
+                    disabled={activeStep === 0}
                     sx={{
-                      borderRadius: 3,
-                      px: 4,
-                      py: 1.5,
-                      fontWeight: 700,
-                      boxShadow: '0 6px 16px rgba(76,175,80,0.4)',
-                      transition: 'all 0.3s',
-                      bgcolor: '#4caf50',
-                      '&:hover': { bgcolor: '#388e3c' },
+                      borderRadius: 1.5,
+                      px: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
                     }}
                   >
-                    {loading ? 'Creatinging Booking...' : '✅ Confirm Booking'}
+                    ← Back
                   </Button>
-                )}
-              </Box>
-            </Paper>
+
+                  {activeStep < steps.length - 1 && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleNext}
+                      sx={{
+                        borderRadius: 1.5,
+                        px: 4,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        bgcolor: '#1976d2',
+                        '&:hover': { bgcolor: '#1565c0' },
+                      }}
+                    >
+                      Next →
+                    </Button>
+                  )}
+
+                  {activeStep === steps.length - 1 && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={handleSubmitBooking}
+                      disabled={loading}
+                      sx={{
+                        borderRadius: 1.5,
+                        px: 4,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        bgcolor: '#4caf50',
+                        '&:hover': { bgcolor: '#388e3c' },
+                      }}
+                    >
+                      {loading ? '⏳ Creating...' : '✅ Confirm Booking'}
+                    </Button>
+                  )}
+                </Box>
+              </Paper>
+            </Box>
+
+            {/* Right Side Summary Panel */}
+            <Box
+              sx={{
+                display: { xs: 'none', lg: 'flex' },
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {/* Guest Summary */}
+              {selectedGuest && (
+                <Card sx={{ borderRadius: 2, border: '2px solid #e0e0e0' }}>
+                  <CardContent sx={{ pb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      👤 Guest
+                    </Typography>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 700, mb: 0.5 }}
+                    >
+                      {selectedGuest.name}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      📞 {selectedGuest.mobile}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Booking Summary */}
+              {bookingDetails.checkin_date && (
+                <Card sx={{ borderRadius: 2, border: '2px solid #e0e0e0' }}>
+                  <CardContent sx={{ pb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      📅 Dates
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                      }}
+                    >
+                      <Typography variant="caption">
+                        <strong>Check-in:</strong> {bookingDetails.checkin_date}
+                      </Typography>
+                      <Typography variant="caption">
+                        <strong>Check-out:</strong>{' '}
+                        {bookingDetails.checkout_date}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Rooms Summary */}
+              {selectedRooms.length > 0 && (
+                <Card sx={{ borderRadius: 2, border: '2px solid #e0e0e0' }}>
+                  <CardContent sx={{ pb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      🛏️ Rooms ({selectedRooms.length})
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 0.5,
+                      }}
+                    >
+                      {selectedRooms.map((room) => (
+                        <Typography key={room.documentId} variant="caption">
+                          {room.room_no} - {room.category?.name}
+                        </Typography>
+                      ))}
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Amount Summary */}
+              {roomTokens.length > 0 && (
+                <Card
+                  sx={{
+                    borderRadius: 2,
+                    backgroundColor: '#f5f5f5',
+                    border: '2px solid #e0e0e0',
+                  }}
+                >
+                  <CardContent sx={{ pb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      💰 Amount
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="caption">Subtotal:</Typography>
+                      <Typography variant="caption" fontWeight={700}>
+                        ₹{totalAmount.toFixed(2)}
+                      </Typography>
+                    </Box>
+                    {paymentDetails.amount > 0 && (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Typography variant="caption">Advance:</Typography>
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          color="primary"
+                        >
+                          ₹{parseFloat(paymentDetails.amount).toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </Box>
           </Box>
-        </>
+        </Container>
       )}
     </>
   );

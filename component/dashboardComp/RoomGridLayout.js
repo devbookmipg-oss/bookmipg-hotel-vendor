@@ -1,115 +1,72 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Typography,
   Grid,
   Box,
   Chip,
-  Paper,
-  Button,
-  TextField,
+  Stack,
+  alpha,
+  Card,
+  CardContent,
+  Divider,
 } from '@mui/material';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { motion } from 'framer-motion';
-import { GetTodaysDate } from '@/utils/DateFetcher';
-import AddIcon from '@mui/icons-material/Add';
 
-const RoomGridLayout = ({ bookings, rooms }) => {
-  const todaysDate = GetTodaysDate().dateString;
-  const [expandedIndex, setExpandedIndex] = useState(0);
-  const [startDate, setStartDate] = useState(todaysDate);
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 
-  const handleAccordionChange = (index) => (event, isExpanded) => {
-    setExpandedIndex(isExpanded ? index : false);
-  };
+import HotelIcon from '@mui/icons-material/Hotel';
+import BlockIcon from '@mui/icons-material/Block';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import KingBedIcon from '@mui/icons-material/KingBed';
+import EventIcon from '@mui/icons-material/Event';
+import PeopleIcon from '@mui/icons-material/People';
 
-  // 🔹 Helper: Format date as "14-Oct-25 (Tue)"
-  const formatDate = (date) =>
-    date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: '2-digit',
-      weekday: 'short',
-    });
-
-  // 🔹 Generate 7 days from today
-  const next7Days = useMemo(() => {
-    const today = new Date(startDate);
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      return date;
-    });
-  }, [startDate]);
-
-  const handlePrev = () => {
-    const prev = new Date(startDate);
-    prev.setDate(prev.getDate() - 7);
-    setStartDate(prev.toISOString().split('T')[0]);
-  };
-
-  const handleNext = () => {
-    const next = new Date(startDate);
-    next.setDate(next.getDate() + 7);
-    setStartDate(next.toISOString().split('T')[0]);
-  };
-
+const RoomGridLayout = ({ bookings, rooms, selectedDate }) => {
   const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
 
-  // 🔹 For each date, compute filtered data
-  const getDayWiseData = (selectedDate) => {
+  const getStatusData = useMemo(() => {
     const checkedInRooms = [];
     const blockedRooms = [];
     const confirmedRooms = [];
     const occupiedRoomNos = new Set();
+
+    const selectedDateObj = new Date(selectedDate);
 
     bookings?.forEach((bk) => {
       const checkIn = new Date(bk.checkin_date);
       const checkOut = new Date(bk.checkout_date);
 
       const sameDayBooking = isSameDay(checkIn, checkOut);
-      const isInRange = selectedDate >= checkIn && selectedDate < checkOut;
+      const isInRange =
+        selectedDateObj >= checkIn && selectedDateObj < checkOut;
 
-      // 🔹 SAME DAY BOOKINGS (override date logic)
-      if (sameDayBooking && isSameDay(selectedDate, checkIn)) {
+      if (sameDayBooking && isSameDay(selectedDateObj, checkIn)) {
         bk.rooms?.forEach((room) => {
           const roomInfo = rooms.find((r) => r.room_no === room.room_no);
 
-          // 🟢 Checked-in
           if (bk.checked_in === true && bk.checked_out !== true) {
             checkedInRooms.push({
               ...room,
               category: roomInfo?.category?.name || 'Uncategorized',
               bookingId: bk.documentId,
+              guestName: bk.guest_name || 'Guest',
             });
             occupiedRoomNos.add(room.room_no);
-          }
-
-          // 🟡 Confirmed (not checked-in yet)
-          else if (bk.checked_in !== true && bk.checked_out !== true) {
+          } else if (bk.checked_in !== true && bk.checked_out !== true) {
             confirmedRooms.push({
               ...room,
               category: roomInfo?.category?.name || 'Uncategorized',
               bookingId: bk.documentId,
+              guestName: bk.guest_name || 'Guest',
             });
             occupiedRoomNos.add(room.room_no);
           }
-
-          // 🔵 Checked-out → AVAILABLE (do nothing)
         });
-
-        return; // ⛔ skip normal logic
+        return;
       }
 
-      // 🔹 NORMAL MULTI-DAY LOGIC
       if (isInRange) {
-        // Checked-in
         if (bk.checked_in === true && bk.checked_out !== true) {
           bk.rooms?.forEach((room) => {
             const roomInfo = rooms.find((r) => r.room_no === room.room_no);
@@ -117,12 +74,12 @@ const RoomGridLayout = ({ bookings, rooms }) => {
               ...room,
               category: roomInfo?.category?.name || 'Uncategorized',
               bookingId: bk.documentId,
+              guestName: bk.guest_name || 'Guest',
             });
             occupiedRoomNos.add(room.room_no);
           });
         }
 
-        // Confirmed
         if (bk.booking_status === 'Confirmed' && bk.checked_in !== true) {
           bk.rooms?.forEach((room) => {
             const roomInfo = rooms.find((r) => r.room_no === room.room_no);
@@ -130,12 +87,12 @@ const RoomGridLayout = ({ bookings, rooms }) => {
               ...room,
               category: roomInfo?.category?.name || 'Uncategorized',
               bookingId: bk.documentId,
+              guestName: bk.guest_name || 'Guest',
             });
             occupiedRoomNos.add(room.room_no);
           });
         }
 
-        // Blocked
         if (bk.booking_status === 'Blocked' && bk.checked_in !== true) {
           bk.rooms?.forEach((room) => {
             const roomInfo = rooms.find((r) => r.room_no === room.room_no);
@@ -143,6 +100,7 @@ const RoomGridLayout = ({ bookings, rooms }) => {
               ...room,
               category: roomInfo?.category?.name || 'Uncategorized',
               bookingId: bk.documentId,
+              guestName: bk.guest_name || 'Guest',
             });
             occupiedRoomNos.add(room.room_no);
           });
@@ -150,7 +108,6 @@ const RoomGridLayout = ({ bookings, rooms }) => {
       }
     });
 
-    // 🔹 Available rooms
     const availableRooms = rooms
       ?.filter((room) => !occupiedRoomNos.has(room.room_no))
       .map((room) => ({
@@ -166,6 +123,7 @@ const RoomGridLayout = ({ bookings, rooms }) => {
         grouped[cat].push({
           room_no: room.room_no,
           bookingId: room.bookingId || null,
+          guestName: room.guestName || null,
         });
       });
       return grouped;
@@ -176,207 +134,260 @@ const RoomGridLayout = ({ bookings, rooms }) => {
       checkedInGrouped: groupByCategory(checkedInRooms),
       confirmedGrouped: groupByCategory(confirmedRooms),
       blockedGrouped: groupByCategory(blockedRooms),
+      occupiedRoomNos: Array.from(occupiedRoomNos),
     };
-  };
+  }, [bookings, rooms, selectedDate]);
+
+  const {
+    availableGrouped,
+    checkedInGrouped,
+    confirmedGrouped,
+    blockedGrouped,
+    occupiedRoomNos,
+  } = getStatusData;
+
+  const availableCount = Object.values(availableGrouped).flat().length;
+  const checkedInCount = Object.values(checkedInGrouped).flat().length;
+  const confirmedCount = Object.values(confirmedGrouped).flat().length;
+  const blockedCount = Object.values(blockedGrouped).flat().length;
+  const totalRooms = rooms?.length || 0;
+  const occupiedCount = occupiedRoomNos.length;
+
+  const statusCards = [
+    {
+      title: 'Available Rooms',
+      count: availableCount,
+      icon: <EventAvailableIcon />,
+      color: '#009905',
+      bgColor: alpha('#009905', 0.08),
+      borderColor: alpha('#009905', 0.3),
+      data: availableGrouped,
+      description: 'Ready for booking',
+    },
+    {
+      title: 'Checked In',
+      count: checkedInCount,
+      icon: <HotelIcon />,
+      color: '#3498db',
+      bgColor: alpha('#3498db', 0.08),
+      borderColor: alpha('#3498db', 0.3),
+      data: checkedInGrouped,
+      hasBookingLink: true,
+      description: 'Currently occupied',
+    },
+    {
+      title: 'Confirmed',
+      count: confirmedCount,
+      icon: <CheckCircleIcon />,
+      color: '#9e007e',
+      bgColor: alpha('#9e007e', 0.08),
+      borderColor: alpha('#9e007e', 0.3),
+      data: confirmedGrouped,
+      hasBookingLink: true,
+      description: 'Upcoming bookings',
+    },
+    {
+      title: 'Blocked',
+      count: blockedCount,
+      icon: <BlockIcon />,
+      color: '#f39c12',
+      bgColor: alpha('#f39c12', 0.08),
+      borderColor: alpha('#f39c12', 0.3),
+      data: blockedGrouped,
+      hasBookingLink: true,
+      description: 'Temporarily unavailable',
+    },
+  ];
 
   return (
-    <Box p={3}>
-      <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between' }}>
-        <Box>
-          <Button variant="contained" sx={{ minWidth: 0 }} onClick={handlePrev}>
-            <ChevronLeftIcon />
-          </Button>
-          <TextField
-            size="small"
-            label="📅 Select Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            sx={{ mx: 1 }}
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-          <Button variant="contained" sx={{ minWidth: 0 }} onClick={handleNext}>
-            <ChevronRightIcon />
-          </Button>
-        </Box>
-
-        <Button
-          href="/front-office/room-booking/create-new"
-          variant="contained"
-          startIcon={<AddIcon />}
-          sx={{ borderRadius: 2, textTransform: 'none' }}
-        >
-          New Booking
-        </Button>
-      </Box>
-
-      {next7Days.map((date, index) => {
-        const {
-          availableGrouped,
-          checkedInGrouped,
-          confirmedGrouped,
-          blockedGrouped,
-        } = getDayWiseData(date);
-
-        const availableCount = Object.values(availableGrouped).flat().length;
-        const checkedInCount = Object.values(checkedInGrouped).flat().length;
-        const confirmedCount = Object.values(confirmedGrouped).flat().length;
-        const blockedCount = Object.values(blockedGrouped).flat().length;
-
-        return (
-          <motion.div
-            key={index}
-            transition={{ duration: 0.2 }}
-            style={{ marginBottom: 8 }}
-          >
-            <Accordion
-              expanded={expandedIndex === index}
-              onChange={handleAccordionChange(index)}
-              disableGutters
+    <Box sx={{ p: 3 }}>
+      {/* Status Cards */}
+      <Grid container spacing={3}>
+        {statusCards.map((status, index) => (
+          <Grid key={index} size={{ xs: 12, sm: 6 }}>
+            <Card
               sx={{
-                p: 1,
+                minHeight: 300,
                 borderRadius: 3,
-                bgcolor: '#fdfff3ff',
-                border: 'none',
-                overflow: 'hidden',
+                border: `2px solid ${status.borderColor}`,
+                backgroundColor: status.bgColor,
+                height: '100%',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 12px 28px ${alpha(status.color, 0.15)}`,
+                },
               }}
             >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography sx={{ fontWeight: 600, flex: 1 }}>
-                  📆 {formatDate(date)}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  color="green"
-                  sx={{ fontWeight: 500, mr: 4 }}
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 2 }}
                 >
-                  Available ({availableCount})
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="#0284c7"
-                  sx={{ fontWeight: 500, mr: 4 }}
-                >
-                  Checked In ({checkedInCount})
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="purple"
-                  sx={{ fontWeight: 500, mr: 4 }}
-                >
-                  Confirmed ({confirmedCount})
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="orange"
-                  sx={{ fontWeight: 500 }}
-                >
-                  Blocked ({blockedCount})
-                </Typography>
-              </AccordionSummary>
-
-              <AccordionDetails>
-                <Grid container spacing={2}>
-                  {[
-                    {
-                      title: `Available (${availableCount})`,
-                      data: availableGrouped,
-                      color: '#22c55e',
-                      bg: '#f0fdf4',
-                      chipBg: '#bbf7d0',
-                    },
-                    {
-                      title: `Checked In (${checkedInCount})`,
-                      data: checkedInGrouped,
-                      color: '#0ea5e9',
-                      bg: '#e0f2fe',
-                      chipBg: '#bae6fd',
-                    },
-                    {
-                      title: `Confirmed (${confirmedCount})`,
-                      data: confirmedGrouped,
-                      color: 'purple',
-                      bg: '#ffccfdff',
-                      chipBg: '#ffb0ecff',
-                    },
-                    {
-                      title: `Blocked (${blockedCount})`,
-                      data: blockedGrouped,
-                      color: 'orange',
-                      bg: '#fff7e6',
-                      chipBg: '#ffe0b3',
-                    },
-                  ].map((col, idx) => (
-                    <Grid key={idx} size={{ xs: 12, md: 3 }}>
-                      <Paper
-                        component={motion.div}
-                        whileHover={{ scale: 1.01 }}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 3,
+                        backgroundColor: alpha(status.color, 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: `2px solid ${alpha(status.color, 0.3)}`,
+                      }}
+                    >
+                      {React.cloneElement(status.icon, {
+                        sx: {
+                          color: status.color,
+                          fontSize: 24,
+                          transition: 'transform 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                          },
+                        },
+                      })}
+                    </Box>
+                    <Box>
+                      <Typography
+                        variant="h6"
                         sx={{
-                          p: 2,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          flex: 1,
-                          borderLeft: `4px solid ${col.color}`,
-                          bgcolor: col.bg,
-                          borderRadius: 2,
-                          height: '100%',
+                          color: '#2c3e50',
+                          fontWeight: 700,
+                          lineHeight: 1.2,
                         }}
                       >
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          {col.title}
+                        {status.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: '#7f8c8d', fontSize: '0.75rem' }}
+                      >
+                        {status.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      backgroundColor: alpha(status.color, 0.2),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: `2px solid ${status.color}`,
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: status.color,
+                        fontWeight: 800,
+                        fontSize: '1.1rem',
+                      }}
+                    >
+                      {status.count}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                <Divider sx={{ my: 2, borderColor: status.borderColor }} />
+
+                {Object.keys(status.data).length > 0 ? (
+                  <Box sx={{ maxHeight: 300, overflowY: 'auto', pr: 1 }}>
+                    {Object.entries(status.data).map(([category, rooms]) => (
+                      <Box key={category} sx={{ mb: 2 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            color: status.color,
+                            fontWeight: 600,
+                            mb: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            fontSize: '0.8rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                          }}
+                        >
+                          <KingBedIcon sx={{ fontSize: 14 }} />
+                          {category} • {rooms.length}
                         </Typography>
-                        {Object.entries(col.data).map(([cat, rooms]) => (
-                          <Box key={cat} mt={1}>
-                            <Typography variant="body2" fontWeight={600}>
-                              {cat}
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: 0.5,
-                              }}
-                            >
-                              {rooms.map((room) => (
-                                <Chip
-                                  key={room.room_no}
-                                  label={room.room_no}
-                                  size="small"
-                                  clickable={!col.title.startsWith('Available')}
-                                  component={
-                                    !col.title.startsWith('Available')
-                                      ? 'a'
-                                      : 'div'
-                                  }
-                                  href={
-                                    !col.title.startsWith('Available')
-                                      ? `/front-office/room-booking/${room.bookingId}`
-                                      : undefined
-                                  }
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 0.75,
+                          }}
+                        >
+                          {rooms.map((room) => (
+                            <Chip
+                              key={room.room_no}
+                              label={
+                                <Box
                                   sx={{
-                                    bgcolor: col.chipBg,
-                                    cursor: col.title.startsWith('Available')
-                                      ? 'default'
-                                      : 'pointer',
-                                    '&:hover': {
-                                      opacity: 0.8,
-                                    },
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
                                   }}
-                                />
-                              ))}
-                            </Box>
-                          </Box>
-                        ))}
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          </motion.div>
-        );
-      })}
+                                >
+                                  {status.hasBookingLink && (
+                                    <EventIcon sx={{ fontSize: 12 }} />
+                                  )}
+                                  <span>{room.room_no}</span>
+                                  {room.guestName && status.hasBookingLink && (
+                                    <PeopleIcon
+                                      sx={{ fontSize: 12, opacity: 0.7 }}
+                                    />
+                                  )}
+                                </Box>
+                              }
+                              size="small"
+                              clickable={status.hasBookingLink}
+                              component={status.hasBookingLink ? 'a' : 'div'}
+                              href={
+                                status.hasBookingLink
+                                  ? `/front-office/room-booking/${room.bookingId}`
+                                  : undefined
+                              }
+                              sx={{
+                                backgroundColor: alpha(status.color, 0.1),
+                                color: status.color,
+                                border: `1px solid ${alpha(status.color, 0.3)}`,
+                                '&:hover': {
+                                  backgroundColor: alpha(status.color, 0.2),
+                                  transform: 'scale(1.05)',
+                                },
+                                fontWeight: 600,
+                                fontSize: '0.75rem',
+                                height: 26,
+                                transition: 'all 0.2s ease',
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: '#7f8c8d', fontStyle: 'italic' }}
+                    >
+                      No rooms in this category
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 };

@@ -46,6 +46,11 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
       gst_no: '',
       id_type: '',
       id_number: '',
+      passport_issue_date: null,
+      passport_exp_date: null,
+      visa_number: '',
+      visa_issue_date: null,
+      visa_exp_date: null,
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
@@ -78,12 +83,26 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
     else if (!/^[0-9]{10}$/.test(formData.mobile))
       newErrors.mobile = 'Enter valid 10-digit number';
 
+    if (formData.id_type === 'Passport') {
+      if (!formData.passport_issue_date)
+        newErrors.passport_issue_date = 'Passport Issue Date is required';
+      if (!formData.passport_exp_date)
+        newErrors.passport_exp_date = 'Passport Expiry Date is required';
+      if (!formData.visa_number)
+        newErrors.visa_number = 'Visa Number is required';
+      if (!formData.visa_issue_date)
+        newErrors.visa_issue_date = 'Visa Issue Date is required';
+      if (!formData.visa_exp_date)
+        newErrors.visa_exp_date = 'Visa Expiry Date is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
     if (!validate()) return;
+
     const res = await CreateNewData({
       auth,
       endPoint: 'customers',
@@ -526,6 +545,125 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
                 }
               />
             </Grid>
+
+            {formData.id_type === 'Passport' && (
+              <>
+                <Grid size={12}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 700,
+                      color: '#666',
+                      textTransform: 'uppercase',
+                      display: 'block',
+                      mb: 1,
+                    }}
+                  >
+                    Passport Details
+                  </Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Passport Issue Date"
+                    type="date"
+                    size="small"
+                    value={formData.passport_issue_date || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        passport_issue_date: e.target.value,
+                      })
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    error={!!errors.passport_issue_date}
+                    helperText={errors.passport_issue_date}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Passport Expiry Date"
+                    type="date"
+                    size="small"
+                    value={formData.passport_exp_date || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        passport_exp_date: e.target.value,
+                      })
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    error={!!errors.passport_exp_date}
+                    helperText={errors.passport_exp_date}
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 700,
+                      color: '#666',
+                      textTransform: 'uppercase',
+                      display: 'block',
+                      mb: 1,
+                    }}
+                  >
+                    Visa Details
+                  </Typography>
+                </Grid>
+                <Grid size={12}>
+                  <TextField
+                    fullWidth
+                    label="Visa Number"
+                    size="small"
+                    value={formData.visa_number}
+                    onChange={(e) =>
+                      setFormData({ ...formData, visa_number: e.target.value })
+                    }
+                    error={!!errors.visa_number}
+                    helperText={errors.visa_number}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Visa Issue Date"
+                    type="date"
+                    size="small"
+                    value={formData.visa_issue_date || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        visa_issue_date: e.target.value,
+                      })
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    error={!!errors.visa_issue_date}
+                    helperText={errors.visa_issue_date}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Visa Expiry Date"
+                    type="date"
+                    size="small"
+                    value={formData.visa_exp_date || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        visa_exp_date: e.target.value,
+                      })
+                    }
+                    InputLabelProps={{ shrink: true }}
+                    error={!!errors.visa_exp_date}
+                    helperText={errors.visa_exp_date}
+                  />
+                </Grid>
+              </>
+            )}
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
