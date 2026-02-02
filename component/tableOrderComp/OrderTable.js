@@ -126,15 +126,14 @@ const OrderTable = ({ orders, handleEdit, setSelectedRow, setDeleteOpen }) => {
                   </TableCell>
                   <TableCell>₹{totalAmount.toFixed(2) || 0}</TableCell>
                   <TableCell align="center">
-                    {order?.token_status !== 'Closed' && (
-                      <IconButton
-                        color="secondary"
-                        size="small"
-                        onClick={() => handleEdit(order)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    )}
+                    <IconButton
+                      color="secondary"
+                      size="small"
+                      onClick={() => handleEdit(order)}
+                      disabled={order?.token_status === 'Closed'}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
 
                     <IconButton
                       color="error"
