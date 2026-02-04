@@ -20,6 +20,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Autocomplete,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -141,21 +142,35 @@ const CreateNewOrder = ({
 
           <Grid container spacing={2} alignItems="center" mb={2}>
             <Grid item size={{ xs: 10 }}>
-              <FormControl fullWidth margin="dense" size="small">
-                <InputLabel>Select Menu Item</InputLabel>
-                <Select
-                  label="Select Menu Item"
-                  value={selectedItem || ''}
-                  onChange={(e) => setSelectedItem(e.target.value)}
-                >
-                  <MenuItem value="">-- Select --</MenuItem>
-                  {menuItems?.map((cat) => (
-                    <MenuItem key={cat.documentId} value={cat.documentId}>
-                      {cat?.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                options={menuItems || []}
+                getOptionLabel={(option) => option?.name || ''}
+                value={
+                  selectedItem
+                    ? menuItems?.find((m) => m.documentId === selectedItem) ||
+                      null
+                    : null
+                }
+                onChange={(e, newValue) => {
+                  if (newValue?.documentId) {
+                    setSelectedItem(newValue.documentId);
+                  } else {
+                    setSelectedItem('');
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search & Select Menu Item"
+                    size="small"
+                  />
+                )}
+                freeSolo={false}
+                clearOnEscape
+                isOptionEqualToValue={(option, value) =>
+                  option?.documentId === value?.documentId
+                }
+              />
             </Grid>
             <Grid item size={{ xs: 2 }}>
               <Button
