@@ -24,6 +24,7 @@ const TableGrid = ({
   handleTransferOrder,
   handleOrderInvoice,
   handleKOT,
+  setKotDialogOpen,
 }) => {
   return (
     <>
@@ -255,7 +256,10 @@ const TableGrid = ({
                               startIcon={
                                 <LocalPrintshopIcon sx={{ fontSize: 14 }} />
                               }
-                              onClick={() => handleKOT(activeOrder)}
+                              onClick={() => {
+                                handleKOT(activeOrder);
+                                setKotDialogOpen(true);
+                              }}
                               sx={{
                                 py: 0.75,
                                 borderRadius: 2,

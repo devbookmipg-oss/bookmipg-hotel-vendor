@@ -16,14 +16,6 @@ const KotPrint = React.forwardRef((props, ref) => {
         padding: '5px',
       }}
     >
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ margin: 0 }}>{profile?.res_name}</h3>
-        <p style={{ margin: '5px 0', fontSize: '14px', fontWeight: 'bold' }}>
-          KITCHEN ORDER TICKET
-        </p>
-        <p style={{ margin: '5px 0' }}>-------------------------------</p>
-      </div>
-
       <p>
         <strong>Table No:</strong> {order?.table?.table_no}
       </p>
@@ -34,7 +26,7 @@ const KotPrint = React.forwardRef((props, ref) => {
       <p>
         <strong>Order ID:</strong> {order?.order_id}
       </p>
-      <p style={{ margin: '5px 0' }}>-----------------------------</p>
+      <p style={{ margin: '1px 0' }}>------------------------------</p>
 
       <table style={{ width: '100%' }}>
         <thead>
@@ -54,19 +46,13 @@ const KotPrint = React.forwardRef((props, ref) => {
           ))}
         </tbody>
       </table>
-      <p style={{ margin: '5px 0' }}>-----------------------------</p>
-      <p style={{ fontSize: '10px' }}>Notes:</p>
-      <p style={{ fontSize: '10px' }}>{order?.notes || '-'}</p>
-      <p style={{ margin: '5px 0' }}>-----------------------------</p>
-
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: '10px' }}>
-          Please prepare the items listed above
-        </p>
-        <p style={{ fontSize: '10px' }}>
-          Printed: {new Date().toLocaleString()}
-        </p>
-      </div>
+      <p style={{ margin: '1px 0' }}>------------------------------</p>
+      {order?.notes && (
+        <>
+          <p style={{ fontSize: '10px' }}>Notes:</p>
+          <p style={{ fontSize: '10px' }}>{order?.notes || '-'}</p>
+        </>
+      )}
     </div>
   );
 });

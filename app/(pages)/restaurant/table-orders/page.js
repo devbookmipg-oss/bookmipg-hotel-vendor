@@ -9,6 +9,10 @@ import {
   Stack,
   Chip,
   alpha,
+  Button,
+  DialogActions,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -25,7 +29,7 @@ import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
 import { useState, useRef } from 'react';
 import { GetCurrentTime } from '@/utils/Timefetcher';
-import { GetTodaysDate } from '@/utils/DateFetcher';
+import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 import { useReactToPrint } from 'react-to-print';
 import {
@@ -37,6 +41,7 @@ import {
   TransferOrder,
 } from '@/component/tableOrderComp';
 import { KotPrint } from '@/component/printables/KotPrint';
+import { Print } from '@mui/icons-material';
 
 const generateNextOrderNo = (orders) => {
   if (!orders || orders.length === 0) {
@@ -119,6 +124,7 @@ const Page = () => {
   // KOT print state
   const [kotOpen, setKotOpen] = useState(false);
   const [kotData, setKotData] = useState(null);
+  const [kotDialogOpen, setKotDialogOpen] = useState(false);
   const kotComponentRef = useRef(null);
 
   // Get restaurant profile
@@ -445,6 +451,7 @@ const Page = () => {
             handleOrderInvoice={handleOrderInvoice}
             handleEdit={handleEdit}
             handleKOT={handleKOT}
+            setKotDialogOpen={setKotDialogOpen}
           />
         </Paper>
         <Paper
@@ -527,82 +534,76 @@ const Page = () => {
       </Box>
 
       {/* KOT Print Dialog */}
-      {kotData && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: kotOpen ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1300,
-          }}
-          onClick={() => setKotOpen(false)}
-        >
-          <Paper
-            sx={{
-              backgroundColor: 'white',
-              p: 3,
-              borderRadius: 2,
-              boxShadow: 3,
-              textAlign: 'center',
-              maxWidth: 400,
-              width: '90%',
-            }}
-            onClick={(e) => e.stopPropagation()}
+
+      <Dialog
+        open={kotDialogOpen}
+        onClose={() => setKotDialogOpen(false)}
+        sx={{
+          '& .MuiDialog-paper': {
+            '@media (max-width: 600px)': {
+              width: '100%',
+              height: '110vh',
+              maxWidth: '100%',
+              margin: 0,
+              borderRadius: 0,
+            },
+          },
+        }}
+      >
+        <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
+          {kotData && (
+            <>
+              <p>
+                <strong>Table No:</strong> {kotData?.table?.table_no}
+              </p>
+              <p>
+                <strong>Date:</strong> {GetCustomDate(kotData?.date)} |{' '}
+                <strong>Time:</strong> {kotData?.time}
+              </p>
+              <p>
+                <strong>Order ID:</strong> {kotData?.order_id}
+              </p>
+              <p style={{ margin: '1px 0' }}>------------------------------</p>
+
+              <table style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th align="left">Item</th>
+                    <th align="right">Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {kotData?.food_items?.map((item, index) => (
+                    <tr key={index}>
+                      <td>{item.item}</td>
+                      <td align="right">
+                        <strong>{item.qty}</strong>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p style={{ margin: '1px 0' }}>------------------------------</p>
+              {kotData?.notes && (
+                <>
+                  <p style={{ fontSize: '10px' }}>Notes:</p>
+                  <p style={{ fontSize: '10px' }}>{kotData?.notes || '-'}</p>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setKotDialogOpen(false)}>Close</Button>
+          <Button
+            variant="contained"
+            startIcon={<Print />}
+            onClick={handleKOTPrint}
           >
-            <Typography variant="h6" sx={{ mb: 2, color: '#2c3e50' }}>
-              KOT - {kotData?.order_id}
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 3, color: '#7f8c8d' }}>
-              Table No: {kotData?.table?.table_no}
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Box
-                component="button"
-                onClick={() => setKotOpen(false)}
-                sx={{
-                  flex: 1,
-                  py: 1,
-                  px: 2,
-                  backgroundColor: '#f5f5f5',
-                  border: '1px solid #ddd',
-                  borderRadius: 1,
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  color: '#2c3e50',
-                  '&:hover': { backgroundColor: '#eeeeee' },
-                }}
-              >
-                Close
-              </Box>
-              <Box
-                component="button"
-                onClick={handleKOTPrint}
-                sx={{
-                  flex: 1,
-                  py: 1,
-                  px: 2,
-                  backgroundColor: '#c20f12',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 1,
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  '&:hover': { backgroundColor: '#a00c0f' },
-                }}
-              >
-                Print KOT
-              </Box>
-            </Stack>
-          </Paper>
-        </Box>
-      )}
+            Print
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

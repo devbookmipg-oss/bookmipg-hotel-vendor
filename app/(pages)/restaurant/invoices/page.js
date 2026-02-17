@@ -276,7 +276,7 @@ const Page = () => {
   };
 
   const componentRef = useRef(null);
-  const handlePrint = useReactToPrint({
+  const handleInvoicePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: 'res-inv',
   });
@@ -805,71 +805,97 @@ const Page = () => {
           <Dialog
             open={viewOpen}
             onClose={() => setViewOpen(false)}
-            maxWidth="md"
-            fullWidth
+            sx={{
+              '& .MuiDialog-paper': {
+                '@media (max-width: 600px)': {
+                  width: '100%',
+                  height: '100vh',
+                  maxWidth: '100%',
+                  margin: 0,
+                  borderRadius: 0,
+                },
+              },
+            }}
           >
-            <DialogTitle>Invoice: {viewData?.invoice_no}</DialogTitle>
-            <DialogContent dividers>
+            <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
               {viewData && (
                 <>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Date: {viewData.date} | Time: {viewData.time}
-                  </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Customer: {viewData.customer_name} (
-                    {viewData.customer_phone})
-                  </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    GST: {viewData.customer_gst}
-                  </Typography>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Address: {viewData.customer_address}
-                  </Typography>
+                  <div style={{ textAlign: 'center' }}>
+                    <h3 style={{ margin: 0 }}>{myProfile?.res_name}</h3>
+                    <p style={{ margin: 0 }}>
+                      {myProfile?.res_address_line1},{' '}
+                      {myProfile?.res_address_line2}
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      {myProfile?.res_district}, {myProfile?.res_state}
+                    </p>
+                    {myProfile?.res_gst_no && (
+                      <p style={{ margin: 0 }}>
+                        GST: {myProfile?.res_gst_no || 'N/A'}
+                      </p>
+                    )}
 
-                  {/* Items Table */}
-                  <TableContainer component={Paper} sx={{ mt: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Name</TableCell>
-                          <TableCell>HSN</TableCell>
-                          <TableCell>Rate</TableCell>
-                          <TableCell>Qty</TableCell>
-                          <TableCell>GST %</TableCell>
+                    <p style={{ margin: '1px 0' }}>
+                      ------------------------------
+                    </p>
+                  </div>
 
-                          <TableCell>Total</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {viewData.menu_items?.map((item, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell>{item.item}</TableCell>
-                            <TableCell>{item.hsn}</TableCell>
-                            <TableCell>{item.rate}</TableCell>
-                            <TableCell>{item.qty}</TableCell>
-                            <TableCell>{item.gst}</TableCell>
+                  <p>Invoice No: {viewData?.invoice_no}</p>
+                  <p>
+                    Date: {GetCustomDate(viewData?.date)} | Time:{' '}
+                    {viewData?.time}
+                  </p>
+                  {viewData?.customer_name && (
+                    <p>Customer: {viewData?.customer_name}</p>
+                  )}
 
-                            <TableCell>{item.amount.toFixed(2)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                  {viewData?.customer_phone && (
+                    <p>Phone: {viewData?.customer_phone}</p>
+                  )}
 
-                  {/* Summary */}
-                  <Box mt={2}>
-                    <Typography>Total: ₹{viewData.total_amount}</Typography>
-                    <Typography>GST: ₹{viewData.tax}</Typography>
-                    <Typography>Payable: ₹{viewData.payable_amount}</Typography>
-                    <Typography>Payment Method: {viewData.mop}</Typography>
-                  </Box>
-                  <div style={{ display: 'none' }}>
-                    <RestaurantPosInvoice
-                      ref={componentRef}
-                      invoice={viewData}
-                      profile={myProfile}
-                      size="58mm"
-                    />
+                  <p style={{ margin: '1px 0' }}>
+                    ------------------------------
+                  </p>
+
+                  <table style={{ width: '100%' }}>
+                    <thead>
+                      <tr>
+                        <th align="left">Item</th>
+                        <th align="right">Qty</th>
+                        <th align="right">Rate</th>
+                        <th align="right">Amt</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewData?.menu_items?.map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.item}</td>
+                          <td align="right">{item.qty}</td>
+                          <td align="right">{item.rate}</td>
+                          <td align="right">{item.qty * item.rate}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <p style={{ margin: '1px 0' }}>
+                    ------------------------------
+                  </p>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <p>Subtotal: ₹{viewData?.total_amount}</p>
+                    <p>GST: ₹{viewData?.tax}</p>
+                    <p style={{ fontWeight: 'bold' }}>
+                      Total: ₹{viewData?.payable_amount}
+                    </p>
+                  </div>
+
+                  <p style={{ margin: '1px 0' }}>
+                    ------------------------------
+                  </p>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <p>Thank you! Visit again.</p>
                   </div>
                 </>
               )}
@@ -879,7 +905,7 @@ const Page = () => {
               <Button
                 variant="contained"
                 startIcon={<PrintIcon />}
-                onClick={handlePrint}
+                onClick={handleInvoicePrint}
               >
                 Print Invoice
               </Button>
@@ -887,6 +913,14 @@ const Page = () => {
           </Dialog>
         </Box>
       )}
+      <Box sx={{ display: 'none' }}>
+        <RestaurantPosInvoice
+          ref={componentRef}
+          invoice={viewData}
+          profile={myProfile}
+          size="58mm"
+        />
+      </Box>
     </>
   );
 };
