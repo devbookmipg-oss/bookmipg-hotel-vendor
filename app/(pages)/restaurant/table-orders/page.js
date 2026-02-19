@@ -550,7 +550,7 @@ const Page = () => {
           },
         }}
       >
-        <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
+        <DialogContent sx={{ padding: '0 5px', margin: 0, fontSize: '1.95em' }}>
           {kotData && (
             <>
               <p>

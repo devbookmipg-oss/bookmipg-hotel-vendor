@@ -820,8 +820,8 @@ const Page = () => {
             <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
               {viewData && (
                 <>
-                  <div style={{ textAlign: 'center' }}>
-                    <h3 style={{ margin: 0 }}>{myProfile?.res_name}</h3>
+                  <div style={{ textAlign: 'center', fontSize: '1.45em' }}>
+                    <p style={{ margin: 0 }}>{myProfile?.res_name}</p>
                     <p style={{ margin: 0 }}>
                       {myProfile?.res_address_line1},{' '}
                       {myProfile?.res_address_line2}
@@ -834,14 +834,15 @@ const Page = () => {
                         GST: {myProfile?.res_gst_no || 'N/A'}
                       </p>
                     )}
-
-                    <p style={{ margin: '1px 0' }}>
-                      ------------------------------
-                    </p>
                   </div>
+                  <p style={{ margin: '1px 0' }}>
+                    ----------------------------------------
+                  </p>
 
-                  <p>Invoice No: {viewData?.invoice_no}</p>
-                  <p>
+                  <p style={{ fontSize: '1.45em' }}>
+                    Invoice No: {viewData?.invoice_no}
+                  </p>
+                  <p style={{ fontSize: '1.45em' }}>
                     Date: {GetCustomDate(viewData?.date)} | Time:{' '}
                     {viewData?.time}
                   </p>
@@ -853,11 +854,9 @@ const Page = () => {
                     <p>Phone: {viewData?.customer_phone}</p>
                   )}
 
-                  <p style={{ margin: '1px 0' }}>
-                    ------------------------------
-                  </p>
+                  <p style={{ margin: '1px 0', fontSize: '1.2em' }}></p>
 
-                  <table style={{ width: '100%' }}>
+                  <table style={{ width: '100%', fontSize: '1.45em' }}>
                     <thead>
                       <tr>
                         <th align="left">Item</th>
@@ -879,10 +878,10 @@ const Page = () => {
                   </table>
 
                   <p style={{ margin: '1px 0' }}>
-                    ------------------------------
+                    ----------------------------------------
                   </p>
 
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ textAlign: 'right', fontSize: '1.45em' }}>
                     <p>Subtotal: ₹{viewData?.total_amount}</p>
                     <p>GST: ₹{viewData?.tax}</p>
                     <p style={{ fontWeight: 'bold' }}>
@@ -891,7 +890,7 @@ const Page = () => {
                   </div>
 
                   <p style={{ margin: '1px 0' }}>
-                    ------------------------------
+                    ----------------------------------------
                   </p>
 
                   <div style={{ textAlign: 'center' }}>
