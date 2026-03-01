@@ -39,12 +39,14 @@ const menuLinks = [
     label: 'Online Bookings',
     url: '/front-office/online-booking',
     icon: <EventAvailable sx={{ fontSize: 18 }} />,
+    access: 'online-bookings',
   },
   {
     key: 'reviews',
     label: 'Reviews',
     url: '/front-office/reviews',
     icon: <RateReview sx={{ fontSize: 18 }} />,
+    access: 'reviews',
   },
   {
     key: 'admin',

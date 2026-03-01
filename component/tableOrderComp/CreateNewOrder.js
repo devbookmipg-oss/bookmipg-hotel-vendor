@@ -35,6 +35,7 @@ const CreateNewOrder = ({
   selectedItem,
   setSelectedItem,
   handleSave,
+  loading,
 }) => {
   const handleItemSelect = () => {
     if (!selectedItem) return;
@@ -328,7 +329,7 @@ const CreateNewOrder = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setFormOpen(false)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained">
+          <Button onClick={handleSave} variant="contained" disabled={loading}>
             {editing ? 'Update' : 'Create'}
           </Button>
         </DialogActions>

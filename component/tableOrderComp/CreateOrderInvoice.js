@@ -34,6 +34,7 @@ const CreateOrderInvoice = ({
   invoices,
   paymentMethods,
 }) => {
+  const [loading, setLoading] = useState(false);
   const todaysDate = GetTodaysDate().dateString;
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -96,7 +97,7 @@ const CreateOrderInvoice = ({
   };
   const handleSave = async () => {
     const res = await createInvoice();
-
+    setLoading(true);
     await UpdateData({
       auth,
       endPoint: 'table-orders',
@@ -121,6 +122,7 @@ const CreateOrderInvoice = ({
       mop: '',
     });
     setSelectedRow(null);
+    setLoading(false);
   };
   return (
     <>
@@ -310,8 +312,8 @@ const CreateOrderInvoice = ({
           >
             Cancel
           </Button>
-          <Button onClick={handleSave} variant="contained">
-            Create
+          <Button onClick={handleSave} variant="contained" disabled={loading}>
+            {!loading ? 'Create' : 'Creating...'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -59,6 +59,7 @@ const generateNextOrderNo = (orders) => {
 
 const Page = () => {
   const { auth } = useAuth();
+  const [loading, setLoading] = useState(false);
   const todaysDate = GetTodaysDate().dateString;
   const tables = GetDataList({ auth, endPoint: 'tables' });
   const orders = GetDataList({ auth, endPoint: 'table-orders' });
@@ -66,7 +67,7 @@ const Page = () => {
     auth,
     endPoint: 'restaurant-menus',
   });
-  console.log('menuItems', menuItems);
+
   const bookings = GetDataList({
     auth,
     endPoint: 'room-bookings',
@@ -174,7 +175,7 @@ const Page = () => {
   };
 
   const handleSave = async () => {
-    // ✅ Clean food_items (remove id/documentId/etc.)
+    setLoading(true);
     const cleanedMenuItems = formData.food_items.map(
       ({ id, documentId, ...rest }) => rest,
     );
@@ -201,6 +202,7 @@ const Page = () => {
         payload: { data: updateBody },
       });
       SuccessToast('Order updated successfully');
+      setLoading(false);
     } else {
       const newOrderNO = generateNextOrderNo(orders);
       const time = GetCurrentTime();
@@ -217,12 +219,14 @@ const Page = () => {
         },
       });
       SuccessToast('Order created successfully');
+      setLoading(false);
     }
 
     setFormOpen(false);
   };
 
   const handleConfirmDelete = async () => {
+    setLoading(true);
     await DeleteData({
       auth,
       endPoint: 'table-orders',
@@ -231,6 +235,7 @@ const Page = () => {
     SuccessToast('Invoice deleted successfully');
     setDeleteOpen(false);
     setSelectedRow(null);
+    setLoading(false);
   };
 
   if (!tables || !orders || !paymentMethods || !invoices) return <Loader />;
@@ -479,6 +484,7 @@ const Page = () => {
         handleConfirmDelete={handleConfirmDelete}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
+        loading={loading}
       />
 
       {/* Create/Edit Dialog */}
@@ -493,6 +499,7 @@ const Page = () => {
         selectedItem={selectedItem}
         setSelectedItem={setSelectedItem}
         handleSave={handleSave}
+        loading={loading}
       />
 
       {/* Transfer Dialog */}

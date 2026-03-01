@@ -13,6 +13,7 @@ const DeleteDialog = ({
   selectedRow,
   setSelectedRow,
   handleConfirmDelete,
+  loading,
 }) => {
   return (
     <>
@@ -44,8 +45,9 @@ const DeleteDialog = ({
             onClick={handleConfirmDelete}
             color="error"
             variant="contained"
+            disabled={loading}
           >
-            Delete
+            {loading ? 'Deleting...' : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

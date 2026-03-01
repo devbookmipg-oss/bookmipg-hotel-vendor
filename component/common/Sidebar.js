@@ -24,6 +24,9 @@ const Container = styled(Box)`
   overflow-y: auto;
   scrollbar-width: none;
 
+  display: flex;
+  flex-direction: column; /* 👈 ADD THIS */
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -80,60 +83,62 @@ const Sidebar = ({ logout, menuLinks }) => {
       </LogoWrapper>
 
       <Divider />
+      <Box sx={{ flexGrow: 1 }}>
+        {menuLinks.map((item) => {
+          const hasChildren = !!item.children?.length;
+          const isOpen = openMenus[item.key];
 
-      {menuLinks.map((item) => {
-        const hasChildren = !!item.children?.length;
-        const isOpen = openMenus[item.key];
-
-        return (
-          <Box key={item.key}>
-            {/* Parent */}
-            {hasChildren ? (
-              <LinkItem onClick={() => toggleMenu(item.key)}>
-                <Box sx={{ mr: 1, display: 'flex' }}>{item.icon}</Box>
-                {item.label}
-                <Box sx={{ ml: 'auto' }}>
-                  {isOpen ? <ExpandLess /> : <ExpandMore />}
-                </Box>
-              </LinkItem>
-            ) : (
-              <Link href={item.url} style={{ textDecoration: 'none' }}>
-                <LinkItem>
+          return (
+            <Box key={item.key}>
+              {/* Parent */}
+              {hasChildren ? (
+                <LinkItem onClick={() => toggleMenu(item.key)}>
                   <Box sx={{ mr: 1, display: 'flex' }}>{item.icon}</Box>
                   {item.label}
+                  <Box sx={{ ml: 'auto' }}>
+                    {isOpen ? <ExpandLess /> : <ExpandMore />}
+                  </Box>
                 </LinkItem>
-              </Link>
-            )}
+              ) : (
+                <Link href={item.url} style={{ textDecoration: 'none' }}>
+                  <LinkItem>
+                    <Box sx={{ mr: 1, display: 'flex' }}>{item.icon}</Box>
+                    {item.label}
+                  </LinkItem>
+                </Link>
+              )}
 
-            {/* Children */}
-            {hasChildren && (
-              <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                {item.children.map((child) => (
-                  <Link
-                    href={child.url}
-                    key={child.url}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <SubLinkItem>
-                      <Box sx={{ mr: 0.5, display: 'flex' }}>
-                        <Circle sx={{ fontSize: 8 }} />
-                      </Box>
-                      {child.label}
-                    </SubLinkItem>
-                  </Link>
-                ))}
-              </Collapse>
-            )}
-          </Box>
-        );
-      })}
+              {/* Children */}
+              {hasChildren && (
+                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                  {item.children.map((child) => (
+                    <Link
+                      href={child.url}
+                      key={child.url}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <SubLinkItem>
+                        <Box sx={{ mr: 0.5, display: 'flex' }}>
+                          <Circle sx={{ fontSize: 8 }} />
+                        </Box>
+                        {child.label}
+                      </SubLinkItem>
+                    </Link>
+                  ))}
+                </Collapse>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
 
-      <Divider sx={{ my: 1 }} />
-
-      <LinkItem onClick={logout}>
-        <LogoutIcon sx={{ mr: 1 }} />
-        Logout
-      </LinkItem>
+      <Box sx={{ mt: 'auto' }}>
+        <Divider sx={{ my: 1 }} />
+        <LinkItem onClick={logout}>
+          <LogoutIcon sx={{ mr: 1 }} />
+          Logout
+        </LinkItem>
+      </Box>
     </Container>
   );
 };

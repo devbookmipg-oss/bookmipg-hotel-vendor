@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   Box,
   styled,
@@ -12,12 +13,14 @@ import {
   ListItemIcon,
   ListItemText,
   Collapse,
+  Divider,
 } from '@mui/material';
-import { useState } from 'react';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+
+/* -------------------- Styled Components -------------------- */
 
 const Container = styled(Box)`
   width: 100%;
@@ -58,15 +61,19 @@ const SubMenuItem = styled(ListItemText)`
 
   &:hover span {
     color: #eb282c;
-    transform: translateX(2px);
+    transform: translateX(3px);
   }
 `;
+
+/* -------------------- Component -------------------- */
 
 const Header = ({ logout, menuLinks }) => {
   const [open, setOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
 
-  const toggleDrawer = (state) => () => setOpen(state);
+  const toggleDrawer = (state) => () => {
+    setOpen(state);
+  };
 
   const toggleSubMenu = (key) => {
     setExpandedMenus((prev) => ({
@@ -77,7 +84,7 @@ const Header = ({ logout, menuLinks }) => {
 
   return (
     <>
-      {/* Mobile Header */}
+      {/* ---------------- Mobile Header ---------------- */}
       <Container>
         <Box>
           <CustomButton onClick={toggleDrawer(true)}>
@@ -87,69 +94,99 @@ const Header = ({ logout, menuLinks }) => {
         </Box>
       </Container>
 
-      {/* Drawer */}
+      {/* ---------------- Drawer ---------------- */}
       <Drawer open={open} onClose={toggleDrawer(false)}>
-        <Box sx={{ width: 260 }}>
-          <List>
-            {menuLinks.map((menu) => {
-              const hasChildren = !!menu.children?.length;
-              const isOpen = expandedMenus[menu.key];
+        <Box
+          sx={{
+            width: 260,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* ---------- Scrollable Menu Area ---------- */}
+          <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+            <List>
+              {menuLinks.map((menu) => {
+                const hasChildren = !!menu.children?.length;
+                const isOpen = expandedMenus[menu.key];
 
-              if (hasChildren) {
+                if (hasChildren) {
+                  return (
+                    <Box key={menu.key}>
+                      <ListItemButton onClick={() => toggleSubMenu(menu.key)}>
+                        <ListItemText primary={menu.label} />
+                        {isOpen ? <ExpandLess /> : <ExpandMore />}
+                      </ListItemButton>
+
+                      <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                        <List disablePadding>
+                          {menu.children.map((child) => (
+                            <Link
+                              key={child.url}
+                              href={child.url}
+                              style={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                              }}
+                              onClick={() => setOpen(false)}
+                            >
+                              <ListItemButton sx={{ pl: 4 }}>
+                                <SubMenuItem primary={child.label} />
+                              </ListItemButton>
+                            </Link>
+                          ))}
+                        </List>
+                      </Collapse>
+                    </Box>
+                  );
+                }
+
                 return (
-                  <Box key={menu.key}>
-                    <ListItemButton onClick={() => toggleSubMenu(menu.key)}>
+                  <Link
+                    key={menu.key}
+                    href={menu.url}
+                    style={{
+                      textDecoration: 'none',
+                      color: 'inherit',
+                    }}
+                    onClick={() => setOpen(false)}
+                  >
+                    <ListItemButton>
                       <ListItemText primary={menu.label} />
-                      {isOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
-
-                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                      <List disablePadding>
-                        {menu.children.map((child) => (
-                          <Link
-                            key={child.url}
-                            href={child.url}
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                            onClick={() => setOpen(false)}
-                          >
-                            <ListItemButton sx={{ pl: 4 }}>
-                              <SubMenuItem primary={child.label} />
-                            </ListItemButton>
-                          </Link>
-                        ))}
-                      </List>
-                    </Collapse>
-                  </Box>
+                  </Link>
                 );
-              }
+              })}
+            </List>
+          </Box>
 
-              return (
-                <Link
-                  key={menu.key}
-                  href={menu.url}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                  onClick={() => setOpen(false)}
-                >
-                  <ListItemButton>
-                    <ListItemText primary={menu.label} />
-                  </ListItemButton>
-                </Link>
-              );
-            })}
+          {/* ---------- Fixed Logout Section ---------- */}
+          <Divider />
 
-            {/* Logout */}
-            <ListItemButton
-              onClick={() => {
-                setOpen(false);
-                logout();
-              }}
-            >
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
-            </ListItemButton>
-          </List>
+          <Box>
+            <List>
+              <ListItemButton
+                onClick={() => {
+                  setOpen(false);
+                  logout();
+                }}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: '#ffeaea',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <LogoutIcon sx={{ color: '#eb282c' }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Logout"
+                  sx={{ color: '#eb282c', fontWeight: 500 }}
+                />
+              </ListItemButton>
+            </List>
+          </Box>
         </Box>
       </Drawer>
     </>
