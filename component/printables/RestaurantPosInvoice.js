@@ -40,7 +40,7 @@ const RestaurantPosInvoice = React.forwardRef((props, ref) => {
       {invoice?.customer_name && <p>Customer: {invoice?.customer_name}</p>}
 
       {invoice?.customer_phone && <p>Phone: {invoice?.customer_phone}</p>}
-
+      {invoice?.customer_gst && <p>GSTIN: {invoice?.customer_gst}</p>}
       <p style={{ margin: '1px 0' }}>------------------------------</p>
 
       <table style={{ width: '100%' }}>

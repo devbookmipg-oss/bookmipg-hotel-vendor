@@ -847,11 +847,20 @@ const Page = () => {
                     {viewData?.time}
                   </p>
                   {viewData?.customer_name && (
-                    <p>Customer: {viewData?.customer_name}</p>
+                    <p style={{ fontSize: '1.45em' }}>
+                      Customer: {viewData?.customer_name}
+                    </p>
                   )}
 
                   {viewData?.customer_phone && (
-                    <p>Phone: {viewData?.customer_phone}</p>
+                    <p style={{ fontSize: '1.45em' }}>
+                      Phone: {viewData?.customer_phone}
+                    </p>
+                  )}
+                  {viewData?.customer_gst && (
+                    <p style={{ fontSize: '1.45em' }}>
+                      GSTIN: {viewData?.customer_gst}
+                    </p>
                   )}
 
                   <p style={{ margin: '1px 0', fontSize: '1.2em' }}></p>
