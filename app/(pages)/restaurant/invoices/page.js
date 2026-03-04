@@ -275,8 +275,20 @@ const Page = () => {
     setSelectedRow(null);
   };
 
+  const handleInvoicePrint = () => {
+    // If running inside Android WebView
+    if (typeof window !== 'undefined' && window.AndroidPrinter) {
+      const receipt = generateThermalReceipt(viewData, myProfile);
+
+      window.AndroidPrinter.printInvoice(receipt);
+    } else {
+      // Desktop fallback
+      reactPrint();
+    }
+  };
+
   const componentRef = useRef(null);
-  const handleInvoicePrint = useReactToPrint({
+  const reactPrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: 'res-inv',
   });
