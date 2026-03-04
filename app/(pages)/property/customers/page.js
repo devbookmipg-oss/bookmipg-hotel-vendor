@@ -40,10 +40,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useState, useMemo } from 'react';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const { auth } = useAuth();
-
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'customers',
@@ -177,6 +178,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               onClick={handleCreate}
               sx={{ borderRadius: 2 }}
+              disabled={!permissions.canCreate}
             >
               Create New
             </Button>
@@ -217,6 +219,7 @@ const Page = () => {
                           color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -226,6 +229,7 @@ const Page = () => {
                           color="error"
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>

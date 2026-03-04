@@ -29,7 +29,7 @@ const Section = styled(Box)({
 });
 
 const SectionHeader = styled(Box)({
-  borderBottom: `3px solid ${BRAND_RED}`,
+  borderBottom: `1px dashed ${BRAND_RED}`,
   paddingBottom: '8px',
   marginBottom: '12px',
 });
@@ -156,18 +156,16 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
         }}
       >
         {/* Logo */}
-        {/* <Box
+        <Box
           sx={{
-            width: '90px',
-            height: '90px',
+            width: '110px',
+            height: '110px',
             borderRadius: '4px',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            border: `2px solid ${BRAND_RED}`,
-            backgroundColor: '#f5f5f5',
           }}
         >
           <img
@@ -182,7 +180,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
               objectFit: 'cover',
             }}
           />
-        </Box> */}
+        </Box>
 
         {/* Hotel Info */}
         <Box sx={{ flex: 1 }}>
@@ -192,17 +190,29 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
           >
             {hotel?.hotel_name}
           </Typography>
-          <Typography variant="body2" sx={{ color: TEXT_SECONDARY, mt: 0.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: TEXT_SECONDARY, mt: 0.5, fontSize: 13 }}
+          >
             {hotel?.hotel_address_line1}, {hotel?.hotel_address_line2}
           </Typography>
-          <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>
+          <Typography
+            variant="body2"
+            sx={{ color: TEXT_SECONDARY, fontSize: 13 }}
+          >
             {hotel?.hotel_state}, PIN-{hotel?.hotel_pincode}
           </Typography>
-          <Typography variant="body2" sx={{ color: TEXT_SECONDARY, mt: 1 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: TEXT_SECONDARY, mt: 1, fontSize: 13 }}
+          >
             Phone: {hotel?.hotel_mobile}{' '}
             {hotel?.hotel_alt_mobile && `, ${hotel?.hotel_alt_mobile}`}
           </Typography>
-          <Typography variant="body2" sx={{ color: TEXT_SECONDARY }}>
+          <Typography
+            variant="body2"
+            sx={{ color: TEXT_SECONDARY, fontSize: 13 }}
+          >
             Email: {hotel?.hotel_email || 'N/A'} | GSTIN:{' '}
             {hotel?.hotel_gst_no || 'N/A'}
           </Typography>
@@ -214,7 +224,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
             backgroundColor: LIGHT_BG,
             border: `2px solid ${BRAND_RED}`,
             borderRadius: '4px',
-            padding: '16px',
+            padding: '8px',
             textAlign: 'center',
             minWidth: '150px',
           }}

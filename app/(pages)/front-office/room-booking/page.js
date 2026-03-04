@@ -38,10 +38,12 @@ import { Loader } from '@/component/common';
 import { useRouter } from 'next/navigation';
 import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
 import { color } from 'framer-motion';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const router = useRouter();
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const todaysDate = GetTodaysDate().dateString;
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState(todaysDate);
@@ -185,6 +187,7 @@ const Page = () => {
               color="success"
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
+              disabled={!permissions.canCreate}
             >
               New Booking
             </Button>
@@ -296,6 +299,7 @@ const Page = () => {
                                   theme.palette.secondary.dark,
                               },
                             }}
+                            disabled={!permissions.canUpdate}
                           >
                             <EditIcon fontSize="inherit" />
                           </IconButton>

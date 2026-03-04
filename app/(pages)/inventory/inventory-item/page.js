@@ -49,10 +49,11 @@ import ACTION_COLORS from '@/utils/buttonColors';
 
 import { Loader } from '@/component/common';
 import { Shrink } from 'lucide-react';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const { auth } = useAuth();
-
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'inventory-items',
@@ -199,6 +200,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
+              disabled={!permissions.canCreate}
             >
               Create New
             </Button>
@@ -240,6 +242,7 @@ const Page = () => {
                           color={ACTION_COLORS.edit}
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -249,6 +252,7 @@ const Page = () => {
                           color={ACTION_COLORS.delete}
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>

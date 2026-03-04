@@ -54,6 +54,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PrintIcon from '@mui/icons-material/Print';
 import { useReactToPrint } from 'react-to-print';
 import { RestaurantPosInvoice } from '@/component/printables/RestaurantPosInvoice';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const generateNextInvoiceNo = (invoices) => {
   if (!invoices || invoices.length === 0) {
@@ -72,6 +73,7 @@ const generateNextInvoiceNo = (invoices) => {
 
 const Page = () => {
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const todaysDate = GetTodaysDate().dateString;
   const data = GetDataList({
     auth,
@@ -330,6 +332,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
+              disabled={!permissions.canCreate}
             >
               Create New Invoice
             </Button>
@@ -385,6 +388,7 @@ const Page = () => {
                           color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -394,6 +398,7 @@ const Page = () => {
                           color="error"
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>

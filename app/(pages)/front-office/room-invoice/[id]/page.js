@@ -60,7 +60,7 @@ export default function Page({ params }) {
   }
 
   const booking = roomBookings?.find(
-    (item) => item?.documentId === invoiceData?.room_booking?.documentId
+    (item) => item?.documentId === invoiceData?.room_booking?.documentId,
   );
 
   // ✅ Build tokens and totals
@@ -247,7 +247,7 @@ export default function Page({ params }) {
       </Box>
 
       {/* ✅ Hidden printable component */}
-      <div style={{ display: 'block' }}>
+      <div style={{ display: 'none' }}>
         <RoomInvoicePrint
           ref={componentRef}
           data={invoiceData}

@@ -53,11 +53,12 @@ import { SuccessToast, WarningToast } from '@/utils/GenerateToast';
 
 import { Loader } from '@/component/common';
 import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const { auth } = useAuth();
   const todaysDate = GetTodaysDate().dateString;
-
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'table-bookings',
@@ -499,6 +500,7 @@ const Page = () => {
                               backgroundColor: '#008005',
                             },
                           }}
+                          disabled={!permissions.canCreate}
                         >
                           Book Now
                         </Button>
@@ -577,7 +579,10 @@ const Page = () => {
             <Grid container spacing={2}>
               {filteredBookings.length > 0 ? (
                 filteredBookings.map((row) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={row.documentId}>
+                  <Grid
+                    size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                    key={row.documentId}
+                  >
                     <Card
                       sx={{
                         borderRadius: 2,
@@ -681,6 +686,7 @@ const Page = () => {
                           <IconButton
                             size="small"
                             onClick={() => handleEdit(row)}
+                            disabled={!permissions.canUpdate}
                             sx={{
                               backgroundColor: alpha('#3498db', 0.1),
                               color: '#3498db',
@@ -696,6 +702,7 @@ const Page = () => {
                           <IconButton
                             size="small"
                             onClick={() => handleDeleteClick(row)}
+                            disabled={!permissions.canDelete}
                             sx={{
                               backgroundColor: alpha('#e74c3c', 0.1),
                               color: '#e74c3c',
@@ -836,37 +843,28 @@ const Page = () => {
                 </>
               )}
             </DialogTitle>
-            <DialogContent sx={{ py: 3 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+            <DialogContent>
+              <Grid container spacing={5} sx={{ mt: 5 }}>
+                <Grid size={12}>
                   <FormControl fullWidth size="small">
-                    <InputLabel sx={{ fontSize: '0.875rem' }}>
-                      Table Number
-                    </InputLabel>
+                    <InputLabel>Table Number</InputLabel>
                     <Select
                       label="Table Number"
                       value={formData.table_no || ''}
                       onChange={(e) =>
                         setFormData({ ...formData, table_no: e.target.value })
                       }
-                      sx={{ fontSize: '0.875rem' }}
                     >
-                      <MenuItem value="" sx={{ fontSize: '0.875rem' }}>
-                        -- Select Table --
-                      </MenuItem>
+                      <MenuItem value="">-- Select Table --</MenuItem>
                       {tableList?.map((table) => (
-                        <MenuItem
-                          key={table.documentId}
-                          value={table.table_no}
-                          sx={{ fontSize: '0.875rem' }}
-                        >
+                        <MenuItem key={table.documentId} value={table.table_no}>
                           Table {table.table_no}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -879,7 +877,7 @@ const Page = () => {
                     InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -891,7 +889,7 @@ const Page = () => {
                     placeholder="e.g., 19:30"
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <TextField
                     fullWidth
                     size="small"

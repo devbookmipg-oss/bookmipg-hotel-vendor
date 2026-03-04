@@ -25,6 +25,7 @@ const TableGrid = ({
   handleOrderInvoice,
   handleKOT,
   setKotDialogOpen,
+  permissions,
 }) => {
   return (
     <>
@@ -219,6 +220,7 @@ const TableGrid = ({
                           transition: 'all 0.2s ease',
                           boxShadow: '0 4px 12px rgba(0, 153, 5, 0.3)',
                         }}
+                        disabled={!permissions.canCreate}
                       >
                         Create Order
                       </Button>
@@ -244,6 +246,7 @@ const TableGrid = ({
                                   backgroundColor: '#2980b9',
                                 },
                               }}
+                              disabled={!permissions.canUpdate}
                             >
                               Edit
                             </Button>

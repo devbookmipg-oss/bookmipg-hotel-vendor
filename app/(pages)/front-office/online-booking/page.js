@@ -29,10 +29,12 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Loader } from '@/component/common';
 import { useRouter } from 'next/navigation';
 import { GetCustomDate } from '@/utils/DateFetcher';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const router = useRouter();
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetUnfilteredDataList({
     auth,
     endPoint: 'online-bookings',
@@ -176,6 +178,7 @@ const Page = () => {
                                 theme.palette.secondary.dark,
                             },
                           }}
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>

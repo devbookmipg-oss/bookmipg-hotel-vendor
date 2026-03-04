@@ -18,6 +18,18 @@ const RestaurantPosInvoice = React.forwardRef((props, ref) => {
         padding: '5px',
       }}
     >
+      {profile?.res_logo?.url && (
+        <div style={{ textAlign: 'center', marginBottom: '5px' }}>
+          <img
+            src={profile?.res_logo?.url}
+            alt="Logo"
+            style={{
+              width: '80px',
+              objectFit: 'contain',
+            }}
+          />
+        </div>
+      )}
       <div style={{ textAlign: 'center' }}>
         <h3 style={{ margin: 0 }}>{profile?.res_name}</h3>
         <p style={{ margin: 0 }}>

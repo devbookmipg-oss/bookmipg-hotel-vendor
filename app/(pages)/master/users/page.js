@@ -73,6 +73,7 @@ const Page = () => {
       blocked: false,
       role: 1,
       access: [],
+      permissions: [],
       hotel_id: auth?.user?.hotel_id || '',
     };
   }
@@ -80,7 +81,8 @@ const Page = () => {
   const handleEdit = (row) => {
     setEditing(true);
     setFormData({
-      access: row.access,
+      access: row.access || [],
+      permissions: row.permissions || [],
       blocked: row.blocked,
       confirmed: row.confirmed,
       hotel_id: row.hotel_id,
@@ -116,6 +118,7 @@ const Page = () => {
 
     if (editing) {
       let data = {
+        permissions: formData.permissions,
         access: formData.access,
         blocked: formData.blocked,
         confirmed: formData.confirmed,
@@ -211,6 +214,7 @@ const Page = () => {
                     'Email',
                     'Role',
                     'Access',
+
                     'Status',
                     'Actions',
                   ].map((h) => (
@@ -279,6 +283,7 @@ const Page = () => {
                           </>
                         )}
                       </TableCell>
+
                       <TableCell>
                         {!row.blocked ? (
                           <Chip label="Active" color="success" size="small" />
@@ -351,7 +356,7 @@ const Page = () => {
           >
             <DialogTitle>{editing ? 'Edit User' : 'Create User'}</DialogTitle>
             <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid container spacing={5} sx={{ mt: 3 }}>
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
@@ -413,6 +418,29 @@ const Page = () => {
                       <MenuItem value="restaurant">Restaurant</MenuItem>
                       <MenuItem value="inventory">Inventory</MenuItem>
                       <MenuItem value="accounts">Accounts</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Permissions</InputLabel>
+                    <Select
+                      multiple
+                      label="Permissions"
+                      value={formData.permissions}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          permissions:
+                            typeof e.target.value === 'string'
+                              ? e.target.value.split(',')
+                              : e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="write">Create</MenuItem>
+                      <MenuItem value="update">Update</MenuItem>
+                      <MenuItem value="delete">Delete</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

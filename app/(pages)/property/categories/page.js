@@ -47,6 +47,7 @@ import { Loader } from '@/component/common';
 import Image from 'next/image';
 import { UploadImage } from '@/utils/UploadImage';
 import CreateIcon from '@mui/icons-material/Create';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const ImageContainer = styled(Box)`
   width: 200px;
@@ -89,6 +90,7 @@ const EditIconWrapper = styled(Box)`
 
 const Page = () => {
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'room-categories',
@@ -333,6 +335,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
+              disabled={!permissions.canCreate}
             >
               Create New Category
             </Button>
@@ -386,6 +389,7 @@ const Page = () => {
                           color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -395,6 +399,7 @@ const Page = () => {
                           color="error"
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>

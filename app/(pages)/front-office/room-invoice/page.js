@@ -26,12 +26,6 @@ import { useAuth } from '@/context';
 const Page = () => {
   const { auth } = useAuth();
   const [search, setSearch] = useState('');
-
-  const hotel = GetSingleData({
-    endPoint: 'hotels',
-    auth: auth,
-    id: auth?.user?.hotel_id,
-  });
   const data = GetDataList({
     auth,
     endPoint: 'room-invoices',
@@ -49,7 +43,7 @@ const Page = () => {
   const filteredData = useMemo(() => {
     if (!data) return [];
     return data.filter((item) =>
-      item.invoice_no?.toLowerCase().includes(search.toLowerCase())
+      item.invoice_no?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
 

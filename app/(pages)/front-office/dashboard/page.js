@@ -30,6 +30,7 @@ import {
   Typography,
   alpha,
 } from '@mui/material';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const formatDate = (date) =>
   date.toLocaleDateString('en-GB', {
@@ -42,7 +43,7 @@ const formatDate = (date) =>
 const Page = () => {
   const { auth } = useAuth();
   const todaysDate = GetTodaysDate().dateString;
-
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const [selectedDate, setSelectedDate] = useState(todaysDate);
 
   // Fetch all bookings
@@ -222,6 +223,7 @@ const Page = () => {
               fontWeight: 600,
               px: 3,
             }}
+            disabled={!permissions.canCreate}
           >
             New Booking
           </Button>

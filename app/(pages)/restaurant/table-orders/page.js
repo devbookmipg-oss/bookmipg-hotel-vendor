@@ -42,6 +42,7 @@ import {
 } from '@/component/tableOrderComp';
 import { KotPrint } from '@/component/printables/KotPrint';
 import { Print } from '@mui/icons-material';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const generateNextOrderNo = (orders) => {
   if (!orders || orders.length === 0) {
@@ -59,6 +60,7 @@ const generateNextOrderNo = (orders) => {
 
 const Page = () => {
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const [loading, setLoading] = useState(false);
   const todaysDate = GetTodaysDate().dateString;
   const tables = GetDataList({ auth, endPoint: 'tables' });
@@ -457,6 +459,7 @@ const Page = () => {
             handleEdit={handleEdit}
             handleKOT={handleKOT}
             setKotDialogOpen={setKotDialogOpen}
+            permissions={permissions}
           />
         </Paper>
         <Paper
@@ -474,6 +477,7 @@ const Page = () => {
             handleEdit={handleEdit}
             setSelectedRow={setSelectedRow}
             setDeleteOpen={setDeleteOpen}
+            permissions={permissions}
           />
         </Paper>
       </Box>

@@ -11,6 +11,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import {
   UpdateHotelBanner,
   UpdateHotelImages,
+  UpdateHotelLogo,
   UpdateHotelProfileForm,
 } from '@/component/updateForms';
 import { GetSingleData } from '@/utils/ApiFunctions';
@@ -44,6 +45,8 @@ export default function HotelRestaurantForm() {
             <UpdateHotelProfileForm data={data} auth={auth} />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
+            {' '}
+            <UpdateHotelLogo data={data} auth={auth} />
             <UpdateHotelBanner data={data} auth={auth} />
           </Grid>
           <Grid size={{ xs: 12 }}>

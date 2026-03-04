@@ -48,11 +48,12 @@ import { SuccessToast } from '@/utils/GenerateToast';
 
 import { Loader } from '@/component/common';
 import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const { auth } = useAuth();
   const todaysDate = GetTodaysDate().dateString;
-
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'expenses',
@@ -196,6 +197,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
+              disabled={!permissions.canCreate}
             >
               Create New
             </Button>
@@ -237,6 +239,7 @@ const Page = () => {
                           color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -246,6 +249,7 @@ const Page = () => {
                           color="error"
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>

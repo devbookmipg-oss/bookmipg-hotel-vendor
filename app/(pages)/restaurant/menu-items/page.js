@@ -42,9 +42,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { SuccessToast } from '@/utils/GenerateToast';
 import { Loader } from '@/component/common';
+import { CheckUserPermission } from '@/utils/UserPermissions';
 
 const Page = () => {
   const { auth } = useAuth();
+  const permissions = CheckUserPermission(auth?.user?.permissions);
   const data = GetDataList({
     auth,
     endPoint: 'restaurant-menus',
@@ -189,6 +191,7 @@ const Page = () => {
               startIcon={<AddIcon />}
               sx={{ borderRadius: 2, textTransform: 'none' }}
               onClick={handleCreate}
+              disabled={!permissions.canCreate}
             >
               Create New
             </Button>
@@ -232,6 +235,7 @@ const Page = () => {
                           color="secondary"
                           onClick={() => handleEdit(row)}
                           size="small"
+                          disabled={!permissions.canUpdate}
                         >
                           <EditIcon fontSize="inherit" />
                         </IconButton>
@@ -241,6 +245,7 @@ const Page = () => {
                           color="error"
                           onClick={() => handleDeleteClick(row)}
                           size="small"
+                          disabled={!permissions.canDelete}
                         >
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>
