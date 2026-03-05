@@ -1,53 +1,104 @@
-export function generateThermalReceipt(invoice, profile) {
+function centerText(text, width = 32) {
+  const space = Math.max(0, Math.floor((width - text.length) / 2));
+  return ' '.repeat(space) + text;
+}
+
+function formatColumns(item, qtyRate, amount) {
+  const itemCol = item.substring(0, 16).padEnd(16);
+  const qtyCol = qtyRate.substring(0, 8).padStart(8);
+  const amtCol = String(amount).substring(0, 8).padStart(8);
+
+  return itemCol + qtyCol + amtCol;
+}
+
+function formatRight(label, value, width = 32) {
+  const left = label;
+  const right = value;
+
+  const spaces = width - left.length - right.length;
+  return left + ' '.repeat(spaces > 0 ? spaces : 1) + right;
+}
+
+export function resInvoiceThermalReceipt(invoice, profile) {
   if (!invoice) return '';
 
   let receipt = '';
 
-  if (profile?.res_logo?.url) {
-    receipt += `[C]<img>${profile.res_logo.url}</img>\n`;
-  }
-
-  receipt += `[C]<b>${profile?.res_name || ''}</b>\n`;
-  receipt += `[C]${profile?.res_address_line1 || ''}\n`;
-  receipt += `[C]${profile?.res_district || ''}, ${profile?.res_state || ''}\n`;
+  // HEADER
+  receipt += centerText(profile?.res_name || '') + '\n';
+  receipt += centerText(profile?.res_address_line1 || '') + '\n';
+  receipt +=
+    centerText(`${profile?.res_district || ''}, ${profile?.res_state || ''}`) +
+    '\n';
 
   if (profile?.res_gst_no) {
-    receipt += `[C]GST: ${profile.res_gst_no}\n`;
+    receipt += centerText(`GST: ${profile.res_gst_no}`) + '\n';
   }
 
-  receipt += `--------------------------------\n`;
+  receipt += '--------------------------------\n';
 
-  receipt += formatLine('Invoice', invoice.invoice_no) + '\n';
-  receipt += formatLine('Date', `${invoice.date} ${invoice.time}`) + '\n';
+  receipt += formatRight('Invoice', invoice.invoice_no) + '\n';
+  receipt += formatRight('Date', `${invoice.date} ${invoice.time}`) + '\n';
 
   if (invoice.customer_name) {
-    receipt += formatLine('Customer', invoice.customer_name) + '\n';
+    receipt += formatRight('Customer', invoice.customer_name) + '\n';
   }
 
-  receipt += `--------------------------------\n`;
+  receipt += '--------------------------------\n';
 
-  receipt += formatLine('Item', 'Amount') + '\n';
-  receipt += `--------------------------------\n`;
+  receipt += formatColumns('Item', 'QtyRate', 'Amount') + '\n';
+
+  receipt += '--------------------------------\n';
 
   invoice.menu_items?.forEach((item) => {
     const amount = item.qty * item.rate;
+    const qtyRate = `${item.qty}x${item.rate}`;
 
-    receipt += item.item + '\n';
-    receipt += formatLine(`${item.qty} x ${item.rate}`, amount) + '\n';
+    receipt += formatColumns(item.item, qtyRate, amount) + '\n';
   });
 
-  receipt += `--------------------------------\n`;
+  receipt += '--------------------------------\n';
 
-  receipt += formatLine('Subtotal', `₹${invoice.total_amount}`) + '\n';
-  receipt += formatLine('GST', `₹${invoice.tax}`) + '\n';
+  receipt += formatRight('Subtotal', `Rs.${invoice.total_amount}`) + '\n';
+  receipt += formatRight('GST', `Rs.${invoice.tax}`) + '\n';
 
-  receipt += `--------------------------------\n`;
+  receipt += '--------------------------------\n';
 
-  receipt += formatLine('TOTAL', `₹${invoice.payable_amount}`) + '\n';
+  receipt += formatRight('TOTAL', `Rs.${invoice.payable_amount}`) + '\n';
 
-  receipt += `--------------------------------\n`;
+  receipt += '--------------------------------\n';
 
-  receipt += `[C]Thank you! Visit again.\n`;
+  receipt += centerText('Thank you. Visit again.') + '\n\n\n';
+
+  return receipt;
+}
+
+function formatKOTColumns(item, qty) {
+  const itemCol = item.substring(0, 16).padEnd(25);
+  const qtyCol = qty;
+
+  return itemCol + qtyCol;
+}
+
+export function kotThermalReceipt(order) {
+  if (!order) return '';
+
+  let receipt = '';
+  receipt += formatRight('KOT', `${order.order_id}`) + '\n';
+  receipt += formatRight('Table No', order.table?.table_no) + '\n';
+  receipt += formatRight('Date', `${order.date} ${order.time}`) + '\n';
+
+  receipt += '--------------------------------\n';
+
+  receipt += formatKOTColumns('Item', 'Qty') + '\n';
+
+  receipt += '--------------------------------\n';
+
+  order.food_items?.forEach((item) => {
+    receipt += formatKOTColumns(item.item, item.qty) + '\n';
+  });
+
+  receipt += '--------------------------------\n\n\n';
 
   return receipt;
 }

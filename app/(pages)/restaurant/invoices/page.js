@@ -8,7 +8,7 @@ import {
   UpdateData,
   GetSingleData,
 } from '@/utils/ApiFunctions';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 
 // mui
 import {
@@ -55,6 +55,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import { useReactToPrint } from 'react-to-print';
 import { RestaurantPosInvoice } from '@/component/printables/RestaurantPosInvoice';
 import { CheckUserPermission } from '@/utils/UserPermissions';
+import { resInvoiceThermalReceipt } from '@/utils/thermalReceipt';
 
 const generateNextInvoiceNo = (invoices) => {
   if (!invoices || invoices.length === 0) {
@@ -277,14 +278,34 @@ const Page = () => {
     setSelectedRow(null);
   };
 
-  const handleInvoicePrint = () => {
-    // If running inside Android WebView
-    if (typeof window !== 'undefined' && window.AndroidPrinter) {
-      const receipt = generateThermalReceipt(viewData, myProfile);
+  const [selectedPrinter, setSelectedPrinter] = useState(null);
+  const [printerList, setPrinterList] = useState([]);
+  useEffect(() => {
+    setTimeout(() => {
+      if (
+        typeof window !== 'undefined' &&
+        window.AndroidPrinter?.getPairedPrinters
+      ) {
+        const printersRaw = window.AndroidPrinter.getPairedPrinters();
+        const printers = printersRaw
+          .split('\n')
+          .filter(Boolean)
+          .map((p) => {
+            const [name, mac] = p.split('|');
+            return { name, mac };
+          });
+        setPrinterList(printers);
+      }
+    }, 1000);
+  }, []);
 
-      window.AndroidPrinter.printInvoice(receipt);
+  const handleInvoicePrint = () => {
+    const receipt = resInvoiceThermalReceipt(viewData, myProfile);
+
+    if (typeof window !== 'undefined' && window.AndroidPrinter?.printInvoice) {
+      const result = window.AndroidPrinter.printInvoice(receipt);
+      console.log('Printer result:', result);
     } else {
-      // Desktop fallback
       reactPrint();
     }
   };
@@ -294,6 +315,21 @@ const Page = () => {
     contentRef: componentRef,
     documentTitle: 'res-inv',
   });
+
+  // const getPrinters = () => {
+  //   const printersRaw = window.AndroidPrinter.getPairedPrinters();
+
+  //   const printers = printersRaw
+  //     .split('\n')
+  //     .filter(Boolean)
+  //     .map((p) => {
+  //       const [name, mac] = p.split('|');
+  //       return { name, mac };
+  //     });
+
+  //   console.log(printers);
+  //   setPrinterList(printers);
+  // };
 
   return (
     <>
@@ -822,141 +858,100 @@ const Page = () => {
           <Dialog
             open={viewOpen}
             onClose={() => setViewOpen(false)}
-            sx={{
-              '& .MuiDialog-paper': {
-                '@media (max-width: 600px)': {
-                  width: '100%',
-                  height: '100vh',
-                  maxWidth: '100%',
-                  margin: 0,
-                  borderRadius: 0,
-                },
-              },
-            }}
+            maxWidth="md"
+            fullWidth
           >
-            <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
+            <DialogTitle>Invoice: {viewData?.invoice_no}</DialogTitle>
+            <DialogContent dividers>
               {viewData && (
                 <>
-                  {/* Logo */}
-                  <Box
-                    sx={{
-                      mt: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: '90px',
-                        height: '90px',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
+                  <Typography variant="subtitle1" gutterBottom>
+                    Date: {viewData.date} | Time: {viewData.time}
+                  </Typography>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Customer: {viewData.customer_name} (
+                    {viewData.customer_phone})
+                  </Typography>
+                  <Typography variant="subtitle1" gutterBottom>
+                    GST: {viewData.customer_gst}
+                  </Typography>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Address: {viewData.customer_address}
+                  </Typography>
+
+                  {/* Items Table */}
+                  <TableContainer component={Paper} sx={{ mt: 2 }}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Name</TableCell>
+                          <TableCell>HSN</TableCell>
+                          <TableCell>Rate</TableCell>
+                          <TableCell>Qty</TableCell>
+                          <TableCell>GST %</TableCell>
+
+                          <TableCell>Total</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {viewData.menu_items?.map((item, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>{item.item}</TableCell>
+                            <TableCell>{item.hsn}</TableCell>
+                            <TableCell>{item.rate}</TableCell>
+                            <TableCell>{item.qty}</TableCell>
+                            <TableCell>{item.gst}</TableCell>
+
+                            <TableCell>{item.amount.toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+
+                  {/* Summary */}
+                  <Box mt={2}>
+                    <Typography>Total: ₹{viewData.total_amount}</Typography>
+                    <Typography>GST: ₹{viewData.tax}</Typography>
+                    <Typography>Payable: ₹{viewData.payable_amount}</Typography>
+                    <Typography>Payment Method: {viewData.mop}</Typography>
+                  </Box>
+                  <div style={{ display: 'none' }}>
+                    <RestaurantPosInvoice
+                      ref={componentRef}
+                      invoice={viewData}
+                      profile={myProfile}
+                      size="58mm"
+                    />
+                  </div>
+                </>
+              )}
+              {printerList && printerList.length > 0 && (
+                <>
+                  <FormControl fullWidth margin="dense" size="small">
+                    <InputLabel>Select Printer</InputLabel>
+                    <Select
+                      size="small"
+                      fullWidth
+                      value={selectedPrinter?.mac || ''}
+                      label="Select Printer"
+                      onChange={(e) => {
+                        const selectedMac = e.target.value;
+                        window.AndroidPrinter.savePrinter(selectedMac);
+                        const selectedPrinter = printerList.find(
+                          (p) => p.mac === selectedMac,
+                        );
+                        setSelectedPrinter(selectedPrinter);
                       }}
                     >
-                      <img
-                        src={
-                          myProfile?.hotel_logo?.url ||
-                          'https://res.cloudinary.com/deyxdpnom/image/upload/v1760012402/demo_hpzblb.png'
-                        }
-                        alt="Hotel Logo"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                  <div style={{ textAlign: 'center', fontSize: '1.45em' }}>
-                    <p style={{ margin: 0 }}>{myProfile?.res_name}</p>
-                    <p style={{ margin: 0 }}>
-                      {myProfile?.res_address_line1},{' '}
-                      {myProfile?.res_address_line2}
-                    </p>
-                    <p style={{ margin: 0 }}>
-                      {myProfile?.res_district}, {myProfile?.res_state}
-                    </p>
-                    {myProfile?.res_gst_no && (
-                      <p style={{ margin: 0 }}>
-                        GST: {myProfile?.res_gst_no || 'N/A'}
-                      </p>
-                    )}
-                  </div>
-                  <p style={{ margin: '1px 0' }}>
-                    ----------------------------------------
-                  </p>
-
-                  <p style={{ fontSize: '1.45em' }}>
-                    Invoice No: {viewData?.invoice_no}
-                  </p>
-                  <p style={{ fontSize: '1.45em' }}>
-                    Date: {GetCustomDate(viewData?.date)} | Time:{' '}
-                    {viewData?.time}
-                  </p>
-                  {viewData?.customer_name && (
-                    <p style={{ fontSize: '1.45em' }}>
-                      Customer: {viewData?.customer_name}
-                    </p>
-                  )}
-
-                  {viewData?.customer_phone && (
-                    <p style={{ fontSize: '1.45em' }}>
-                      Phone: {viewData?.customer_phone}
-                    </p>
-                  )}
-                  {viewData?.customer_gst && (
-                    <p style={{ fontSize: '1.45em' }}>
-                      GSTIN: {viewData?.customer_gst}
-                    </p>
-                  )}
-
-                  <p style={{ margin: '1px 0', fontSize: '1.2em' }}></p>
-
-                  <table style={{ width: '100%', fontSize: '1.45em' }}>
-                    <thead>
-                      <tr>
-                        <th align="left">Item</th>
-                        <th align="right">Qty</th>
-                        <th align="right">Rate</th>
-                        <th align="right">Amt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {viewData?.menu_items?.map((item, index) => (
-                        <tr key={index}>
-                          <td>{item.item}</td>
-                          <td align="right">{item.qty}</td>
-                          <td align="right">{item.rate}</td>
-                          <td align="right">{item.qty * item.rate}</td>
-                        </tr>
+                      <MenuItem value="">Select Printer</MenuItem>
+                      {printerList.map((printer) => (
+                        <MenuItem key={printer.mac} value={printer.mac}>
+                          {printer.name}
+                        </MenuItem>
                       ))}
-                    </tbody>
-                  </table>
-
-                  <p style={{ margin: '1px 0' }}>
-                    ----------------------------------------
-                  </p>
-
-                  <div style={{ textAlign: 'right', fontSize: '1.45em' }}>
-                    <p>Subtotal: ₹{viewData?.total_amount}</p>
-                    <p>GST: ₹{viewData?.tax}</p>
-                    <p style={{ fontWeight: 'bold' }}>
-                      Total: ₹{viewData?.payable_amount}
-                    </p>
-                  </div>
-
-                  <p style={{ margin: '1px 0' }}>
-                    ----------------------------------------
-                  </p>
-
-                  <div style={{ textAlign: 'center' }}>
-                    <p>Thank you! Visit again.</p>
-                  </div>
+                    </Select>
+                  </FormControl>
                 </>
               )}
             </DialogContent>

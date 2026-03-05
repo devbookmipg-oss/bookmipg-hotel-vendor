@@ -13,6 +13,10 @@ import {
   DialogActions,
   Dialog,
   DialogContent,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -27,7 +31,7 @@ import {
 } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GetCurrentTime } from '@/utils/Timefetcher';
 import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
 import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
@@ -43,6 +47,7 @@ import {
 import { KotPrint } from '@/component/printables/KotPrint';
 import { Print } from '@mui/icons-material';
 import { CheckUserPermission } from '@/utils/UserPermissions';
+import { kotThermalReceipt } from '@/utils/thermalReceipt';
 
 const generateNextOrderNo = (orders) => {
   if (!orders || orders.length === 0) {
@@ -142,7 +147,38 @@ const Page = () => {
     setKotOpen(true);
   };
 
-  const handleKOTPrint = useReactToPrint({
+  const [printerList, setPrinterList] = useState([]);
+  const [selectedPrinter, setSelectedPrinter] = useState(null);
+  useEffect(() => {
+    setTimeout(() => {
+      if (
+        typeof window !== 'undefined' &&
+        window.AndroidPrinter?.getPairedPrinters
+      ) {
+        const printersRaw = window.AndroidPrinter.getPairedPrinters();
+        const printers = printersRaw
+          .split('\n')
+          .filter(Boolean)
+          .map((p) => {
+            const [name, mac] = p.split('|');
+            return { name, mac };
+          });
+        setPrinterList(printers);
+      }
+    }, 1000);
+  }, []);
+
+  const handleKOTPrint = () => {
+    const receipt = kotThermalReceipt(kotData);
+
+    if (typeof window !== 'undefined' && window.AndroidPrinter?.printInvoice) {
+      const result = window.AndroidPrinter.printInvoice(receipt);
+    } else {
+      reactPrint();
+    }
+  };
+
+  const reactPrint = useReactToPrint({
     contentRef: kotComponentRef,
     documentTitle: `KOT-${kotData?.order_id}`,
   });
@@ -546,75 +582,110 @@ const Page = () => {
 
       {/* KOT Print Dialog */}
 
-      <Dialog
-        open={kotDialogOpen}
-        onClose={() => setKotDialogOpen(false)}
-        sx={{
-          '& .MuiDialog-paper': {
-            '@media (max-width: 600px)': {
-              width: '100%',
-              height: '110vh',
-              maxWidth: '100%',
-              margin: 0,
-              borderRadius: 0,
-            },
-          },
-        }}
-      >
-        <DialogContent sx={{ padding: '0 5px', margin: 0, fontSize: '1.95em' }}>
-          {kotData && (
-            <>
-              <p>
-                <strong>Table No:</strong> {kotData?.table?.table_no}
-              </p>
-              <p>
-                <strong>Date:</strong> {GetCustomDate(kotData?.date)} |{' '}
-                <strong>Time:</strong> {kotData?.time}
-              </p>
-              <p>
-                <strong>Order ID:</strong> {kotData?.order_id}
-              </p>
-              <p style={{ margin: '1px 0' }}>------------------------------</p>
-
-              <table style={{ width: '100%' }}>
-                <thead>
-                  <tr>
-                    <th align="left">Item</th>
-                    <th align="right">Qty</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {kotData?.food_items?.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.item}</td>
-                      <td align="right">
-                        <strong>{item.qty}</strong>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p style={{ margin: '1px 0' }}>------------------------------</p>
-              {kotData?.notes && (
-                <>
-                  <p style={{ fontSize: '10px' }}>Notes:</p>
-                  <p style={{ fontSize: '10px' }}>{kotData?.notes || '-'}</p>
-                </>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setKotDialogOpen(false)}>Close</Button>
-          <Button
-            variant="contained"
-            startIcon={<Print />}
-            onClick={handleKOTPrint}
+      {kotData && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: kotOpen ? 'flex' : 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1300,
+          }}
+          onClick={() => setKotOpen(false)}
+        >
+          <Paper
+            sx={{
+              backgroundColor: 'white',
+              p: 3,
+              borderRadius: 2,
+              boxShadow: 3,
+              textAlign: 'center',
+              maxWidth: 400,
+              width: '90%',
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            Print
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Typography variant="h6" sx={{ mb: 2, color: '#2c3e50' }}>
+              KOT - {kotData?.order_id}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 3, color: '#7f8c8d' }}>
+              Table No: {kotData?.table?.table_no}
+            </Typography>
+            {printerList && printerList.length > 0 && (
+              <>
+                <FormControl fullWidth size="small" sx={{ mb: 5 }}>
+                  <InputLabel>Select Printer</InputLabel>
+                  <Select
+                    size="small"
+                    fullWidth
+                    label="Select Printer"
+                    value={selectedPrinter?.mac || ''}
+                    onChange={(e) => {
+                      const selectedMac = e.target.value;
+                      window.AndroidPrinter.savePrinter(selectedMac);
+                      const selectedPrinter = printerList.find(
+                        (p) => p.mac === selectedMac,
+                      );
+                      setSelectedPrinter(selectedPrinter);
+                    }}
+                  >
+                    <MenuItem value="">Select Printer</MenuItem>
+                    {printerList.map((printer) => (
+                      <MenuItem key={printer.mac} value={printer.mac}>
+                        {printer.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </>
+            )}
+            <Stack direction="row" spacing={2}>
+              <Box
+                component="button"
+                onClick={() => setKotOpen(false)}
+                sx={{
+                  flex: 1,
+                  py: 1,
+                  px: 2,
+                  backgroundColor: '#f5f5f5',
+                  border: '1px solid #ddd',
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  color: '#2c3e50',
+                  '&:hover': { backgroundColor: '#eeeeee' },
+                }}
+              >
+                Close
+              </Box>
+              <Box
+                component="button"
+                onClick={handleKOTPrint}
+                sx={{
+                  flex: 1,
+                  py: 1,
+                  px: 2,
+                  backgroundColor: '#c20f12',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 1,
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  '&:hover': { backgroundColor: '#a00c0f' },
+                }}
+              >
+                Print KOT
+              </Box>
+            </Stack>
+          </Paper>
+        </Box>
+      )}
     </>
   );
 };
