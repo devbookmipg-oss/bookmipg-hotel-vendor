@@ -98,7 +98,9 @@ export function kotThermalReceipt(order) {
     receipt += formatKOTColumns(item.item, item.qty) + '\n';
   });
 
-  receipt += '--------------------------------\n\n\n';
+  receipt += '--------------------------------\n';
+
+  receipt += centerText(order?.notes || '') + '\n\n';
 
   return receipt;
 }
