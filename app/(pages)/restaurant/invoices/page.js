@@ -837,6 +837,41 @@ const Page = () => {
             <DialogContent sx={{ padding: '0 5px', margin: 0 }}>
               {viewData && (
                 <>
+                  {/* Logo */}
+                  <Box
+                    sx={{
+                      mt: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: '90px',
+                        height: '90px',
+                        borderRadius: '4px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <img
+                        src={
+                          myProfile?.hotel_logo?.url ||
+                          'https://res.cloudinary.com/deyxdpnom/image/upload/v1760012402/demo_hpzblb.png'
+                        }
+                        alt="Hotel Logo"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Box>
+                  </Box>
                   <div style={{ textAlign: 'center', fontSize: '1.45em' }}>
                     <p style={{ margin: 0 }}>{myProfile?.res_name}</p>
                     <p style={{ margin: 0 }}>
