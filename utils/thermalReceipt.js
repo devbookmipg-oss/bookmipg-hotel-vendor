@@ -32,7 +32,7 @@ export function resInvoiceThermalReceipt(invoice, profile) {
     '\n';
 
   if (profile?.res_gst_no) {
-    receipt += centerText(`GST: ${profile.res_gst_no}`) + '\n';
+    receipt += centerText(`GSTIN: ${profile.res_gst_no}`) + '\n';
   }
 
   receipt += '--------------------------------\n';
@@ -44,10 +44,13 @@ export function resInvoiceThermalReceipt(invoice, profile) {
     receipt += formatRight('Customer', invoice.customer_name) + '\n';
   }
   if (invoice.customer_phone) {
-    receipt += formatRight('Customer', invoice.customer_phone) + '\n';
+    receipt += formatRight('Phone', invoice.customer_phone) + '\n';
   }
   if (invoice.customer_gst) {
-    receipt += formatRight('Customer', invoice.customer_gst) + '\n';
+    receipt += formatRight('GSTIN', invoice.customer_gst) + '\n';
+  }
+  if (invoice.customer_address) {
+    receipt += formatRight('Address', invoice.customer_address) + '\n';
   }
 
   receipt += '--------------------------------\n';
