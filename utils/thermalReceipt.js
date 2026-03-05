@@ -43,6 +43,12 @@ export function resInvoiceThermalReceipt(invoice, profile) {
   if (invoice.customer_name) {
     receipt += formatRight('Customer', invoice.customer_name) + '\n';
   }
+  if (invoice.customer_phone) {
+    receipt += formatRight('Customer', invoice.customer_phone) + '\n';
+  }
+  if (invoice.customer_gst) {
+    receipt += formatRight('Customer', invoice.customer_gst) + '\n';
+  }
 
   receipt += '--------------------------------\n';
 
