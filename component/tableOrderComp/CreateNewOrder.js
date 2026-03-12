@@ -39,6 +39,7 @@ import {
   useCallback,
   useRef,
   useEffect,
+  memo,
 } from 'react';
 
 // Icons
