@@ -24,12 +24,17 @@ import {
   MenuItem,
   InputLabel,
   Slide,
-  Pagination,
-  Stack,
-  FormHelperText,
 } from '@mui/material';
 
-import { forwardRef, useState, useMemo, useCallback, useEffect } from 'react';
+import {
+  forwardRef,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  memo,
+} from 'react';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -42,14 +47,64 @@ import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CategoryIcon from '@mui/icons-material/Category';
 import NoteIcon from '@mui/icons-material/Note';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-// Transition for dialog
-const Transition = forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+// Custom Dialog with touch event handling
+const CustomDialog = ({ open, onClose, children, ...props }) => {
+  const dialogRef = useRef(null);
+  const touchStartY = useRef(0);
 
-// Product Card Component
-const ProductCard = ({ item, qty, onIncrease, onDecrease, onRemove }) => {
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog || !open) return;
+
+    const handleTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      const scrollTop = dialog.scrollTop;
+      const touchY = e.touches[0].clientY;
+      const scrollingDown = touchY > touchStartY.current;
+
+      // Prevent pull-to-refresh when at the top and trying to scroll up
+      if (scrollTop <= 0 && scrollingDown) {
+        e.preventDefault();
+      }
+    };
+
+    dialog.addEventListener('touchstart', handleTouchStart, { passive: false });
+    dialog.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      dialog.removeEventListener('touchstart', handleTouchStart);
+      dialog.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [open]);
+
+  return (
+    <Dialog
+      ref={dialogRef}
+      open={open}
+      onClose={onClose}
+      fullScreen
+      {...props}
+      sx={{
+        '& .MuiDialog-paper': {
+          background: '#f5f7fb',
+          overscrollBehavior: 'none',
+          WebkitOverflowScrolling: 'touch',
+        },
+      }}
+    >
+      {children}
+    </Dialog>
+  );
+};
+
+// Memoized Product Card Component
+const ProductCard = memo(({ item, qty, onIncrease, onDecrease, onRemove }) => {
   // Generate consistent color based on item name
   const stringToColor = (str) => {
     let hash = 0;
@@ -152,10 +207,14 @@ const ProductCard = ({ item, qty, onIncrease, onDecrease, onRemove }) => {
           <IconButton
             size="small"
             onClick={onDecrease}
+            disabled={qty === 0}
             sx={{
               bgcolor: qty > 0 ? bgColor : 'transparent',
               color: qty > 0 ? 'white' : bgColor,
-              '&:hover': { bgcolor: bgColor, color: 'white' },
+
+              '&.Mui-disabled': {
+                color: alpha(bgColor, 0.3),
+              },
               p: 0.5,
             }}
           >
@@ -182,25 +241,31 @@ const ProductCard = ({ item, qty, onIncrease, onDecrease, onRemove }) => {
             <AddIcon sx={{ fontSize: 16 }} />
           </IconButton>
 
-          {qty > 0 && (
-            <IconButton
-              size="small"
-              onClick={onRemove}
-              sx={{
-                color: '#ff4444',
-                '&:hover': { bgcolor: alpha('#ff4444', 0.1) },
-                p: 0.5,
-                ml: 0.2,
-              }}
-            >
-              <DeleteIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          )}
+          <IconButton
+            size="small"
+            onClick={onRemove}
+            disabled={qty === 0}
+            sx={{
+              color: qty > 0 ? '#ff4444' : alpha('#ff4444', 0.3),
+              '&:hover': {
+                bgcolor: qty > 0 ? alpha('#ff4444', 0.1) : 'transparent',
+              },
+              '&.Mui-disabled': {
+                color: alpha('#ff4444', 0.3),
+              },
+              p: 0.5,
+              ml: 0.2,
+            }}
+          >
+            <DeleteIcon sx={{ fontSize: 16 }} />
+          </IconButton>
         </Box>
       </CardContent>
     </Card>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 const CreateNewOrder = ({
   formOpen,
@@ -216,7 +281,30 @@ const CreateNewOrder = ({
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [page, setPage] = useState(1);
+  const [localFoodItems, setLocalFoodItems] = useState(
+    formData.food_items || [],
+  );
   const ITEMS_PER_PAGE = 12;
+  const updateTimeoutRef = useRef(null);
+
+  // Sync with formData when it changes externally
+  useEffect(() => {
+    setLocalFoodItems(formData.food_items || []);
+  }, [formData.food_items]);
+
+  // Debounced update to parent
+  const updateParentFormData = useCallback(
+    (newItems) => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      updateTimeoutRef.current = setTimeout(() => {
+        setFormData({ ...formData, food_items: newItems });
+      }, 100);
+    },
+    [formData, setFormData],
+  );
 
   // Get unique categories for select dropdown
   const categories = useMemo(() => {
@@ -272,31 +360,44 @@ const CreateNewOrder = ({
   }, [filteredItems, page]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const startItem = (page - 1) * ITEMS_PER_PAGE + 1;
+  const endItem = Math.min(page * ITEMS_PER_PAGE, filteredItems.length);
 
   // Handle page change
-  const handlePageChange = (event, value) => {
-    setPage(value);
-    // Scroll to top of products
-    document
-      .getElementById('form-start')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+      document
+        .getElementById('form-start')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
-  // Quantity management functions
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+      document
+        .getElementById('form-start')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Optimized quantity management functions
   const getQty = useCallback(
     (item) => {
-      const found = formData.food_items.find((f) => f.item === item.name);
+      const found = localFoodItems.find((f) => f.item === item.name);
       return found ? found.qty : 0;
     },
-    [formData.food_items],
+    [localFoodItems],
   );
 
   const increaseQty = useCallback(
     (item) => {
-      const exists = formData.food_items.find((f) => f.item === item.name);
+      const exists = localFoodItems.find((f) => f.item === item.name);
 
+      let newItems;
       if (exists) {
-        const updated = formData.food_items.map((f) =>
+        newItems = localFoodItems.map((f) =>
           f.item === item.name
             ? {
                 ...f,
@@ -305,8 +406,6 @@ const CreateNewOrder = ({
               }
             : f,
         );
-
-        setFormData({ ...formData, food_items: updated });
       } else {
         const rate = parseFloat(item.rate) || 0;
         const gst = parseFloat(item.gst) || 0;
@@ -319,26 +418,25 @@ const CreateNewOrder = ({
           gst,
           amount: rate * (1 + gst / 100),
         };
-
-        setFormData({
-          ...formData,
-          food_items: [...formData.food_items, newItem],
-        });
+        newItems = [...localFoodItems, newItem];
       }
+
+      setLocalFoodItems(newItems);
+      updateParentFormData(newItems);
     },
-    [formData, setFormData],
+    [localFoodItems, updateParentFormData],
   );
 
   const decreaseQty = useCallback(
     (item) => {
-      const exists = formData.food_items.find((f) => f.item === item.name);
+      const exists = localFoodItems.find((f) => f.item === item.name);
       if (!exists) return;
 
+      let newItems;
       if (exists.qty === 1) {
-        const updated = formData.food_items.filter((f) => f.item !== item.name);
-        setFormData({ ...formData, food_items: updated });
+        newItems = localFoodItems.filter((f) => f.item !== item.name);
       } else {
-        const updated = formData.food_items.map((f) =>
+        newItems = localFoodItems.map((f) =>
           f.item === item.name
             ? {
                 ...f,
@@ -347,19 +445,21 @@ const CreateNewOrder = ({
               }
             : f,
         );
-
-        setFormData({ ...formData, food_items: updated });
       }
+
+      setLocalFoodItems(newItems);
+      updateParentFormData(newItems);
     },
-    [formData, setFormData],
+    [localFoodItems, updateParentFormData],
   );
 
   const removeItem = useCallback(
     (item) => {
-      const updated = formData.food_items.filter((f) => f.item !== item.name);
-      setFormData({ ...formData, food_items: updated });
+      const newItems = localFoodItems.filter((f) => f.item !== item.name);
+      setLocalFoodItems(newItems);
+      updateParentFormData(newItems);
     },
-    [formData, setFormData],
+    [localFoodItems, updateParentFormData],
   );
 
   // Handle category change
@@ -368,17 +468,11 @@ const CreateNewOrder = ({
   };
 
   return (
-    <Dialog
+    <CustomDialog
       open={formOpen}
-      fullScreen
-      TransitionComponent={Transition}
-      sx={{
-        borderRadius: 0,
-        '& .MuiDialog-paper': {
-          background: '#f5f7fb',
-          borderRadius: 0,
-        },
-      }}
+      onClose={() => setFormOpen(false)}
+      TransitionComponent={Slide}
+      TransitionProps={{ direction: 'up' }}
     >
       {/* Header */}
       <Paper
@@ -502,30 +596,6 @@ const CreateNewOrder = ({
           </Grid>
         </Grid>
 
-        {/* Results Count */}
-        <Box
-          sx={{
-            mb: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            Showing {paginatedItems.length} of {filteredItems.length} items
-          </Typography>
-          {selectedCategory !== 'all' && (
-            <Chip
-              label={
-                categories.find((c) => c.value === selectedCategory)?.label
-              }
-              size="small"
-              onDelete={() => setSelectedCategory('all')}
-              sx={{ bgcolor: alpha('#667eea', 0.1) }}
-            />
-          )}
-        </Box>
-
         {/* Products Grid */}
         <Box id="products-grid" sx={{ minHeight: '400px' }}>
           <Grid container spacing={2}>
@@ -549,27 +619,67 @@ const CreateNewOrder = ({
             })}
           </Grid>
         </Box>
+        {/* Results Count and Simple Pagination */}
+        <Box
+          sx={{
+            my: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Showing {filteredItems.length > 0 ? `${startItem}-${endItem}` : '0'}{' '}
+            of {filteredItems.length} items
+          </Typography>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Stack spacing={2} sx={{ mt: 4, mb: 2, alignItems: 'center' }}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="medium"
-              showFirstButton
-              showLastButton
-              sx={{
-                '& .MuiPaginationItem-root': {
-                  borderRadius: 2,
-                },
-              }}
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <IconButton
+                size="small"
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                sx={{
+                  bgcolor: page > 1 ? '#667eea' : '#e0e0e0',
+                  color: 'white',
+                  '&:hover': { bgcolor: page > 1 ? '#764ba2' : '#e0e0e0' },
+                  '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
+                }}
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+              <Typography variant="body2">
+                Page {page} of {totalPages}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                sx={{
+                  bgcolor: page < totalPages ? '#667eea' : '#e0e0e0',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: page < totalPages ? '#764ba2' : '#e0e0e0',
+                  },
+                  '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
+                }}
+              >
+                <ChevronRightIcon />
+              </IconButton>
+            </Box>
+          )}
+
+          {selectedCategory !== 'all' && (
+            <Chip
+              label={
+                categories.find((c) => c.value === selectedCategory)?.label
+              }
+              size="small"
+              onDelete={() => setSelectedCategory('all')}
+              sx={{ bgcolor: alpha('#667eea', 0.1) }}
             />
-          </Stack>
-        )}
-
+          )}
+        </Box>
         {/* No Results */}
         {paginatedItems.length === 0 && (
           <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -586,10 +696,24 @@ const CreateNewOrder = ({
         <Button
           size="small"
           onClick={handleSave}
-          disabled={
-            loading || !formData.table || formData.food_items.length === 0
-          }
+          disabled={loading || !formData.table || localFoodItems.length === 0}
           variant="contained"
+          sx={{
+            background:
+              loading || !formData.table || localFoodItems.length === 0
+                ? '#e0e0e0'
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color:
+              loading || !formData.table || localFoodItems.length === 0
+                ? '#999'
+                : 'white',
+            '&:hover': {
+              background:
+                loading || !formData.table || localFoodItems.length === 0
+                  ? '#e0e0e0'
+                  : 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+            },
+          }}
         >
           {loading
             ? 'Processing...'
@@ -598,7 +722,7 @@ const CreateNewOrder = ({
               : 'Create Order'}
         </Button>
       </DialogActions>
-    </Dialog>
+    </CustomDialog>
   );
 };
 
