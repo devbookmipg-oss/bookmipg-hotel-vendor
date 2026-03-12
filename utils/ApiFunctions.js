@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // fetch data list
 export const GetDataList = ({ auth, endPoint }) => {
-  const apiUrl = `${BASEURL}/${endPoint}?sort=id:DESC&filters[$and][0][hotel_id][$eq]=${auth?.user?.hotel_id}&populate=*`;
+  const apiUrl = `${BASEURL}/${endPoint}?sort=createdAt:DESC&filters[$and][0][hotel_id][$eq]=${auth?.user?.hotel_id}&populate=*`;
 
   const { data } = useSWR(
     apiUrl,
@@ -19,7 +19,7 @@ export const GetDataList = ({ auth, endPoint }) => {
     {
       refreshInterval: 500,
       revalidateOnFocus: true,
-    }
+    },
   );
   return data;
 };
@@ -40,7 +40,7 @@ export const GetSingleData = ({ auth, endPoint, id }) => {
     {
       refreshInterval: 500,
       revalidateOnFocus: true,
-    }
+    },
   );
   return data;
 };
@@ -91,7 +91,7 @@ export const GetUserList = ({ auth }) => {
     {
       refreshInterval: 500,
       revalidateOnFocus: true,
-    }
+    },
   );
   const filteredData = data?.filter((item) => {
     return item?.hotel_id === auth?.user?.hotel_id;
@@ -101,7 +101,7 @@ export const GetUserList = ({ auth }) => {
 
 // fetch data list
 export const GetUnfilteredDataList = ({ auth, endPoint }) => {
-  const apiUrl = `${BASEURL}/${endPoint}?sort=id:DESC&populate=*`;
+  const apiUrl = `${BASEURL}/${endPoint}?sort=createdAt:DESC&populate=*`;
 
   const { data } = useSWR(
     apiUrl,
@@ -116,7 +116,7 @@ export const GetUnfilteredDataList = ({ auth, endPoint }) => {
     {
       refreshInterval: 500,
       revalidateOnFocus: true,
-    }
+    },
   );
   return data;
 };

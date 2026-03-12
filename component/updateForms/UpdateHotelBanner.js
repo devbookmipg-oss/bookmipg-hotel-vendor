@@ -52,7 +52,7 @@ const UpdateHotelBanner = ({ data, auth }) => {
   //   handle image change
   const [upload, setUpload] = useState(false);
   const [previewImage, setPreviewImage] = useState(
-    data?.banner_image?.url || null
+    data?.banner_image?.url || null,
   );
   const [profileImage, setProfileImage] = useState();
 
@@ -154,11 +154,11 @@ const UpdateHotelBanner = ({ data, auth }) => {
               />
             </ImageBorder>
             <EditIconWrapper>
-              <label htmlFor="profile-pic">
+              <label htmlFor="banner-pic">
                 <CreateIcon />
               </label>
               <input
-                id="profile-pic"
+                id="banner-pic"
                 type="file"
                 hidden
                 onChange={imageHandler}

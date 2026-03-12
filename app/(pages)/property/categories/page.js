@@ -223,6 +223,7 @@ const Page = () => {
         updatedAt,
         createdAt,
         room_image,
+        rooms,
         ...cleanFormData
       } = formData;
 

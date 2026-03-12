@@ -54,7 +54,7 @@ const UpdateHotelLogo = ({ data, auth }) => {
   const [previewImage, setPreviewImage] = useState(
     data?.hotel_logo?.url || null,
   );
-  const [profileImage, setProfileImage] = useState();
+  const [logoImage, setLogoImage] = useState();
 
   const imageHandler = (e) => {
     const selected = e.target.files[0];
@@ -82,7 +82,7 @@ const UpdateHotelLogo = ({ data, auth }) => {
       let reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
-        setProfileImage(selected);
+        setLogoImage(selected);
         setUpload(true);
       };
       reader.readAsDataURL(selected);
@@ -95,7 +95,7 @@ const UpdateHotelLogo = ({ data, auth }) => {
     try {
       setLoading(true);
       const uploadedImage = await UploadImage({
-        image: profileImage,
+        image: logoImage,
         token: auth.token,
       });
 
@@ -155,11 +155,11 @@ const UpdateHotelLogo = ({ data, auth }) => {
               />
             </ImageBorder>
             <EditIconWrapper>
-              <label htmlFor="profile-pic">
+              <label htmlFor="profile-logo">
                 <CreateIcon />
               </label>
               <input
-                id="profile-pic"
+                id="profile-logo"
                 type="file"
                 hidden
                 onChange={imageHandler}
