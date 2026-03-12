@@ -3,10 +3,6 @@
 import {
   Box,
   Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogActions,
   Grid,
   Typography,
   TextField,
@@ -51,55 +47,82 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 // Custom Dialog with touch event handling
-const CustomDialog = ({ open, onClose, children, ...props }) => {
-  const dialogRef = useRef(null);
+const CustomDialog = ({ open, onClose, children }) => {
+  const scrollRef = useRef(null);
   const touchStartY = useRef(0);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog || !open) return;
+    const el = scrollRef.current;
+    if (!el) return;
 
     const handleTouchStart = (e) => {
       touchStartY.current = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
-      const scrollTop = dialog.scrollTop;
-      const touchY = e.touches[0].clientY;
-      const scrollingDown = touchY > touchStartY.current;
+      const scrollTop = el.scrollTop;
+      const currentY = e.touches[0].clientY;
+      const pullingDown = currentY > touchStartY.current;
 
-      // Prevent pull-to-refresh when at the top and trying to scroll up
-      if (scrollTop <= 0 && scrollingDown) {
+      // Prevent pull-to-refresh
+      if (scrollTop <= 0 && pullingDown) {
         e.preventDefault();
       }
     };
 
-    dialog.addEventListener('touchstart', handleTouchStart, { passive: false });
-    dialog.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     return () => {
-      dialog.removeEventListener('touchstart', handleTouchStart);
-      dialog.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [open]);
+  }, []);
+
+  if (!open) return null;
 
   return (
-    <Dialog
-      ref={dialogRef}
-      open={open}
-      onClose={onClose}
-      fullScreen
-      {...props}
+    <Box
       sx={{
-        '& .MuiDialog-paper': {
-          background: '#f5f7fb',
-          overscrollBehavior: 'none',
-          WebkitOverflowScrolling: 'touch',
-        },
+        position: 'fixed',
+        inset: 0,
+        zIndex: 2000,
+        background: '#f5f7fb',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100vw',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
-      {children}
-    </Dialog>
+      {/* Backdrop */}
+      <Box
+        onClick={onClose}
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.4)',
+        }}
+      />
+
+      {/* Dialog */}
+      <Box
+        ref={scrollRef}
+        sx={{
+          position: 'relative',
+          height: '100%',
+          width: '100%',
+          background: '#f5f7fb',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          overscrollBehavior: 'contain',
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
   );
 };
 
@@ -475,37 +498,29 @@ const CreateNewOrder = ({
       TransitionProps={{ direction: 'up' }}
     >
       {/* Header */}
-      <Paper
-        elevation={2}
+      <Box
         sx={{
-          background: 'white',
+          py: 1.5,
+          px: 2,
+          display: 'flex',
+          alignItems: 'center',
           borderBottom: '1px solid #e0e0e0',
+          bgcolor: 'white',
           position: 'sticky',
           top: 0,
-          zIndex: 20,
-          borderRadius: 0,
+          zIndex: 10,
         }}
       >
-        <DialogTitle
-          sx={{
-            py: 1.5,
-            px: 2,
-            display: 'flex',
-            alignItems: 'center',
-            borderRadius: 0,
-          }}
-        >
-          <ReceiptIcon sx={{ mr: 1 }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
-            {editing ? 'Edit Order' : 'Create New Order'}
-          </Typography>
-          <IconButton onClick={() => setFormOpen(false)} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-      </Paper>
+        <ReceiptIcon sx={{ mr: 1 }} />
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
+          {editing ? 'Edit Order' : 'Create New Order'}
+        </Typography>
+        <IconButton onClick={() => setFormOpen(false)} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Box>
 
-      <DialogContent sx={{ p: 2 }}>
+      <Box sx={{ p: 2 }}>
         {/* Table Selection and Notes */}
         <Grid container spacing={2} sx={{ mb: 3, mt: 3 }} id="form-start">
           <Grid size={{ xs: 12, md: 4 }}>
@@ -687,11 +702,17 @@ const CreateNewOrder = ({
             <Typography color="text.secondary">No items found</Typography>
           </Box>
         )}
-      </DialogContent>
+      </Box>
 
       {/* Actions */}
-      <DialogActions
-        sx={{ p: 2, bgcolor: 'white', borderTop: '1px solid #e0e0e0' }}
+      <Box
+        sx={{
+          p: 2,
+          bgcolor: 'white',
+          borderTop: '1px solid #e0e0e0',
+          position: 'sticky',
+          bottom: 0,
+        }}
       >
         <Button
           size="small"
@@ -721,7 +742,7 @@ const CreateNewOrder = ({
               ? 'Update Order'
               : 'Create Order'}
         </Button>
-      </DialogActions>
+      </Box>
     </CustomDialog>
   );
 };
