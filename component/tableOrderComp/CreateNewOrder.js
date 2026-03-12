@@ -3,6 +3,10 @@
 import {
   Box,
   Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
   Grid,
   Typography,
   TextField,
@@ -22,14 +26,13 @@ import {
   Slide,
 } from '@mui/material';
 
-import {
+import React, {
   forwardRef,
   useState,
   useMemo,
   useCallback,
   useEffect,
   useRef,
-  memo,
 } from 'react';
 
 // Icons
@@ -47,246 +50,221 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 // Custom Dialog with touch event handling
-const CustomDialog = ({ open, onClose, children }) => {
-  const scrollRef = useRef(null);
+const CustomDialog = ({ open, onClose, children, ...props }) => {
+  const dialogRef = useRef(null);
   const touchStartY = useRef(0);
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
+    const dialog = dialogRef.current;
+    if (!dialog || !open) return;
 
     const handleTouchStart = (e) => {
       touchStartY.current = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
-      const scrollTop = el.scrollTop;
-      const currentY = e.touches[0].clientY;
-      const pullingDown = currentY > touchStartY.current;
+      const scrollTop = dialog.scrollTop;
+      const touchY = e.touches[0].clientY;
+      const scrollingDown = touchY > touchStartY.current;
 
-      // Prevent pull-to-refresh
-      if (scrollTop <= 0 && pullingDown) {
+      // Prevent pull-to-refresh when at the top and trying to scroll up
+      if (scrollTop <= 0 && scrollingDown) {
         e.preventDefault();
       }
     };
 
-    el.addEventListener('touchstart', handleTouchStart, { passive: false });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    dialog.addEventListener('touchstart', handleTouchStart, { passive: false });
+    dialog.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     return () => {
-      el.removeEventListener('touchstart', handleTouchStart);
-      el.removeEventListener('touchmove', handleTouchMove);
+      dialog.removeEventListener('touchstart', handleTouchStart);
+      dialog.removeEventListener('touchmove', handleTouchMove);
     };
-  }, []);
-
-  if (!open) return null;
+  }, [open]);
 
   return (
-    <Box
+    <Dialog
+      ref={dialogRef}
+      open={open}
+      onClose={onClose}
+      {...props}
+      maxWidth="lg"
       sx={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 2000,
-        background: '#f5f7fb',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        width: '100vw',
-        overscrollBehavior: 'none',
-        WebkitOverflowScrolling: 'touch',
+        '& .MuiDialog-paper': {
+          background: '#f5f7fb',
+          overscrollBehavior: 'none',
+          WebkitOverflowScrolling: 'touch',
+        },
       }}
     >
-      {/* Backdrop */}
-      <Box
-        onClick={onClose}
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(0,0,0,0.4)',
-        }}
-      />
-
-      {/* Dialog */}
-      <Box
-        ref={scrollRef}
-        sx={{
-          position: 'relative',
-          height: '100%',
-          width: '100%',
-          background: '#f5f7fb',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          overscrollBehavior: 'contain',
-        }}
-      >
-        {children}
-      </Box>
-    </Box>
+      {children}
+    </Dialog>
   );
 };
 
 // Memoized Product Card Component
-const ProductCard = memo(({ item, qty, onIncrease, onDecrease, onRemove }) => {
-  // Generate consistent color based on item name
-  const stringToColor = (str) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const hue = hash % 360;
-    return `hsl(${hue}, 70%, 50%)`;
-  };
+const ProductCard = React.memo(
+  ({ item, qty, onIncrease, onDecrease, onRemove }) => {
+    // Generate consistent color based on item name
+    const stringToColor = (str) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const hue = hash % 360;
+      return `hsl(${hue}, 70%, 50%)`;
+    };
 
-  const bgColor = stringToColor(item.name);
+    const bgColor = stringToColor(item.name);
 
-  return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        transition: 'all 0.2s ease',
-        border: qty > 0 ? `2px solid ${bgColor}` : '1px solid #e0e0e0',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
-        },
-      }}
-    >
-      {qty > 0 && (
-        <Badge
-          badgeContent={qty}
-          color="primary"
-          sx={{
-            position: 'absolute',
-            top: 18,
-            right: 18,
-            zIndex: 1,
-            '& .MuiBadge-badge': {
-              fontSize: '0.7rem',
-              minWidth: 20,
-              height: 20,
-            },
-          }}
-        />
-      )}
-
-      <Box
+    return (
+      <Card
         sx={{
-          height: 90,
-          background: `#cecece`,
+          height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderBottom: '1px solid #f0f0f0',
+          flexDirection: 'column',
+          position: 'relative',
+          transition: 'all 0.2s ease',
+          border: qty > 0 ? `2px solid ${bgColor}` : '1px solid #e0e0e0',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+          },
         }}
       >
-        <Avatar
-          sx={{
-            width: 50,
-            height: 50,
-            bgcolor: 'white',
-            color: bgColor,
-            fontSize: '1.3rem',
-            fontWeight: 'bold',
-            boxShadow: `0 2px 8px ${alpha('#a3a3a3', 0.3)}`,
-          }}
-        >
-          {item.name.charAt(0)}
-        </Avatar>
-      </Box>
-
-      <CardContent
-        sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}
-      >
-        <Typography variant="body2" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
-          {item.name}
-        </Typography>
-
-        <Typography
-          sx={{
-            fontWeight: 700,
-            color: bgColor,
-            fontSize: '1rem',
-            mb: 1,
-          }}
-        >
-          ₹{Number(item.rate).toFixed(2)}
-        </Typography>
+        {qty > 0 && (
+          <Badge
+            badgeContent={qty}
+            color="primary"
+            sx={{
+              position: 'absolute',
+              top: 18,
+              right: 18,
+              zIndex: 1,
+              '& .MuiBadge-badge': {
+                fontSize: '0.7rem',
+                minWidth: 20,
+                height: 20,
+              },
+            }}
+          />
+        )}
 
         <Box
           sx={{
+            height: 90,
+            background: `#cecece`,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            mt: 'auto',
-            bgcolor: alpha(bgColor, 0.05),
-            borderRadius: 1.5,
-            p: 0.3,
+            justifyContent: 'center',
+            borderBottom: '1px solid #f0f0f0',
           }}
         >
-          <IconButton
-            size="small"
-            onClick={onDecrease}
-            disabled={qty === 0}
+          <Avatar
             sx={{
-              bgcolor: qty > 0 ? bgColor : 'transparent',
-              color: qty > 0 ? 'white' : bgColor,
-
-              '&.Mui-disabled': {
-                color: alpha(bgColor, 0.3),
-              },
-              p: 0.5,
+              width: 50,
+              height: 50,
+              bgcolor: 'white',
+              color: bgColor,
+              fontSize: '1.3rem',
+              fontWeight: 'bold',
+              boxShadow: `0 2px 8px ${alpha('#a3a3a3', 0.3)}`,
             }}
           >
-            <RemoveIcon sx={{ fontSize: 16 }} />
-          </IconButton>
+            {item.name.charAt(0)}
+          </Avatar>
+        </Box>
 
-          <Typography
-            fontWeight={700}
-            sx={{ minWidth: 24, textAlign: 'center', fontSize: '0.9rem' }}
-          >
-            {qty}
+        <CardContent
+          sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}
+        >
+          <Typography variant="body2" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
+            {item.name}
           </Typography>
 
-          <IconButton
-            size="small"
-            onClick={onIncrease}
+          <Typography
             sx={{
-              bgcolor: bgColor,
-              color: 'white',
-              '&:hover': { bgcolor: alpha(bgColor, 0.8) },
-              p: 0.5,
+              fontWeight: 700,
+              color: bgColor,
+              fontSize: '1rem',
+              mb: 1,
             }}
           >
-            <AddIcon sx={{ fontSize: 16 }} />
-          </IconButton>
+            ₹{Number(item.rate).toFixed(2)}
+          </Typography>
 
-          <IconButton
-            size="small"
-            onClick={onRemove}
-            disabled={qty === 0}
+          <Box
             sx={{
-              color: qty > 0 ? '#ff4444' : alpha('#ff4444', 0.3),
-              '&:hover': {
-                bgcolor: qty > 0 ? alpha('#ff4444', 0.1) : 'transparent',
-              },
-              '&.Mui-disabled': {
-                color: alpha('#ff4444', 0.3),
-              },
-              p: 0.5,
-              ml: 0.2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mt: 'auto',
+              bgcolor: alpha(bgColor, 0.05),
+              borderRadius: 1.5,
+              p: 0.3,
             }}
           >
-            <DeleteIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-});
+            <IconButton
+              size="small"
+              onClick={onDecrease}
+              disabled={qty === 0}
+              sx={{
+                bgcolor: qty > 0 ? bgColor : 'transparent',
+                color: qty > 0 ? 'white' : bgColor,
+                '&:hover': { bgcolor: qty > 0 ? bgColor : alpha(bgColor, 0.1) },
+                '&.Mui-disabled': {
+                  color: alpha(bgColor, 0.3),
+                },
+                p: 0.5,
+              }}
+            >
+              <RemoveIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+
+            <Typography
+              fontWeight={700}
+              sx={{ minWidth: 24, textAlign: 'center', fontSize: '0.9rem' }}
+            >
+              {qty}
+            </Typography>
+
+            <IconButton
+              size="small"
+              onClick={onIncrease}
+              sx={{
+                bgcolor: bgColor,
+                color: 'white',
+                '&:hover': { bgcolor: alpha(bgColor, 0.8) },
+                p: 0.5,
+              }}
+            >
+              <AddIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+
+            <IconButton
+              size="small"
+              onClick={onRemove}
+              disabled={qty === 0}
+              sx={{
+                color: qty > 0 ? '#ff4444' : alpha('#ff4444', 0.3),
+                '&:hover': {
+                  bgcolor: qty > 0 ? alpha('#ff4444', 0.1) : 'transparent',
+                },
+                '&.Mui-disabled': {
+                  color: alpha('#ff4444', 0.3),
+                },
+                p: 0.5,
+                ml: 0.2,
+              }}
+            >
+              <DeleteIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  },
+);
 
 ProductCard.displayName = 'ProductCard';
 
@@ -498,29 +476,37 @@ const CreateNewOrder = ({
       TransitionProps={{ direction: 'up' }}
     >
       {/* Header */}
-      <Box
+      <Paper
+        elevation={2}
         sx={{
-          py: 1.5,
-          px: 2,
-          display: 'flex',
-          alignItems: 'center',
+          background: 'white',
           borderBottom: '1px solid #e0e0e0',
-          bgcolor: 'white',
           position: 'sticky',
           top: 0,
-          zIndex: 10,
+          zIndex: 20,
+          borderRadius: 0,
         }}
       >
-        <ReceiptIcon sx={{ mr: 1 }} />
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
-          {editing ? 'Edit Order' : 'Create New Order'}
-        </Typography>
-        <IconButton onClick={() => setFormOpen(false)} size="small">
-          <CloseIcon />
-        </IconButton>
-      </Box>
+        <DialogTitle
+          sx={{
+            py: 1.5,
+            px: 2,
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 0,
+          }}
+        >
+          <ReceiptIcon sx={{ mr: 1 }} />
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
+            {editing ? 'Edit Order' : 'Create New Order'}
+          </Typography>
+          <IconButton onClick={() => setFormOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+      </Paper>
 
-      <Box sx={{ p: 2 }}>
+      <DialogContent sx={{ p: 2 }}>
         {/* Table Selection and Notes */}
         <Grid container spacing={2} sx={{ mb: 3, mt: 3 }} id="form-start">
           <Grid size={{ xs: 12, md: 4 }}>
@@ -702,17 +688,11 @@ const CreateNewOrder = ({
             <Typography color="text.secondary">No items found</Typography>
           </Box>
         )}
-      </Box>
+      </DialogContent>
 
       {/* Actions */}
-      <Box
-        sx={{
-          p: 2,
-          bgcolor: 'white',
-          borderTop: '1px solid #e0e0e0',
-          position: 'sticky',
-          bottom: 0,
-        }}
+      <DialogActions
+        sx={{ p: 2, bgcolor: 'white', borderTop: '1px solid #e0e0e0' }}
       >
         <Button
           size="small"
@@ -742,7 +722,7 @@ const CreateNewOrder = ({
               ? 'Update Order'
               : 'Create Order'}
         </Button>
-      </Box>
+      </DialogActions>
     </CustomDialog>
   );
 };
