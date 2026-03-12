@@ -16,9 +16,6 @@ import {
   Paper,
   Avatar,
   Chip,
-  Divider,
-  Zoom,
-  Fade,
   Badge,
   alpha,
   InputAdornment,
@@ -27,20 +24,12 @@ import {
   MenuItem,
   InputLabel,
   Slide,
-  Skeleton,
-  useMediaQuery,
-  useTheme,
+  Pagination,
+  Stack,
+  FormHelperText,
 } from '@mui/material';
 
-import {
-  forwardRef,
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-  useEffect,
-  memo,
-} from 'react';
+import { forwardRef, useState, useMemo, useCallback, useEffect } from 'react';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -51,192 +40,166 @@ import CloseIcon from '@mui/icons-material/Close';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import ReceiptIcon from '@mui/icons-material/Receipt';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import CategoryIcon from '@mui/icons-material/Category';
 import NoteIcon from '@mui/icons-material/Note';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 // Transition for dialog
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-// Memoized Product Card Component
-const ProductCard = memo(
-  ({ item, qty, onIncrease, onDecrease, onRemove, bgColor }) => {
-    return (
-      <Paper
-        elevation={qty > 0 ? 4 : 1}
+// Product Card Component
+const ProductCard = ({ item, qty, onIncrease, onDecrease, onRemove }) => {
+  // Generate consistent color based on item name
+  const stringToColor = (str) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = hash % 360;
+    return `hsl(${hue}, 70%, 50%)`;
+  };
+
+  const bgColor = stringToColor(item.name);
+
+  return (
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        transition: 'all 0.2s ease',
+        border: qty > 0 ? `2px solid ${bgColor}` : '1px solid #e0e0e0',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 6px 12px rgba(0,0,0,0.1)',
+        },
+      }}
+    >
+      {qty > 0 && (
+        <Badge
+          badgeContent={qty}
+          color="primary"
+          sx={{
+            position: 'absolute',
+            top: 18,
+            right: 18,
+            zIndex: 1,
+            '& .MuiBadge-badge': {
+              fontSize: '0.7rem',
+              minWidth: 20,
+              height: 20,
+            },
+          }}
+        />
+      )}
+
+      <Box
         sx={{
-          borderRadius: 2,
-          overflow: 'hidden',
-          transition: 'all 0.2s ease',
-          transform: qty > 0 ? 'scale(1.01)' : 'scale(1)',
-          '&:hover': {
-            boxShadow: '0 8px 16px rgba(102, 126, 234, 0.2)',
-          },
-          position: 'relative',
-          height: '100%',
+          height: 90,
+          background: `#cecece`,
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderBottom: '1px solid #f0f0f0',
         }}
       >
-        {qty > 0 && (
-          <Badge
-            badgeContent={qty}
-            color="secondary"
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 1,
-              '& .MuiBadge-badge': {
-                fontSize: '0.7rem',
-                minWidth: 20,
-                height: 20,
-                borderRadius: '10px',
-              },
-            }}
-          />
-        )}
+        <Avatar
+          sx={{
+            width: 50,
+            height: 50,
+            bgcolor: 'white',
+            color: bgColor,
+            fontSize: '1.3rem',
+            fontWeight: 'bold',
+            boxShadow: `0 2px 8px ${alpha('#a3a3a3', 0.3)}`,
+          }}
+        >
+          {item.name.charAt(0)}
+        </Avatar>
+      </Box>
+
+      <CardContent
+        sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}
+      >
+        <Typography variant="body2" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
+          {item.name}
+        </Typography>
+
+        <Typography
+          sx={{
+            fontWeight: 700,
+            color: bgColor,
+            fontSize: '1rem',
+            mb: 1,
+          }}
+        >
+          ₹{Number(item.rate).toFixed(2)}
+        </Typography>
 
         <Box
           sx={{
-            height: 80,
-            bgcolor: '#f5f5f5',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
+            justifyContent: 'space-between',
+            mt: 'auto',
+            bgcolor: alpha(bgColor, 0.05),
+            borderRadius: 1.5,
+            p: 0.3,
           }}
         >
-          <Avatar
+          <IconButton
+            size="small"
+            onClick={onDecrease}
             sx={{
-              width: 45,
-              height: 45,
-              bgcolor: 'white',
-              color: bgColor,
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              bgcolor: qty > 0 ? bgColor : 'transparent',
+              color: qty > 0 ? 'white' : bgColor,
+              '&:hover': { bgcolor: bgColor, color: 'white' },
+              p: 0.5,
             }}
           >
-            {item.name.charAt(0)}
-          </Avatar>
-        </Box>
+            <RemoveIcon sx={{ fontSize: 16 }} />
+          </IconButton>
 
-        <CardContent
-          sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column' }}
-        >
-          <Typography variant="body2" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
-            {item.name}
+          <Typography
+            fontWeight={700}
+            sx={{ minWidth: 24, textAlign: 'center', fontSize: '0.9rem' }}
+          >
+            {qty}
           </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-            <Typography
-              sx={{ fontWeight: 700, color: '#667eea', fontSize: '0.95rem' }}
-            >
-              ₹{item.rate}
-            </Typography>
-            {item.gst > 0 && (
-              <Chip
-                label={`${item.gst}%`}
-                size="small"
-                sx={{
-                  bgcolor: alpha('#4caf50', 0.1),
-                  color: '#4caf50',
-                  height: 16,
-                  fontSize: '0.6rem',
-                  '& .MuiChip-label': { px: 0.5 },
-                }}
-              />
-            )}
-          </Box>
-
-          <Box
+          <IconButton
+            size="small"
+            onClick={onIncrease}
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mt: 'auto',
-              bgcolor: alpha('#667eea', 0.05),
-              borderRadius: 1.5,
-              p: 0.3,
+              bgcolor: bgColor,
+              color: 'white',
+              '&:hover': { bgcolor: alpha(bgColor, 0.8) },
+              p: 0.5,
             }}
           >
+            <AddIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+
+          {qty > 0 && (
             <IconButton
               size="small"
-              onClick={onDecrease}
+              onClick={onRemove}
               sx={{
-                bgcolor: qty > 0 ? '#667eea' : 'transparent',
-                color: qty > 0 ? 'white' : '#667eea',
-                '&:hover': { bgcolor: '#764ba2', color: 'white' },
+                color: '#ff4444',
+                '&:hover': { bgcolor: alpha('#ff4444', 0.1) },
                 p: 0.5,
+                ml: 0.2,
               }}
             >
-              <RemoveIcon sx={{ fontSize: 16 }} />
+              <DeleteIcon sx={{ fontSize: 16 }} />
             </IconButton>
-
-            <Typography
-              fontWeight={700}
-              sx={{ minWidth: 20, textAlign: 'center', fontSize: '0.9rem' }}
-            >
-              {qty}
-            </Typography>
-
-            <IconButton
-              size="small"
-              onClick={onIncrease}
-              sx={{
-                bgcolor: '#667eea',
-                color: 'white',
-                '&:hover': { bgcolor: '#764ba2' },
-                p: 0.5,
-              }}
-            >
-              <AddIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-
-            {qty > 0 && (
-              <IconButton
-                size="small"
-                onClick={onRemove}
-                sx={{
-                  color: '#ff6b6b',
-                  '&:hover': { bgcolor: alpha('#ff6b6b', 0.1) },
-                  p: 0.5,
-                  ml: 0.2,
-                }}
-              >
-                <DeleteIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            )}
-          </Box>
-        </CardContent>
-      </Paper>
-    );
-  },
-);
-
-ProductCard.displayName = 'ProductCard';
-
-// Lazy load wrapper for dialog content
-const LazyContent = ({ children, loading }) => {
-  if (loading) {
-    return (
-      <Grid container spacing={1.5}>
-        {[...Array(12)].map((_, i) => (
-          <Grid item xs={6} sm={4} md={3} lg={2} key={i}>
-            <Skeleton
-              variant="rectangular"
-              height={180}
-              sx={{ borderRadius: 2 }}
-            />
-          </Grid>
-        ))}
-      </Grid>
-    );
-  }
-  return children;
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
 };
 
 const CreateNewOrder = ({
@@ -250,123 +213,76 @@ const CreateNewOrder = ({
   handleSave,
   loading,
 }) => {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [contentLoading, setContentLoading] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const contentRef = useRef(null);
-  const touchStartY = useRef(0);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
-  // Prevent pull-to-refresh on Android WebView
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content || !formOpen) return;
-
-    const handleTouchStart = (e) => {
-      touchStartY.current = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e) => {
-      const scrollTop = content.scrollTop;
-      const touchY = e.touches[0].clientY;
-      const scrollingDown = touchY > touchStartY.current;
-
-      // Prevent pull-to-refresh when at the top and trying to scroll up
-      if (scrollTop <= 0 && scrollingDown) {
-        e.preventDefault();
-      }
-    };
-
-    content.addEventListener('touchstart', handleTouchStart, {
-      passive: false,
-    });
-    content.addEventListener('touchmove', handleTouchMove, { passive: false });
-
-    return () => {
-      content.removeEventListener('touchstart', handleTouchStart);
-      content.removeEventListener('touchmove', handleTouchMove);
-    };
-  }, [formOpen]);
-
-  // Handle scroll to show/hide scroll-to-top button
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content) return;
-
-    const handleScroll = () => {
-      setShowScrollTop(content.scrollTop > 300);
-    };
-
-    content.addEventListener('scroll', handleScroll);
-    return () => content.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Get unique categories (memoized)
+  // Get unique categories for select dropdown
   const categories = useMemo(() => {
-    if (!menuItems?.length) return ['all'];
-    const cats = [
+    if (!menuItems?.length) return [{ value: 'all', label: 'All Categories' }];
+
+    const uniqueCats = [
       'all',
       ...new Set(menuItems.map((item) => item.category || 'Uncategorized')),
     ];
-    return cats;
+
+    return uniqueCats.map((cat) => ({
+      value: cat,
+      label:
+        cat === 'all'
+          ? 'All Categories'
+          : cat.charAt(0).toUpperCase() + cat.slice(1),
+    }));
   }, [menuItems]);
 
-  // Filter items (memoized)
+  // Filter items based on search and category
   const filteredItems = useMemo(() => {
     if (!menuItems?.length) return [];
 
     let filtered = menuItems;
 
+    // Apply search filter
     if (search) {
       filtered = filtered.filter((item) =>
         item?.name?.toLowerCase().includes(search.toLowerCase()),
       );
     }
 
-    if (activeCategory !== 'all') {
+    // Apply category filter
+    if (selectedCategory !== 'all') {
       filtered = filtered.filter(
-        (item) => (item.category || 'Uncategorized') === activeCategory,
+        (item) => (item.category || 'Uncategorized') === selectedCategory,
       );
     }
 
     return filtered;
-  }, [search, menuItems, activeCategory]);
+  }, [search, menuItems, selectedCategory]);
 
-  // Virtual scrolling - show only first 50 items initially
-  const [visibleItems, setVisibleItems] = useState([]);
-  const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 30;
-
+  // Reset page when filters change
   useEffect(() => {
-    setVisibleItems(filteredItems.slice(0, ITEMS_PER_PAGE));
     setPage(1);
-  }, [filteredItems]);
+  }, [search, selectedCategory]);
 
-  const loadMore = useCallback(() => {
-    const nextPage = page + 1;
-    const start = (nextPage - 1) * ITEMS_PER_PAGE;
-    const end = nextPage * ITEMS_PER_PAGE;
-
-    if (start < filteredItems.length) {
-      setVisibleItems((prev) => [...prev, ...filteredItems.slice(start, end)]);
-      setPage(nextPage);
-    }
+  // Calculate pagination
+  const paginatedItems = useMemo(() => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredItems.slice(start, end);
   }, [filteredItems, page]);
 
-  // Scroll handler for infinite scroll
-  const handleScroll = useCallback(
-    (e) => {
-      const { scrollTop, scrollHeight, clientHeight } = e.target;
-      if (scrollHeight - scrollTop <= clientHeight * 1.5) {
-        loadMore();
-      }
-    },
-    [loadMore],
-  );
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
 
-  // Memoized quantity functions
+  // Handle page change
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    // Scroll to top of products
+    document
+      .getElementById('form-start')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Quantity management functions
   const getQty = useCallback(
     (item) => {
       const found = formData.food_items.find((f) => f.item === item.name);
@@ -446,101 +362,63 @@ const CreateNewOrder = ({
     [formData, setFormData],
   );
 
-  // Memoized summary
-  const summary = useMemo(() => {
-    const total = formData.food_items.reduce(
-      (acc, cur) => acc + cur.rate * cur.qty,
-      0,
-    );
-
-    const tax = formData.food_items.reduce(
-      (acc, cur) => acc + (cur.rate * cur.qty * cur.gst) / 100,
-      0,
-    );
-
-    return {
-      total,
-      tax,
-      payable: total + tax,
-    };
-  }, [formData.food_items]);
-
-  // Color generator
-  const stringToColor = useCallback((string) => {
-    let hash = 0;
-    for (let i = 0; i < string.length; i++) {
-      hash = string.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xff;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-  }, []);
-
-  // Scroll to top
-  const scrollToTop = () => {
-    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  // Handle category change
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
   };
 
   return (
     <Dialog
       open={formOpen}
-      fullScreen={fullScreen}
-      fullWidth
-      maxWidth="xl"
+      fullScreen
       TransitionComponent={Transition}
       sx={{
+        borderRadius: 0,
         '& .MuiDialog-paper': {
-          background: '#f8f9ff',
-          height: fullScreen ? '100%' : '90vh',
+          background: '#f5f7fb',
+          borderRadius: 0,
         },
       }}
     >
-      {/* Sticky Header */}
+      {/* Header */}
       <Paper
         elevation={2}
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: 0,
+          background: 'white',
+          borderBottom: '1px solid #e0e0e0',
           position: 'sticky',
           top: 0,
           zIndex: 20,
+          borderRadius: 0,
         }}
       >
         <DialogTitle
-          sx={{ py: 1.5, px: 2, display: 'flex', alignItems: 'center' }}
+          sx={{
+            py: 1.5,
+            px: 2,
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 0,
+          }}
         >
+          <ReceiptIcon sx={{ mr: 1 }} />
           <Typography variant="subtitle1" sx={{ fontWeight: 600, flex: 1 }}>
-            {editing ? '✎ Edit Order' : '✨ New Order'}
+            {editing ? 'Edit Order' : 'Create New Order'}
           </Typography>
-          <IconButton
-            onClick={() => setFormOpen(false)}
-            sx={{ color: 'white', p: 0.5 }}
-          >
+          <IconButton onClick={() => setFormOpen(false)} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
       </Paper>
 
-      <DialogContent
-        ref={contentRef}
-        onScroll={handleScroll}
-        sx={{
-          p: 2,
-          overscrollBehavior: 'none', // Prevent pull-to-refresh
-          WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
-        }}
-      >
-        {/* Top Section - Compact */}
-        <Grid container spacing={1.5} sx={{ mb: 2 }}>
-          <Grid size={{ xs: 12, sm: 5 }}>
+      <DialogContent sx={{ p: 2 }}>
+        {/* Table Selection and Notes */}
+        <Grid container spacing={2} sx={{ mb: 3, mt: 3 }} id="form-start">
+          <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth size="small">
-              <InputLabel>Table</InputLabel>
+              <InputLabel>Select Table</InputLabel>
               <Select
-                label="Table"
+                label="Select Table"
                 value={formData.table || ''}
                 onChange={(e) =>
                   setFormData({ ...formData, table: e.target.value })
@@ -549,6 +427,9 @@ const CreateNewOrder = ({
               >
                 {tables?.map((table) => (
                   <MenuItem key={table.documentId} value={table.documentId}>
+                    <TableRestaurantIcon
+                      sx={{ mr: 1, fontSize: 18, color: '#667eea' }}
+                    />
                     {table.table_no}
                   </MenuItem>
                 ))}
@@ -556,9 +437,9 @@ const CreateNewOrder = ({
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 7 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <TextField
-              label="Notes"
+              label="Special Notes"
               fullWidth
               size="small"
               value={formData.notes || ''}
@@ -566,68 +447,90 @@ const CreateNewOrder = ({
                 setFormData({ ...formData, notes: e.target.value })
               }
               sx={{ bgcolor: 'white', borderRadius: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <NoteIcon sx={{ color: '#667eea', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              }}
             />
           </Grid>
         </Grid>
 
-        {/* Search */}
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search items..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: '#667eea', fontSize: 20 }} />
-                </InputAdornment>
-              ),
-              sx: { bgcolor: 'white', borderRadius: 2 },
-            }}
-          />
-        </Box>
-
-        {/* Category Chips - Scrollable */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 1,
-            mb: 2,
-            overflowX: 'auto',
-            pb: 1,
-            '&::-webkit-scrollbar': { display: 'none' },
-            scrollbarWidth: 'none',
-          }}
-        >
-          {categories.map((category) => (
-            <Chip
-              key={category}
-              label={category}
-              onClick={() => setActiveCategory(category)}
+        {/* Search and Category Filter */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
+            <TextField
+              fullWidth
               size="small"
-              icon={
-                category === 'all' ? <RestaurantIcon /> : <LocalOfferIcon />
-              }
-              sx={{
-                bgcolor: activeCategory === category ? '#667eea' : 'white',
-                color: activeCategory === category ? 'white' : '#666',
-                '& .MuiChip-icon': {
-                  color: activeCategory === category ? 'white' : '#666',
-                },
-                flexShrink: 0,
+              placeholder="Search menu items..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: '#667eea', fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                sx: { bgcolor: 'white', borderRadius: 2 },
               }}
             />
-          ))}
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                label="Category"
+                sx={{ bgcolor: 'white', borderRadius: 2 }}
+                startAdornment={
+                  <CategoryIcon
+                    sx={{ color: '#667eea', mr: 1, fontSize: 18 }}
+                  />
+                }
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category.value} value={category.value}>
+                    {category.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        {/* Results Count */}
+        <Box
+          sx={{
+            mb: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Showing {paginatedItems.length} of {filteredItems.length} items
+          </Typography>
+          {selectedCategory !== 'all' && (
+            <Chip
+              label={
+                categories.find((c) => c.value === selectedCategory)?.label
+              }
+              size="small"
+              onDelete={() => setSelectedCategory('all')}
+              sx={{ bgcolor: alpha('#667eea', 0.1) }}
+            />
+          )}
         </Box>
 
-        {/* Product Grid with Lazy Loading */}
-        <LazyContent loading={contentLoading}>
-          <Grid container spacing={1.5}>
-            {visibleItems?.map((item) => {
+        {/* Products Grid */}
+        <Box id="products-grid" sx={{ minHeight: '400px' }}>
+          <Grid container spacing={2}>
+            {paginatedItems.map((item) => {
               const qty = getQty(item);
-              const bgColor = stringToColor(item.name);
 
               return (
                 <Grid
@@ -640,111 +543,59 @@ const CreateNewOrder = ({
                     onIncrease={() => increaseQty(item)}
                     onDecrease={() => decreaseQty(item)}
                     onRemove={() => removeItem(item)}
-                    bgColor={bgColor}
                   />
                 </Grid>
               );
             })}
           </Grid>
-        </LazyContent>
+        </Box>
 
-        {/* Loading More Indicator */}
-        {visibleItems.length < filteredItems.length && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              Loading more...
-            </Typography>
-          </Box>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Stack spacing={2} sx={{ mt: 4, mb: 2, alignItems: 'center' }}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              size="medium"
+              showFirstButton
+              showLastButton
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+          </Stack>
         )}
 
-        {/* Summary - Sticky at bottom */}
-        {formData.food_items.length > 0 && (
-          <Paper
-            elevation={4}
-            sx={{
-              position: 'sticky',
-              bottom: 0,
-              mt: 2,
-              p: 2,
-              background: 'white',
-              borderRadius: 3,
-              border: '1px solid #e0e0e0',
-              zIndex: 10,
-            }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle2">
-                Items: {formData.food_items.length}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 700, color: '#667eea' }}
-              >
-                ₹{summary.payable.toFixed(2)}
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 1,
-                fontSize: '0.75rem',
-                color: 'text.secondary',
-              }}
-            >
-              <span>Subtotal: ₹{summary.total.toFixed(2)}</span>
-              <span>•</span>
-              <span>Tax: ₹{summary.tax.toFixed(2)}</span>
-            </Box>
-          </Paper>
+        {/* No Results */}
+        {paginatedItems.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <RestaurantIcon sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+            <Typography color="text.secondary">No items found</Typography>
+          </Box>
         )}
       </DialogContent>
 
-      {/* Scroll to Top Button */}
-      <Zoom in={showScrollTop}>
-        <IconButton
-          onClick={scrollToTop}
-          sx={{
-            position: 'fixed',
-            bottom: 80,
-            right: 20,
-            bgcolor: '#667eea',
-            color: 'white',
-            '&:hover': { bgcolor: '#764ba2' },
-            zIndex: 30,
-          }}
-        >
-          <KeyboardArrowUpIcon />
-        </IconButton>
-      </Zoom>
-
       {/* Actions */}
       <DialogActions
-        sx={{ p: 2, bgcolor: 'white', borderTop: '1px solid #eee' }}
+        sx={{ p: 2, bgcolor: 'white', borderTop: '1px solid #e0e0e0' }}
       >
-        <Button size="small" onClick={() => setFormOpen(false)}>
-          Cancel
-        </Button>
         <Button
           size="small"
           onClick={handleSave}
-          disabled={loading}
+          disabled={
+            loading || !formData.table || formData.food_items.length === 0
+          }
           variant="contained"
-          sx={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-            },
-          }}
         >
-          {loading ? '...' : editing ? 'Update' : 'Create'}
+          {loading
+            ? 'Processing...'
+            : editing
+              ? 'Update Order'
+              : 'Create Order'}
         </Button>
       </DialogActions>
     </Dialog>
