@@ -9,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from '@mui/material';
 
@@ -25,49 +26,17 @@ const OrderTable = ({ orders, setSelectedRow, setDeleteOpen, permissions }) => {
         </Typography>
       </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: 3,
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Table
-          size="small"
-          sx={{
-            minWidth: 650, // forces horizontal scroll on mobile
-          }}
-        >
-          <TableHead
-            sx={{
-              background: 'linear-gradient(135deg, #ffb74d, #ff7043)',
-            }}
-          >
-            <TableRow>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>ID</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>
-                Table
-              </TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>
-                Status
-              </TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>
-                Method
-              </TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 600 }}>
-                Amount
-              </TableCell>
-              <TableCell
-                sx={{
-                  color: '#fff',
-                  fontWeight: 600,
-                  textAlign: 'center',
-                }}
-              >
-                Actions
-              </TableCell>
+      <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: 'grey.100' }}>
+              {['#ID', 'Table', 'Status', 'Method', 'Amount', 'Actions'].map(
+                (item, index) => (
+                  <TableCell key={index} sx={{ fontWeight: 'bold' }}>
+                    {item}
+                  </TableCell>
+                ),
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
