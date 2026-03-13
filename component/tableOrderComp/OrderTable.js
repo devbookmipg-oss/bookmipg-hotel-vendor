@@ -16,13 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Link from 'next/link';
 
-const OrderTable = ({
-  orders,
-  handleEdit,
-  setSelectedRow,
-  setDeleteOpen,
-  permissions,
-}) => {
+const OrderTable = ({ orders, setSelectedRow, setDeleteOpen, permissions }) => {
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
@@ -135,7 +129,7 @@ const OrderTable = ({
                     <IconButton
                       color="secondary"
                       size="small"
-                      onClick={() => handleEdit(order)}
+                      href={`/restaurant/tables-orders/edit?orderId=${order.documentId}`}
                       disabled={
                         order?.token_status === 'Closed' ||
                         !permissions.canUpdate

@@ -1,4 +1,4 @@
-import { BASEURL } from '@/config/MainApi';
+import { BASEURL, fetcher } from '@/config/MainApi';
 import useSWR from 'swr';
 import axios from 'axios';
 
@@ -6,42 +6,19 @@ import axios from 'axios';
 export const GetDataList = ({ auth, endPoint }) => {
   const apiUrl = `${BASEURL}/${endPoint}?sort=createdAt:DESC&filters[$and][0][hotel_id][$eq]=${auth?.user?.hotel_id}&populate=*`;
 
-  const { data } = useSWR(
-    apiUrl,
-    async (url) => {
-      const res = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-      return res.data.data;
-    },
-    {
-      refreshInterval: 500,
-      revalidateOnFocus: true,
-    },
-  );
+  const { data } = useSWR(apiUrl, fetcher, {
+    refreshInterval: 500,
+    revalidateOnFocus: true,
+  });
   return data;
 };
 
 // get single data
 export const GetSingleData = ({ auth, endPoint, id }) => {
-  const { data } = useSWR(
-    `${BASEURL}/${endPoint}/${id}?populate=*`,
-    async (url) => {
-      const res = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-      const result = await res.data.data;
-      return result;
-    },
-    {
-      refreshInterval: 500,
-      revalidateOnFocus: true,
-    },
-  );
+  const { data } = useSWR(`${BASEURL}/${endPoint}/${id}?populate=*`, fetcher, {
+    refreshInterval: 500,
+    revalidateOnFocus: true,
+  });
   return data;
 };
 

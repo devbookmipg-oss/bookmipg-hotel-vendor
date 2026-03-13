@@ -49,20 +49,6 @@ import { Print } from '@mui/icons-material';
 import { CheckUserPermission } from '@/utils/UserPermissions';
 import { kotThermalReceipt } from '@/utils/thermalReceipt';
 
-const generateNextOrderNo = (orders) => {
-  if (!orders || orders.length === 0) {
-    return 'ODR-1';
-  }
-
-  const numbers = orders
-    .map((inv) => parseInt(inv.order_id?.replace('ODR-', ''), 10))
-    .filter((n) => !isNaN(n));
-
-  const maxNumber = Math.max(...numbers);
-
-  return `ODR-${maxNumber + 1}`;
-};
-
 const Page = () => {
   const { auth } = useAuth();
   const permissions = CheckUserPermission(auth?.user?.permissions);
@@ -70,10 +56,6 @@ const Page = () => {
   const todaysDate = GetTodaysDate().dateString;
   const tables = GetDataList({ auth, endPoint: 'tables' });
   const orders = GetDataList({ auth, endPoint: 'table-orders' });
-  const menuItems = GetDataList({
-    auth,
-    endPoint: 'restaurant-menus',
-  });
 
   const bookings = GetDataList({
     auth,
@@ -112,16 +94,6 @@ const Page = () => {
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
-
-  // Create/Edit dialog state
-  const [formOpen, setFormOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    food_items: [],
-    notes: '',
-    hotel_id: auth?.user?.hotel_id || '',
-  });
-  const [editing, setEditing] = useState(false);
-  const [selectedItem, setSelectedItem] = useState();
 
   // room transfer/invoice state
   const [transferOpen, setTransferOpen] = useState(false);
@@ -190,77 +162,6 @@ const Page = () => {
   const handleOrderInvoice = (order) => {
     setSelectedRow(order);
     setInvoiceOpen(true);
-  };
-
-  // handle edit
-  const handleEdit = (order) => {
-    setEditing(true);
-    setFormData({ ...order, table: order.table?.documentId });
-    setFormOpen(true);
-  };
-
-  // handle create
-  const handleCreate = (tableId) => {
-    setEditing(false);
-    setFormData({
-      food_items: [],
-      notes: '',
-      hotel_id: auth?.user?.hotel_id || '',
-      table: tableId,
-      token_status: 'Open',
-    });
-    setFormOpen(true);
-  };
-
-  const handleSave = async () => {
-    setLoading(true);
-    const cleanedMenuItems = formData.food_items.map(
-      ({ id, documentId, ...rest }) => rest,
-    );
-
-    const finalData = {
-      ...formData,
-      food_items: cleanedMenuItems,
-    };
-
-    if (editing) {
-      const {
-        id,
-        documentId,
-        publishedAt,
-        updatedAt,
-        createdAt,
-        ...updateBody
-      } = finalData;
-
-      await UpdateData({
-        auth,
-        endPoint: 'table-orders',
-        id: formData.documentId, // ✅ only for URL
-        payload: { data: updateBody },
-      });
-      SuccessToast('Order updated successfully');
-      setLoading(false);
-    } else {
-      const newOrderNO = generateNextOrderNo(orders);
-      const time = GetCurrentTime();
-      await CreateNewData({
-        auth,
-        endPoint: 'table-orders',
-        payload: {
-          data: {
-            ...finalData,
-            order_id: newOrderNO,
-            date: todaysDate,
-            time: time,
-          },
-        },
-      });
-      SuccessToast('Order created successfully');
-      setLoading(false);
-    }
-
-    setFormOpen(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -489,10 +390,8 @@ const Page = () => {
           <TableGrid
             tables={tables}
             orders={orders}
-            handleCreate={handleCreate}
             handleTransferOrder={handleTransferOrder}
             handleOrderInvoice={handleOrderInvoice}
-            handleEdit={handleEdit}
             handleKOT={handleKOT}
             setKotDialogOpen={setKotDialogOpen}
             permissions={permissions}
@@ -510,7 +409,6 @@ const Page = () => {
         >
           <OrderTable
             orders={orders}
-            handleEdit={handleEdit}
             setSelectedRow={setSelectedRow}
             setDeleteOpen={setDeleteOpen}
             permissions={permissions}
@@ -528,7 +426,7 @@ const Page = () => {
       />
 
       {/* Create/Edit Dialog */}
-      <CreateNewOrder
+      {/* <CreateNewOrder
         formOpen={formOpen}
         setFormOpen={setFormOpen}
         editing={editing}
@@ -540,7 +438,7 @@ const Page = () => {
         setSelectedItem={setSelectedItem}
         handleSave={handleSave}
         loading={loading}
-      />
+      /> */}
 
       {/* Transfer Dialog */}
       <TransferOrder

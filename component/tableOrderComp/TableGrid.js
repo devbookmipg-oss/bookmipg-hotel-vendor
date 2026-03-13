@@ -19,8 +19,7 @@ import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 const TableGrid = ({
   tables,
   orders,
-  handleCreate,
-  handleEdit,
+
   handleTransferOrder,
   handleOrderInvoice,
   handleKOT,
@@ -230,7 +229,7 @@ const TableGrid = ({
                               size="small"
                               variant="contained"
                               startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-                              onClick={() => handleEdit(activeOrder)}
+                              href={`/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`}
                               sx={{
                                 py: 0.75,
                                 borderRadius: 2,
