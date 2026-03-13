@@ -45,7 +45,6 @@ import {
   TransferOrder,
 } from '@/component/tableOrderComp';
 import { KotPrint } from '@/component/printables/KotPrint';
-import { Print } from '@mui/icons-material';
 import { CheckUserPermission } from '@/utils/UserPermissions';
 import { kotThermalReceipt } from '@/utils/thermalReceipt';
 

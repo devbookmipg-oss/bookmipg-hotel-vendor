@@ -267,7 +267,7 @@ const Page = () => {
 
           {/* Stats Cards */}
           <Grid container spacing={2} sx={{ mb: 4 }}>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={4}>
               <Paper
                 sx={{
                   p: 2.5,
@@ -307,7 +307,7 @@ const Page = () => {
                 </Stack>
               </Paper>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={4}>
               <Paper
                 sx={{
                   p: 2.5,
@@ -347,7 +347,7 @@ const Page = () => {
                 </Stack>
               </Paper>
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={4}>
               <Paper
                 sx={{
                   p: 2.5,

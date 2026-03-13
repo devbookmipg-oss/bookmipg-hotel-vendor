@@ -29,11 +29,17 @@ const OrderTable = ({ orders, setSelectedRow, setDeleteOpen, permissions }) => {
         component={Paper}
         sx={{
           borderRadius: 3,
-          overflow: 'hidden',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         }}
       >
-        <Table size="small">
+        <Table
+          size="small"
+          sx={{
+            minWidth: 650, // forces horizontal scroll on mobile
+          }}
+        >
           <TableHead
             sx={{
               background: 'linear-gradient(135deg, #ffb74d, #ff7043)',
