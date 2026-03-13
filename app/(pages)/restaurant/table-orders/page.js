@@ -28,6 +28,7 @@ import {
   CreateNewData,
   UpdateData,
   DeleteData,
+  GetSingleData,
 } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
@@ -68,6 +69,11 @@ const Page = () => {
     auth,
     endPoint: 'restaurant-invoices',
   });
+  const myProfile = GetSingleData({
+    auth,
+    endPoint: 'hotels',
+    id: auth?.user?.hotel_id,
+  });
 
   const activeBookings = bookings?.filter((bk) => {
     const checkIn = new Date(bk.checkin_date);
@@ -105,13 +111,6 @@ const Page = () => {
   const [kotData, setKotData] = useState(null);
   const [kotDialogOpen, setKotDialogOpen] = useState(false);
   const kotComponentRef = useRef(null);
-
-  // Get restaurant profile
-  const profile = GetDataList({
-    auth,
-    endPoint: 'restaurant-profiles',
-  });
-  const myProfile = profile?.[0];
 
   const handleKOT = (order) => {
     setKotData(order);
@@ -411,6 +410,8 @@ const Page = () => {
             setSelectedRow={setSelectedRow}
             setDeleteOpen={setDeleteOpen}
             permissions={permissions}
+            myProfile={myProfile}
+            invoices={invoices}
           />
         </Paper>
       </Box>

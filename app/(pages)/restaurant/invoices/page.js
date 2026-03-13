@@ -316,21 +316,6 @@ const Page = () => {
     documentTitle: 'res-inv',
   });
 
-  // const getPrinters = () => {
-  //   const printersRaw = window.AndroidPrinter.getPairedPrinters();
-
-  //   const printers = printersRaw
-  //     .split('\n')
-  //     .filter(Boolean)
-  //     .map((p) => {
-  //       const [name, mac] = p.split('|');
-  //       return { name, mac };
-  //     });
-
-  //   console.log(printers);
-  //   setPrinterList(printers);
-  // };
-
   return (
     <>
       <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
