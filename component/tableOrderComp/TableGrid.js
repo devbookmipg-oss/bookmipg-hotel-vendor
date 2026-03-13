@@ -117,11 +117,6 @@ const TableGrid = ({
                       borderRadius: '3px 3px 0 0',
                     },
                   }}
-                  onClick={
-                    isAvailable
-                      ? () => handleCreate(table.documentId)
-                      : undefined
-                  }
                 >
                   {/* Status Badge */}
                   <Chip
@@ -205,7 +200,8 @@ const TableGrid = ({
                         fullWidth
                         variant="contained"
                         startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-                        onClick={() => handleCreate(table.documentId)}
+                        href={`/restaurant/table-orders/new?tableId=${table.documentId}`}
+                        // onClick={() => handleCreate(table.documentId)}
                         sx={{
                           py: 1,
                           borderRadius: 2,
