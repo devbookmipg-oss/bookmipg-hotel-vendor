@@ -169,17 +169,36 @@ const OrderTable = ({
                         </IconButton>
                       )}
                     </Tooltip>
-                    <IconButton
-                      color="secondary"
-                      size="small"
-                      href={`/restaurant/tables-orders/edit?orderId=${order.documentId}`}
-                      disabled={
-                        order?.token_status === 'Closed' ||
-                        !permissions.canUpdate
-                      }
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
+                    {order?.token_status === 'Closed' ? (
+                      <>
+                        {' '}
+                        <IconButton
+                          color="secondary"
+                          size="small"
+                          href={`/restaurant/invoices/${order.restaurant_invoice?.documentId}`}
+                          disabled={
+                            order?.token_status !== 'Closed' ||
+                            !permissions.canUpdate
+                          }
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <>
+                        <IconButton
+                          color="secondary"
+                          size="small"
+                          href={`/restaurant/table-orders/edit?orderId=${order.documentId}`}
+                          disabled={
+                            order?.token_status === 'Closed' ||
+                            !permissions.canUpdate
+                          }
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    )}
 
                     <IconButton
                       color="error"

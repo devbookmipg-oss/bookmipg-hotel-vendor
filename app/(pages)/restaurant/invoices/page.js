@@ -9,6 +9,7 @@ import {
   GetSingleData,
 } from '@/utils/ApiFunctions';
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 // mui
 import {
@@ -167,11 +168,13 @@ const Page = () => {
     );
   }, [data, search]);
 
+  const router = useRouter();
+
   // handle edit
   const handleEdit = (row) => {
-    setEditing(true);
-    setFormData(row);
-    setFormOpen(true);
+    if (row?.documentId) {
+      router.push(`/restaurant/invoices/${row.documentId}`);
+    }
   };
 
   // handle create
