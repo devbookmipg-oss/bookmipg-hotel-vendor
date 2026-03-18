@@ -20,10 +20,11 @@ import {
   TableRow,
   Paper,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
   Grid,
+  MenuItem,
+  Select,
+  InputLabel,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -286,20 +287,30 @@ const EditInvoice = ({ params }) => {
         <Grid container spacing={2} alignItems="center" mb={2}>
           <Grid size={10}>
             <FormControl fullWidth>
-              <InputLabel>Select menu item</InputLabel>
-              <Select
-                value={selectedItem}
-                label="Select menu item"
-                size="small"
-                onChange={(e) => setSelectedItem(e.target.value)}
-              >
-                <MenuItem value="">-- Select --</MenuItem>
-                {menuItems.map((item) => (
-                  <MenuItem key={item.documentId} value={item.documentId}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
+              <Autocomplete
+                options={menuItems || []}
+                getOptionLabel={(option) => option?.name || ''}
+                value={
+                  menuItems?.find((item) => item.documentId === selectedItem) ||
+                  null
+                }
+                onChange={(event, newValue) => {
+                  setSelectedItem(newValue ? newValue.documentId : '');
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search Menu Item"
+                    margin="dense"
+                    size="small"
+                    fullWidth
+                  />
+                )}
+                isOptionEqualToValue={(option, value) =>
+                  option.documentId === value.documentId
+                }
+                clearOnEscape
+              />
             </FormControl>
           </Grid>
           <Grid size={2}>
