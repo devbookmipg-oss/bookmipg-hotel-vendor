@@ -15,6 +15,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
+import { useRouter } from 'next/navigation';
 
 const TableGrid = ({
   tables,
@@ -26,6 +27,7 @@ const TableGrid = ({
   setKotDialogOpen,
   permissions,
 }) => {
+  const router = useRouter();
   return (
     <>
       <Typography
@@ -199,8 +201,11 @@ const TableGrid = ({
                         fullWidth
                         variant="contained"
                         startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-                        href={`/restaurant/table-orders/new?tableId=${table.documentId}`}
-                        // onClick={() => handleCreate(table.documentId)}
+                        onClick={() =>
+                          router.push(
+                            `/restaurant/table-orders/new?tableId=${table.documentId}`,
+                          )
+                        }
                         sx={{
                           py: 1,
                           borderRadius: 2,
@@ -229,7 +234,11 @@ const TableGrid = ({
                               size="small"
                               variant="contained"
                               startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-                              href={`/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`}
+                              onClick={() =>
+                                router.push(
+                                  `/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`,
+                                )
+                              }
                               sx={{
                                 py: 0.75,
                                 borderRadius: 2,
