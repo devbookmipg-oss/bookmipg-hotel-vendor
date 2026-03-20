@@ -7,7 +7,7 @@ import {
   CreateNewData,
   UpdateData,
 } from '@/utils/ApiFunctions';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 // mui
 import {
@@ -35,6 +35,7 @@ import {
   FormControlLabel,
   Switch,
   Grid,
+  Pagination,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -53,6 +54,8 @@ const Page = () => {
   });
 
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const ROWS_PER_PAGE = 10;
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -82,6 +85,21 @@ const Page = () => {
       item.name?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, data]);
+
+  const totalItems = filteredData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ROWS_PER_PAGE));
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * ROWS_PER_PAGE;
+    return filteredData.slice(start, start + ROWS_PER_PAGE);
+  }, [filteredData, page]);
+
+  const startItem = totalItems > 0 ? (page - 1) * ROWS_PER_PAGE + 1 : 0;
+  const endItem = Math.min(page * ROWS_PER_PAGE, totalItems);
 
   // handle edit
   const handleEdit = (row) => {
@@ -220,9 +238,9 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row, index) => (
+                {paginatedData?.map((row, index) => (
                   <TableRow key={row.documentId}>
-                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{startItem + index}</TableCell>
                     <TableCell>{row.name}</TableCell>
                     <TableCell>{row.category}</TableCell>
                     <TableCell>{row.hsn_code}</TableCell>
@@ -263,6 +281,29 @@ const Page = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 2,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Showing {startItem}-{endItem} of {totalItems} menu items
+            </Typography>
+            {totalPages > 1 && (
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+                size="small"
+                shape="rounded"
+              />
+            )}
+          </Box>
 
           {/* Delete Confirmation Dialog */}
           <Dialog

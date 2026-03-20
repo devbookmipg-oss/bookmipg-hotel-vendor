@@ -42,6 +42,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Pagination,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -111,6 +112,10 @@ const Page = () => {
 
   const [viewOpen, setViewOpen] = useState(false);
   const [viewData, setViewData] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const ROWS_PER_PAGE = 10;
+
   const [formErrors, setFormErrors] = useState({});
 
   const handleItemSelect = () => {
@@ -167,6 +172,21 @@ const Page = () => {
       item.invoice_no?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [data, search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, data]);
+
+  const totalItems = filteredData.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ROWS_PER_PAGE));
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * ROWS_PER_PAGE;
+    return filteredData.slice(start, start + ROWS_PER_PAGE);
+  }, [filteredData, page]);
+
+  const startItem = totalItems > 0 ? (page - 1) * ROWS_PER_PAGE + 1 : 0;
+  const endItem = Math.min(page * ROWS_PER_PAGE, totalItems);
 
   const router = useRouter();
 
@@ -384,7 +404,7 @@ const Page = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredData?.map((row) => (
+                {paginatedData?.map((row) => (
                   <TableRow key={row.documentId}>
                     <TableCell>{row.invoice_no}</TableCell>
                     <TableCell>{GetCustomDate(row.date)}</TableCell>
@@ -430,9 +450,9 @@ const Page = () => {
                     </TableCell>
                   </TableRow>
                 ))}
-                {filteredData?.length === 0 && (
+                {paginatedData?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
+                    <TableCell colSpan={8} align="center">
                       No invoice found
                     </TableCell>
                   </TableRow>
@@ -440,6 +460,29 @@ const Page = () => {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 2,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Showing {startItem}-{endItem} of {totalItems} invoices
+            </Typography>
+            {totalPages > 1 && (
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+                size="small"
+                shape="rounded"
+              />
+            )}
+          </Box>
 
           {/* Delete Confirmation Dialog */}
           <Dialog
