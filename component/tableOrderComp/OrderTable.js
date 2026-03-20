@@ -110,6 +110,9 @@ const OrderTable = ({
           </TableHead>
           <TableBody>
             {orders.map((order) => {
+              const status =
+                order.token_status === 'Closed' ? 'Closed' : 'Open';
+              const closingMethod = order.closing_method || '-';
               const totalAmount = order.food_items?.reduce(
                 (sum, item) => sum + item.amount,
                 0,
@@ -146,7 +149,12 @@ const OrderTable = ({
                       <>{order.closing_method || '-'}</>
                     )}
                   </TableCell>
-                  <TableCell>₹{totalAmount.toFixed(2) || 0}</TableCell>
+                  <TableCell>
+                    ₹
+                    {closingMethod === 'Restaurant Invoice'
+                      ? order?.restaurant_invoice?.payable_amount
+                      : totalAmount.toFixed(2) || 0}
+                  </TableCell>
                   <TableCell align="center">
                     <Tooltip title="View">
                       {order.closing_method === 'Restaurant Invoice' ? (

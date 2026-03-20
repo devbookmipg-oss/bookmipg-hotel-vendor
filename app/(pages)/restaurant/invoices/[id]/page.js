@@ -118,9 +118,7 @@ const EditInvoice = ({ params }) => {
     if (!formData.menu_items || formData.menu_items.length === 0) {
       errors.menu_items = 'Please add at least one menu item';
     }
-    if (!formData.mop) {
-      errors.mop = 'Mode of payment is required';
-    }
+
     setFormErrors(errors);
 
     return Object.keys(errors).length === 0;

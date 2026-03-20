@@ -154,7 +154,7 @@ const ProductCard = memo(({ item, qty, onIncrease, onDecrease, onRemove }) => {
             mb: 1,
           }}
         >
-          ₹{Number(item.rate).toFixed(2)}
+          ₹{Number(item.total).toFixed(2)}
         </Typography>
 
         <Box
