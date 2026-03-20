@@ -19,13 +19,14 @@ import {
   TableRow,
   Tooltip,
   Typography,
+  Pagination,
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { Print, Visibility } from '@mui/icons-material';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { resInvoiceThermalReceipt } from '@/utils/thermalReceipt';
 import { useReactToPrint } from 'react-to-print';
 import { RestaurantPosInvoice } from '../printables/RestaurantPosInvoice';
@@ -40,6 +41,9 @@ const OrderTable = ({
 }) => {
   const [viewOpen, setViewOpen] = useState(false);
   const [viewData, setViewData] = useState(null);
+
+  const [page, setPage] = useState(1);
+  const ROWS_PER_PAGE = 10;
 
   const [selectedPrinter, setSelectedPrinter] = useState(null);
   const [printerList, setPrinterList] = useState([]);
@@ -62,6 +66,26 @@ const OrderTable = ({
       }
     }, 1000);
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [orders]);
+
+  const totalOrders = orders?.length || 0;
+  const totalPages = Math.max(1, Math.ceil(totalOrders / ROWS_PER_PAGE));
+
+  const paginatedOrders = useMemo(() => {
+    if (!orders?.length) return [];
+    const start = (page - 1) * ROWS_PER_PAGE;
+    return orders.slice(start, start + ROWS_PER_PAGE);
+  }, [orders, page]);
+
+  const startItem = totalOrders > 0 ? (page - 1) * ROWS_PER_PAGE + 1 : 0;
+  const endItem = Math.min(page * ROWS_PER_PAGE, totalOrders);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
 
   const handleInvoicePrint = () => {
     const receipt = resInvoiceThermalReceipt(viewData, myProfile);
@@ -109,7 +133,7 @@ const OrderTable = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map((order) => {
+            {paginatedOrders.map((order) => {
               const status =
                 order.token_status === 'Closed' ? 'Closed' : 'Open';
               const closingMethod = order.closing_method || '-';
@@ -226,6 +250,32 @@ const OrderTable = ({
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mt: 2,
+          px: 1,
+        }}
+      >
+        <Typography variant="body2" color="text.secondary">
+          Showing {startItem}-{endItem} of {totalOrders} orders
+        </Typography>
+
+        {totalOrders > ROWS_PER_PAGE && (
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="small"
+            shape="rounded"
+          />
+        )}
+      </Box>
+
       <Dialog
         open={viewOpen}
         onClose={() => setViewOpen(false)}
