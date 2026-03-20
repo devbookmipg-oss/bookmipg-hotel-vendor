@@ -393,6 +393,8 @@ const Page = () => {
             handleKOT={handleKOT}
             setKotDialogOpen={setKotDialogOpen}
             permissions={permissions}
+            setDeleteOpen={setDeleteOpen}
+            setSelectedRow={setSelectedRow}
           />
         </Paper>
         <Paper

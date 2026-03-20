@@ -7,6 +7,7 @@ import {
   Chip,
   alpha,
   Stack,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -16,16 +17,18 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import { useRouter } from 'next/navigation';
+import { Delete } from '@mui/icons-material';
 
 const TableGrid = ({
   tables,
   orders,
-
   handleTransferOrder,
   handleOrderInvoice,
   handleKOT,
   setKotDialogOpen,
   permissions,
+  setSelectedRow,
+  setDeleteOpen,
 }) => {
   const router = useRouter();
   return (
@@ -120,23 +123,23 @@ const TableGrid = ({
                   }}
                 >
                   {/* Status Badge */}
-                  <Chip
-                    label={isAvailable ? 'AVL' : 'OCC'}
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      fontSize: '0.6rem',
-                      fontWeight: 700,
-                      height: '20px',
-                      backgroundColor: isAvailable
-                        ? alpha('#009905', 0.15)
-                        : alpha('#c20f12', 0.15),
-                      color: isAvailable ? '#009905' : '#c20f12',
-                      border: `1px solid ${isAvailable ? alpha('#009905', 0.3) : alpha('#c20f12', 0.3)}`,
-                    }}
-                  />
+                  {!isAvailable && (
+                    <IconButton
+                      onClick={() => {
+                        setSelectedRow(activeOrder);
+                        setDeleteOpen(true);
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        top: 5,
+                        right: 2,
+
+                        color: '#c20f12',
+                      }}
+                    >
+                      <Delete sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  )}
 
                   {/* Table Icon & Number */}
                   <Box sx={{ mb: 1.5 }}>
