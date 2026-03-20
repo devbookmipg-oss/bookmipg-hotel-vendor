@@ -19,6 +19,7 @@ const GlobalProvider = ({ children }) => {
   const logout = () => {
     destroyCookie(null, 'user', { path: '/' });
     destroyCookie(null, 'token', { path: '/' });
+    destroyCookie(null, 'hotel', { path: '/' });
     dispatchAuth({ type: 'AUTH_RESET' });
     localStorage.removeItem('someKey'); // only clear your auth keys if any
     router.replace('/');
@@ -43,6 +44,7 @@ const GlobalProvider = ({ children }) => {
       const cookies = parseCookies();
       const token = cookies.token;
       const user = cookies.user ? JSON.parse(cookies.user) : null;
+      const hotel = cookies.hotel ? JSON.parse(cookies.hotel) : null;
 
       if (token && user) {
         if (isTokenExpired(token)) {
@@ -50,7 +52,7 @@ const GlobalProvider = ({ children }) => {
         } else {
           dispatchAuth({
             type: 'LOGIN_SUCCESS',
-            payload: { token, user },
+            payload: { token, user, hotel },
           });
         }
       } else {

@@ -147,6 +147,20 @@ export default function FacebookLogin() {
     }
   };
 
+  const getUser = async (token, id) => {
+    try {
+      const res = await axios.get(`${BASEURL}/hotels/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const result = res.data.data;
+      return result;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   // authenticating user account
   const authenticateUser = async (data, event) => {
     event.preventDefault();
@@ -168,6 +182,7 @@ export default function FacebookLogin() {
           res.data.jwt,
           res.data.user.id,
         );
+        const hotel = await getUser(res.data.jwt, populatedUser.hotel_id);
 
         // set the jwt in the cookies
         setCookie(null, 'token', res.data.jwt, {
@@ -176,6 +191,10 @@ export default function FacebookLogin() {
         });
         // set the user in the cookies
         setCookie(null, 'user', JSON.stringify(populatedUser), {
+          maxAge: 30 * 24 * 60 * 60,
+          path: '/',
+        });
+        setCookie(null, 'hotel', JSON.stringify(hotel), {
           maxAge: 30 * 24 * 60 * 60,
           path: '/',
         });

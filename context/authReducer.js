@@ -6,6 +6,7 @@ export const authReducer = (state, action) => {
         loading: true,
         token: null,
         user: null,
+        hotel: null,
         error: null,
       };
 
@@ -15,6 +16,7 @@ export const authReducer = (state, action) => {
         loading: false,
         token: action.payload.token,
         user: action.payload.user,
+        hotel: action.payload.hotel,
         error: null,
       };
 
@@ -24,6 +26,7 @@ export const authReducer = (state, action) => {
         loading: false,
         token: null,
         user: null,
+        hotel: null,
         error: action.payload,
       };
 
@@ -33,6 +36,7 @@ export const authReducer = (state, action) => {
         loading: false,
         token: null,
         user: null,
+        hotel: null,
         error: null,
       };
 
@@ -42,6 +46,7 @@ export const authReducer = (state, action) => {
         loading: false,
         token: null,
         user: null,
+        hotel: null,
         error: action.payload,
       };
     case 'AUTH_RESET':
@@ -49,6 +54,7 @@ export const authReducer = (state, action) => {
         loading: false,
         token: null,
         user: null,
+        hotel: null,
         error: null,
       };
 

@@ -48,11 +48,13 @@ import {
 import { KotPrint } from '@/component/printables/KotPrint';
 import { CheckUserPermission } from '@/utils/UserPermissions';
 import { kotThermalReceipt } from '@/utils/thermalReceipt';
-
+import { parseCookies } from 'nookies';
 const Page = () => {
   const { auth } = useAuth();
+
   const permissions = CheckUserPermission(auth?.user?.permissions);
   const [loading, setLoading] = useState(false);
+  const [myProfile, setMyProfile] = useState({});
   const todaysDate = GetTodaysDate().dateString;
   const tables = GetDataList({ auth, endPoint: 'tables' });
   const orders = GetDataList({ auth, endPoint: 'table-orders' });
@@ -69,11 +71,12 @@ const Page = () => {
     auth,
     endPoint: 'restaurant-invoices',
   });
-  const myProfile = GetSingleData({
-    auth,
-    endPoint: 'hotels',
-    id: auth?.user?.hotel_id,
-  });
+
+  useEffect(() => {
+    const cookies = parseCookies();
+    const profile = cookies.hotel ? JSON.parse(cookies.hotel) : null;
+    setMyProfile(profile);
+  }, []);
 
   const activeBookings = bookings?.filter((bk) => {
     const checkIn = new Date(bk.checkin_date);

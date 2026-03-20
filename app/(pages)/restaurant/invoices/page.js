@@ -58,6 +58,7 @@ import { useReactToPrint } from 'react-to-print';
 import { RestaurantPosInvoice } from '@/component/printables/RestaurantPosInvoice';
 import { CheckUserPermission } from '@/utils/UserPermissions';
 import { resInvoiceThermalReceipt } from '@/utils/thermalReceipt';
+import { parseCookies } from 'nookies';
 
 const generateNextInvoiceNo = (invoices) => {
   if (!invoices || invoices.length === 0) {
@@ -76,6 +77,7 @@ const generateNextInvoiceNo = (invoices) => {
 
 const Page = () => {
   const { auth } = useAuth();
+  const [myProfile, setMyProfile] = useState({});
   const permissions = CheckUserPermission(auth?.user?.permissions);
   const todaysDate = GetTodaysDate().dateString;
   const data = GetDataList({
@@ -88,16 +90,16 @@ const Page = () => {
     endPoint: 'restaurant-menus',
   });
 
-  const myProfile = GetSingleData({
-    auth,
-    endPoint: 'hotels',
-    id: auth?.user?.hotel_id,
-  });
-
   const paymentMethods = GetDataList({
     auth,
     endPoint: 'payment-methods',
   });
+
+  useEffect(() => {
+    const cookies = parseCookies();
+    const profile = cookies.hotel ? JSON.parse(cookies.hotel) : null;
+    setMyProfile(profile);
+  }, []);
 
   const [search, setSearch] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
