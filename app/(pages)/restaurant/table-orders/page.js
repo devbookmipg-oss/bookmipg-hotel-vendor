@@ -7,12 +7,7 @@ import {
   Grid,
   Paper,
   Stack,
-  Chip,
   alpha,
-  Button,
-  DialogActions,
-  Dialog,
-  DialogContent,
   Select,
   MenuItem,
   FormControl,
@@ -23,23 +18,14 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 
-import {
-  GetDataList,
-  CreateNewData,
-  UpdateData,
-  DeleteData,
-  GetSingleData,
-} from '@/utils/ApiFunctions';
+import { GetDataList, DeleteData } from '@/utils/ApiFunctions';
 import { useAuth } from '@/context';
 import { Loader } from '@/component/common';
 import { useState, useRef, useEffect } from 'react';
-import { GetCurrentTime } from '@/utils/Timefetcher';
-import { GetCustomDate, GetTodaysDate } from '@/utils/DateFetcher';
-import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
+import { GetTodaysDate } from '@/utils/DateFetcher';
+import { SuccessToast } from '@/utils/GenerateToast';
 import { useReactToPrint } from 'react-to-print';
 import {
-  CreateNewOrder,
-  CreateOrderInvoice,
   DeleteDialog,
   OrderTable,
   TableGrid,
@@ -51,7 +37,6 @@ import { kotThermalReceipt } from '@/utils/thermalReceipt';
 import { parseCookies } from 'nookies';
 const Page = () => {
   const { auth } = useAuth();
-
   const permissions = CheckUserPermission(auth?.user?.permissions);
   const [loading, setLoading] = useState(false);
   const [myProfile, setMyProfile] = useState({});
@@ -62,10 +47,6 @@ const Page = () => {
   const bookings = GetDataList({
     auth,
     endPoint: 'room-bookings',
-  });
-  const paymentMethods = GetDataList({
-    auth,
-    endPoint: 'payment-methods',
   });
   const invoices = GetDataList({
     auth,
@@ -105,14 +86,13 @@ const Page = () => {
 
   // room transfer/invoice state
   const [transferOpen, setTransferOpen] = useState(false);
-  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState('');
 
   // KOT print state
   const [kotOpen, setKotOpen] = useState(false);
   const [kotData, setKotData] = useState(null);
-  const [kotDialogOpen, setKotDialogOpen] = useState(false);
+
   const kotComponentRef = useRef(null);
 
   const handleKOT = (order) => {
@@ -160,10 +140,6 @@ const Page = () => {
     setSelectedRow(order);
     setTransferOpen(true);
   };
-  const handleOrderInvoice = (order) => {
-    setSelectedRow(order);
-    setInvoiceOpen(true);
-  };
 
   const handleConfirmDelete = async () => {
     setLoading(true);
@@ -178,7 +154,7 @@ const Page = () => {
     setLoading(false);
   };
 
-  if (!tables || !orders || !paymentMethods || !invoices) return <Loader />;
+  if (!tables || !orders || !invoices) return <Loader />;
 
   // Calculate stats
   const totalTables = tables?.length || 0;
@@ -392,9 +368,7 @@ const Page = () => {
             tables={tables}
             orders={orders}
             handleTransferOrder={handleTransferOrder}
-            handleOrderInvoice={handleOrderInvoice}
             handleKOT={handleKOT}
-            setKotDialogOpen={setKotDialogOpen}
             permissions={permissions}
             setDeleteOpen={setDeleteOpen}
             setSelectedRow={setSelectedRow}
@@ -430,21 +404,6 @@ const Page = () => {
         loading={loading}
       />
 
-      {/* Create/Edit Dialog */}
-      {/* <CreateNewOrder
-        formOpen={formOpen}
-        setFormOpen={setFormOpen}
-        editing={editing}
-        formData={formData}
-        setFormData={setFormData}
-        tables={tables}
-        menuItems={menuItems}
-        selectedItem={selectedItem}
-        setSelectedItem={setSelectedItem}
-        handleSave={handleSave}
-        loading={loading}
-      /> */}
-
       {/* Transfer Dialog */}
       <TransferOrder
         auth={auth}
@@ -458,17 +417,6 @@ const Page = () => {
         selectedRoom={selectedRoom}
         setSelectedRoom={setSelectedRoom}
         bookings={bookings}
-      />
-
-      {/* create Invoice */}
-      <CreateOrderInvoice
-        auth={auth}
-        invoiceOpen={invoiceOpen}
-        setInvoiceOpen={setInvoiceOpen}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        invoices={invoices}
-        paymentMethods={paymentMethods}
       />
 
       {/* KOT Print (Hidden) */}

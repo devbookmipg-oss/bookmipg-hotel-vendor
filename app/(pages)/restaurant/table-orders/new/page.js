@@ -480,6 +480,7 @@ const NewOrder = () => {
     router.push('/restaurant/table-orders');
   };
 
+  if (!tables || !orders) return;
   return (
     <>
       <Box sx={{ px: 3, py: 2, backgroundColor: '#efefef' }}>
@@ -497,220 +498,213 @@ const NewOrder = () => {
           <Typography color="text.primary">New Order</Typography>
         </Breadcrumbs>
       </Box>
-      {!tables || !orders ? (
-        <Loader />
-      ) : (
-        <Box sx={{ p: 3 }}>
-          {/* Table Selection and Notes */}
-          <Grid container spacing={2} sx={{ mb: 3, mt: 3 }} id="form-start">
-            <Grid size={{ xs: 12, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Select Table</InputLabel>
-                <Select
-                  label="Select Table"
-                  value={formData.table || ''}
-                  onChange={(e) =>
-                    setFormData({ ...formData, table: e.target.value })
-                  }
-                  sx={{ bgcolor: 'white', borderRadius: 2 }}
-                >
-                  {tables?.map((table) => (
-                    <MenuItem key={table.documentId} value={table.documentId}>
-                      <TableRestaurant
-                        sx={{ mr: 1, fontSize: 18, color: '#667eea' }}
-                      />
-                      {table.table_no}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
-                label="Special Notes"
-                fullWidth
-                size="small"
-                value={formData.notes || ''}
+      <Box sx={{ p: 3 }}>
+        {/* Table Selection and Notes */}
+        <Grid container spacing={2} sx={{ mb: 3, mt: 3 }} id="form-start">
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Select Table</InputLabel>
+              <Select
+                label="Select Table"
+                value={formData.table || ''}
                 onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
+                  setFormData({ ...formData, table: e.target.value })
                 }
                 sx={{ bgcolor: 'white', borderRadius: 2 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Note sx={{ color: '#667eea', fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Search and Category Filter */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, md: 8 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search menu items..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: '#667eea', fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                  sx: { bgcolor: 'white', borderRadius: 2 },
-                }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={selectedCategory}
-                  onChange={handleCategoryChange}
-                  label="Category"
-                  sx={{ bgcolor: 'white', borderRadius: 2 }}
-                  startAdornment={
-                    <Category sx={{ color: '#667eea', mr: 1, fontSize: 18 }} />
-                  }
-                >
-                  {categories.map((category) => (
-                    <MenuItem key={category.value} value={category.value}>
-                      {category.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-
-          {/* Products Grid */}
-          <Box id="products-grid" sx={{ minHeight: '400px' }}>
-            <Grid container spacing={2}>
-              {paginatedItems.map((item) => {
-                const qty = getQty(item);
-
-                return (
-                  <Grid
-                    size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
-                    key={item.documentId}
-                  >
-                    <ProductCard
-                      item={item}
-                      qty={qty}
-                      onIncrease={() => increaseQty(item)}
-                      onDecrease={() => decreaseQty(item)}
-                      onRemove={() => removeItem(item)}
+              >
+                {tables?.map((table) => (
+                  <MenuItem key={table.documentId} value={table.documentId}>
+                    <TableRestaurant
+                      sx={{ mr: 1, fontSize: 18, color: '#667eea' }}
                     />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          </Box>
-          {/* Results Count and Simple Pagination */}
-          <Box
-            sx={{
-              my: 2,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Showing{' '}
-              {filteredItems.length > 0 ? `${startItem}-${endItem}` : '0'} of{' '}
-              {filteredItems.length} items
-            </Typography>
+                    {table.table_no}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-            {totalPages > 1 && (
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <IconButton
-                  size="small"
-                  onClick={handlePrevPage}
-                  disabled={page === 1}
-                  sx={{
-                    bgcolor: page > 1 ? '#667eea' : '#e0e0e0',
-                    color: 'white',
-                    '&:hover': { bgcolor: page > 1 ? '#764ba2' : '#e0e0e0' },
-                    '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
-                  }}
-                >
-                  <ChevronLeft />
-                </IconButton>
-                <Typography variant="body2">
-                  Page {page} of {totalPages}
-                </Typography>
-                <IconButton
-                  size="small"
-                  onClick={handleNextPage}
-                  disabled={page === totalPages}
-                  sx={{
-                    bgcolor: page < totalPages ? '#667eea' : '#e0e0e0',
-                    color: 'white',
-                    '&:hover': {
-                      bgcolor: page < totalPages ? '#764ba2' : '#e0e0e0',
-                    },
-                    '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
-                  }}
-                >
-                  <ChevronRight />
-                </IconButton>
-              </Box>
-            )}
+          <Grid size={{ xs: 12, md: 8 }}>
+            <TextField
+              label="Special Notes"
+              fullWidth
+              size="small"
+              value={formData.notes || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, notes: e.target.value })
+              }
+              sx={{ bgcolor: 'white', borderRadius: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Note sx={{ color: '#667eea', fontSize: 18 }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+        </Grid>
 
-            {selectedCategory !== 'all' && (
-              <Chip
-                label={
-                  categories.find((c) => c.value === selectedCategory)?.label
+        {/* Search and Category Filter */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search menu items..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: '#667eea', fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                sx: { bgcolor: 'white', borderRadius: 2 },
+              }}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                label="Category"
+                sx={{ bgcolor: 'white', borderRadius: 2 }}
+                startAdornment={
+                  <Category sx={{ color: '#667eea', mr: 1, fontSize: 18 }} />
                 }
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category.value} value={category.value}>
+                    {category.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+
+        {/* Products Grid */}
+        <Box id="products-grid" sx={{ minHeight: '400px' }}>
+          <Grid container spacing={2}>
+            {paginatedItems.map((item) => {
+              const qty = getQty(item);
+
+              return (
+                <Grid
+                  size={{ xs: 6, sm: 4, md: 3, lg: 2 }}
+                  key={item.documentId}
+                >
+                  <ProductCard
+                    item={item}
+                    qty={qty}
+                    onIncrease={() => increaseQty(item)}
+                    onDecrease={() => decreaseQty(item)}
+                    onRemove={() => removeItem(item)}
+                  />
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+        {/* Results Count and Simple Pagination */}
+        <Box
+          sx={{
+            my: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            Showing {filteredItems.length > 0 ? `${startItem}-${endItem}` : '0'}{' '}
+            of {filteredItems.length} items
+          </Typography>
+
+          {totalPages > 1 && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <IconButton
                 size="small"
-                onDelete={() => setSelectedCategory('all')}
-                sx={{ bgcolor: alpha('#667eea', 0.1) }}
-              />
-            )}
-          </Box>
-          {/* No Results */}
-          {paginatedItems.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Restaurant sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
-              <Typography color="text.secondary">No items found</Typography>
+                onClick={handlePrevPage}
+                disabled={page === 1}
+                sx={{
+                  bgcolor: page > 1 ? '#667eea' : '#e0e0e0',
+                  color: 'white',
+                  '&:hover': { bgcolor: page > 1 ? '#764ba2' : '#e0e0e0' },
+                  '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
+                }}
+              >
+                <ChevronLeft />
+              </IconButton>
+              <Typography variant="body2">
+                Page {page} of {totalPages}
+              </Typography>
+              <IconButton
+                size="small"
+                onClick={handleNextPage}
+                disabled={page === totalPages}
+                sx={{
+                  bgcolor: page < totalPages ? '#667eea' : '#e0e0e0',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: page < totalPages ? '#764ba2' : '#e0e0e0',
+                  },
+                  '&.Mui-disabled': { bgcolor: '#e0e0e0', color: '#999' },
+                }}
+              >
+                <ChevronRight />
+              </IconButton>
             </Box>
           )}
-          <Box sx={{ textAlign: 'end' }}>
-            <Button
-              size="small"
-              onClick={handleSave}
-              disabled={
-                loading || !formData.table || localFoodItems.length === 0
+
+          {selectedCategory !== 'all' && (
+            <Chip
+              label={
+                categories.find((c) => c.value === selectedCategory)?.label
               }
-              variant="contained"
-              sx={{
+              size="small"
+              onDelete={() => setSelectedCategory('all')}
+              sx={{ bgcolor: alpha('#667eea', 0.1) }}
+            />
+          )}
+        </Box>
+        {/* No Results */}
+        {paginatedItems.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Restaurant sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+            <Typography color="text.secondary">No items found</Typography>
+          </Box>
+        )}
+        <Box sx={{ textAlign: 'end' }}>
+          <Button
+            size="small"
+            onClick={handleSave}
+            disabled={loading || !formData.table || localFoodItems.length === 0}
+            variant="contained"
+            sx={{
+              background:
+                loading || !formData.table || localFoodItems.length === 0
+                  ? '#e0e0e0'
+                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color:
+                loading || !formData.table || localFoodItems.length === 0
+                  ? '#999'
+                  : 'white',
+              '&:hover': {
                 background:
                   loading || !formData.table || localFoodItems.length === 0
                     ? '#e0e0e0'
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color:
-                  loading || !formData.table || localFoodItems.length === 0
-                    ? '#999'
-                    : 'white',
-                '&:hover': {
-                  background:
-                    loading || !formData.table || localFoodItems.length === 0
-                      ? '#e0e0e0'
-                      : 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                },
-              }}
-            >
-              {loading ? 'Processing...' : 'Create Order'}
-            </Button>
-          </Box>
+                    : 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+              },
+            }}
+          >
+            {loading ? 'Processing...' : 'Create Order'}
+          </Button>
         </Box>
-      )}
+      </Box>
     </>
   );
 };

@@ -18,14 +18,15 @@ import LocalPrintshopIcon from '@mui/icons-material/LocalPrintshop';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
 import { useRouter } from 'next/navigation';
 import { Delete } from '@mui/icons-material';
+import Link from 'next/link';
 
 const TableGrid = ({
   tables,
   orders,
   handleTransferOrder,
-  handleOrderInvoice,
+
   handleKOT,
-  setKotDialogOpen,
+
   permissions,
   setSelectedRow,
   setDeleteOpen,
@@ -200,63 +201,63 @@ const TableGrid = ({
                   {/* Action Buttons */}
                   <Box sx={{ width: '100%' }}>
                     {isAvailable ? (
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-                        onClick={() =>
-                          router.push(
-                            `/restaurant/table-orders/new?tableId=${table.documentId}`,
-                          )
-                        }
-                        sx={{
-                          py: 1,
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '0.85rem',
-                          backgroundColor: '#009905',
-                          '&:hover': {
-                            backgroundColor: '#008005',
-                            transform: 'scale(1.02)',
-                          },
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 12px rgba(0, 153, 5, 0.3)',
-                        }}
-                        disabled={!permissions.canCreate}
+                      <Link
+                        href={`/restaurant/table-orders/new?tableId=${table.documentId}`}
+                        passHref
                       >
-                        Create Order
-                      </Button>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+                          sx={{
+                            py: 1,
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            backgroundColor: '#009905',
+                            '&:hover': {
+                              backgroundColor: '#008005',
+                              transform: 'scale(1.02)',
+                            },
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 4px 12px rgba(0, 153, 5, 0.3)',
+                          }}
+                          disabled={!permissions.canCreate}
+                        >
+                          Create Order
+                        </Button>
+                      </Link>
                     ) : (
                       <Stack spacing={0.5} width="100%">
                         {/* Action Buttons Grid */}
                         <Grid container spacing={1}>
                           <Grid size={6}>
-                            <Button
-                              fullWidth
-                              size="small"
-                              variant="contained"
-                              startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-                              onClick={() =>
-                                router.push(
-                                  `/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`,
-                                )
-                              }
-                              sx={{
-                                py: 0.75,
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontSize: '0.7rem',
-                                fontWeight: 600,
-                                backgroundColor: '#3498db',
-                                '&:hover': {
-                                  backgroundColor: '#2980b9',
-                                },
-                              }}
-                              disabled={!permissions.canUpdate}
+                            <Link
+                              href={`/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`}
+                              passHref
                             >
-                              Edit
-                            </Button>
+                              <Button
+                                fullWidth
+                                size="small"
+                                variant="contained"
+                                startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+                                sx={{
+                                  py: 0.75,
+                                  borderRadius: 2,
+                                  textTransform: 'none',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  backgroundColor: '#3498db',
+                                  '&:hover': {
+                                    backgroundColor: '#2980b9',
+                                  },
+                                }}
+                                disabled={!permissions.canUpdate}
+                              >
+                                Edit
+                              </Button>
+                            </Link>
                           </Grid>
                           <Grid size={6}>
                             <Button
@@ -268,7 +269,6 @@ const TableGrid = ({
                               }
                               onClick={() => {
                                 handleKOT(activeOrder);
-                                setKotDialogOpen(true);
                               }}
                               sx={{
                                 py: 0.75,
@@ -310,26 +310,32 @@ const TableGrid = ({
                             </Button>
                           </Grid>
                           <Grid size={6}>
-                            <Button
-                              fullWidth
-                              size="small"
-                              variant="contained"
-                              startIcon={<ReceiptIcon sx={{ fontSize: 14 }} />}
-                              onClick={() => handleOrderInvoice(activeOrder)}
-                              sx={{
-                                py: 0.75,
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                fontSize: '0.7rem',
-                                fontWeight: 600,
-                                backgroundColor: '#c20f12',
-                                '&:hover': {
-                                  backgroundColor: '#a00c0f',
-                                },
-                              }}
+                            <Link
+                              href={`/restaurant/table-orders/create-invoice?orderId=${activeOrder.documentId}`}
+                              passHref
                             >
-                              Invoice
-                            </Button>
+                              <Button
+                                fullWidth
+                                size="small"
+                                variant="contained"
+                                startIcon={
+                                  <ReceiptIcon sx={{ fontSize: 14 }} />
+                                }
+                                sx={{
+                                  py: 0.75,
+                                  borderRadius: 2,
+                                  textTransform: 'none',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  backgroundColor: '#c20f12',
+                                  '&:hover': {
+                                    backgroundColor: '#a00c0f',
+                                  },
+                                }}
+                              >
+                                Invoice
+                              </Button>
+                            </Link>
                           </Grid>
                         </Grid>
                       </Stack>

@@ -7,7 +7,6 @@ export const GetDataList = ({ auth, endPoint }) => {
   const apiUrl = `${BASEURL}/${endPoint}?sort=createdAt:DESC&filters[$and][0][hotel_id][$eq]=${auth?.user?.hotel_id}&populate=*`;
 
   const { data } = useSWR(apiUrl, fetcher, {
-    refreshInterval: 500,
     revalidateOnFocus: true,
   });
   return data;
@@ -16,7 +15,6 @@ export const GetDataList = ({ auth, endPoint }) => {
 // get single data
 export const GetSingleData = ({ auth, endPoint, id }) => {
   const { data } = useSWR(`${BASEURL}/${endPoint}/${id}?populate=*`, fetcher, {
-    refreshInterval: 500,
     revalidateOnFocus: true,
   });
   return data;
