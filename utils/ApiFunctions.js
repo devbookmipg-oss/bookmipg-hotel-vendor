@@ -16,6 +16,7 @@ export const GetDataList = ({ auth, endPoint }) => {
 export const GetSingleData = ({ auth, endPoint, id }) => {
   const { data } = useSWR(`${BASEURL}/${endPoint}/${id}?populate=*`, fetcher, {
     revalidateOnFocus: true,
+    refreshInterval: 1000,
   });
   return data;
 };

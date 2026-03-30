@@ -292,8 +292,8 @@ export default function FacebookLogin() {
                 }}
               >
                 <Image
-                  src="/logo-white.png"
-                  height={150}
+                  src="https://res.cloudinary.com/dopl2wzjv/image/upload/v1774892145/raw-logo-bookmipg-original-white_fu0hxq.png"
+                  height={140}
                   width={300}
                   alt="logo"
                   style={{

@@ -233,31 +233,31 @@ const TableGrid = ({
                         {/* Action Buttons Grid */}
                         <Grid container spacing={1}>
                           <Grid size={6}>
-                            <Link
-                              href={`/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`}
-                              passHref
+                            <Button
+                              fullWidth
+                              size="small"
+                              variant="contained"
+                              startIcon={<EditIcon sx={{ fontSize: 14 }} />}
+                              sx={{
+                                py: 0.75,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                backgroundColor: '#3498db',
+                                '&:hover': {
+                                  backgroundColor: '#2980b9',
+                                },
+                              }}
+                              onClick={() =>
+                                router.push(
+                                  `/restaurant/table-orders/edit?orderId=${activeOrder.documentId}`,
+                                )
+                              }
+                              disabled={!permissions.canUpdate}
                             >
-                              <Button
-                                fullWidth
-                                size="small"
-                                variant="contained"
-                                startIcon={<EditIcon sx={{ fontSize: 14 }} />}
-                                sx={{
-                                  py: 0.75,
-                                  borderRadius: 2,
-                                  textTransform: 'none',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 600,
-                                  backgroundColor: '#3498db',
-                                  '&:hover': {
-                                    backgroundColor: '#2980b9',
-                                  },
-                                }}
-                                disabled={!permissions.canUpdate}
-                              >
-                                Edit
-                              </Button>
-                            </Link>
+                              Edit
+                            </Button>
                           </Grid>
                           <Grid size={6}>
                             <Button

@@ -216,7 +216,7 @@ ProductCard.displayName = 'ProductCard';
 const UpdateOrder = () => {
   const ITEMS_PER_PAGE = 12;
   const { auth } = useAuth();
-  const permissions = CheckUserPermission(auth?.user?.permissions);
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
@@ -224,19 +224,6 @@ const UpdateOrder = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [page, setPage] = useState(1);
-
-  const todaysDate = GetTodaysDate().dateString;
-  const tables = GetDataList({ auth, endPoint: 'tables' });
-  const orders = GetDataList({ auth, endPoint: 'table-orders' });
-  const menuItems = GetDataList({
-    auth,
-    endPoint: 'restaurant-menus',
-  });
-  const existingOrder = GetSingleData({
-    auth,
-    endPoint: 'table-orders',
-    id: orderId,
-  });
   const [formData, setFormData] = useState({
     food_items: [],
     notes: '',
@@ -244,6 +231,18 @@ const UpdateOrder = () => {
     table: '',
     token_status: 'Open',
   });
+  const tables = GetDataList({ auth, endPoint: 'tables' });
+  const orders = GetDataList({ auth, endPoint: 'table-orders' });
+  const menuItems = GetDataList({
+    auth,
+    endPoint: 'restaurant-menus',
+  });
+  const existingOrder = GetSingleData({
+    endPoint: 'table-orders',
+    id: orderId,
+  });
+  console.log(existingOrder);
+
   const [localFoodItems, setLocalFoodItems] = useState(
     formData.food_items || [],
   );
@@ -268,18 +267,25 @@ const UpdateOrder = () => {
     setLocalFoodItems(formData.food_items || []);
   }, [formData.food_items]);
 
-  // Populate form data when existing order is loaded
-  useEffect(() => {
-    if (existingOrder && !formData.table) {
-      setFormData({
-        food_items: existingOrder.food_items || [],
-        notes: existingOrder.notes || '',
-        hotel_id: existingOrder.hotel_id || auth?.user?.hotel_id || '',
-        table: existingOrder.table?.documentId || '',
-        token_status: existingOrder.token_status || 'Open',
-      });
-    }
+  // Memoized existing order initial form values
+  const existingOrderFormData = useMemo(() => {
+    if (!existingOrder || formData.table) return null;
+
+    return {
+      food_items: existingOrder.food_items || [],
+      notes: existingOrder.notes || '',
+      hotel_id: existingOrder.hotel_id || auth?.user?.hotel_id || '',
+      table: existingOrder.table?.documentId || '',
+      token_status: existingOrder.token_status || 'Open',
+    };
   }, [existingOrder, auth?.user?.hotel_id, formData.table]);
+
+  // Apply memoized initial data once when ready
+  useEffect(() => {
+    if (existingOrderFormData) {
+      setFormData(existingOrderFormData);
+    }
+  }, [existingOrderFormData]);
 
   // Get unique categories for select dropdown
   const categories = useMemo(() => {
@@ -327,12 +333,29 @@ const UpdateOrder = () => {
     setPage(1);
   }, [search, selectedCategory]);
 
-  // Calculate pagination
+  // Optimized quantity management functions
+  const getQty = useCallback(
+    (item) => {
+      const found = localFoodItems.find((f) => f.item === item.name);
+      return found ? found.qty : 0;
+    },
+    [localFoodItems],
+  );
+
   const paginatedItems = useMemo(() => {
+    const itemsWithQty = filteredItems.map((item) => ({
+      item,
+      qty: getQty(item),
+    }));
+
+    const sortedItems = itemsWithQty
+      .sort((a, b) => b.qty - a.qty)
+      .map(({ item }) => item);
+
     const start = (page - 1) * ITEMS_PER_PAGE;
     const end = start + ITEMS_PER_PAGE;
-    return filteredItems.slice(start, end);
-  }, [filteredItems, page]);
+    return sortedItems.slice(start, end);
+  }, [filteredItems, page, getQty]);
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const startItem = (page - 1) * ITEMS_PER_PAGE + 1;
@@ -358,14 +381,6 @@ const UpdateOrder = () => {
   };
 
   // Optimized quantity management functions
-  const getQty = useCallback(
-    (item) => {
-      const found = localFoodItems.find((f) => f.item === item.name);
-      return found ? found.qty : 0;
-    },
-    [localFoodItems],
-  );
-
   const increaseQty = useCallback(
     (item) => {
       const exists = localFoodItems.find((f) => f.item === item.name);
@@ -463,13 +478,19 @@ const UpdateOrder = () => {
         },
       },
     });
-
+    setFormData({
+      food_items: [],
+      notes: '',
+      hotel_id: auth?.user?.hotel_id || '',
+      table: '',
+      token_status: 'Open',
+    });
     SuccessToast('Order updated successfully');
     setLoading(false);
     router.push('/restaurant/table-orders');
   };
 
-  if (!tables || !orders || !existingOrder) return;
+  if (!tables || !orders || !existingOrder) return null;
 
   return (
     <>
