@@ -40,7 +40,12 @@ const UpdateRestaurantProfileForm = ({ data, auth }) => {
     try {
       setLoading(true);
       const payload = {
-        data: formData,
+        data: {
+          ...formData,
+          res_mobile: formData.res_mobile || null,
+          res_alt_mobile: formData.res_alt_mobile || null,
+          res_email: formData.res_email || null,
+        },
       };
       await UpdateData({
         auth,
@@ -59,11 +64,6 @@ const UpdateRestaurantProfileForm = ({ data, auth }) => {
     }
   };
 
-  const getHotelDistrictOptions = () => {
-    return formData.hotel_state
-      ? stateDistricts[formData.hotel_state] || []
-      : [];
-  };
   const getResDistrictOptions = () => {
     return formData.res_state ? stateDistricts[formData.res_state] || [] : [];
   };
@@ -114,7 +114,6 @@ const UpdateRestaurantProfileForm = ({ data, auth }) => {
                   name="res_email"
                   value={formData.res_email}
                   onChange={handleChange}
-                  required
                 />
               </Grid>
               <Grid item size={{ xs: 12, md: 6 }}>

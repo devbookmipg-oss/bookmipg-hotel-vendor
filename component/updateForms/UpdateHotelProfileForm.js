@@ -26,7 +26,6 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
     hotel_gst_no: data.hotel_gst_no || '',
     hotel_website: data.hotel_website || '',
     hotel_address_line1: data.hotel_address_line1 || '',
-
     hotel_district: data.hotel_district || '',
     hotel_state: data.hotel_state || 'West Bengal',
     hotel_pincode: data.hotel_pincode || '',
@@ -81,6 +80,8 @@ const UpdateHotelProfileForm = ({ data, auth }) => {
         data: {
           ...formData,
           amenities: sanitizedAmenities,
+          hotel_mobile: formData.hotel_mobile || null,
+          hotel_alt_mobile: formData.hotel_alt_mobile || null,
         },
       };
 

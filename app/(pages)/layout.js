@@ -8,6 +8,7 @@ import {
   AdminPanelSettings,
   AirplayOutlined,
   Apartment,
+  CleaningServices,
   Dashboard,
   EventAvailable,
   FoodBank,
@@ -113,6 +114,13 @@ const menuLinks = [
         url: '/front-office/room-invoice',
       },
     ],
+  },
+  {
+    key: 'housekeeping',
+    label: 'Housekeeping',
+    url: '/house-keeping',
+    icon: <CleaningServices sx={{ fontSize: 18 }} />,
+    access: 'housekeeping',
   },
   {
     key: 'restaurant',

@@ -128,6 +128,7 @@ const Page = () => {
         publishedAt,
         updatedAt,
         createdAt,
+        room_bookings,
         ...updateBody
       } = formData;
 

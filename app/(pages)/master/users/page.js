@@ -55,7 +55,7 @@ const Page = () => {
     auth,
   });
 
-  const [search, setSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -69,7 +69,7 @@ const Page = () => {
     return {
       username: '',
       email: '',
-      confirmed: false,
+      confirmed: true,
       blocked: false,
       role: 1,
       access: [],
@@ -151,6 +151,7 @@ const Page = () => {
     setFormOpen(false);
     setFormData(initialForm());
     setPassword('');
+    setUserSearch('');
   };
 
   const handleDeleteClick = (row) => {
@@ -189,8 +190,8 @@ const Page = () => {
             <TextField
               size="small"
               label="Search by Username"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
             />
             <Button
               variant="contained"
@@ -231,7 +232,9 @@ const Page = () => {
               <TableBody>
                 {data
                   ?.filter((row) =>
-                    row.username?.toLowerCase().includes(search.toLowerCase()),
+                    row.username
+                      ?.toLowerCase()
+                      .includes(userSearch.toLowerCase()),
                   )
                   ?.map((row, index) => (
                     <TableRow key={row.documentId}>

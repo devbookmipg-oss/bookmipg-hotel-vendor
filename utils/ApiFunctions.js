@@ -8,6 +8,7 @@ export const GetDataList = ({ auth, endPoint }) => {
 
   const { data } = useSWR(apiUrl, fetcher, {
     revalidateOnFocus: true,
+    refreshInterval: 1000,
   });
   return data;
 };
