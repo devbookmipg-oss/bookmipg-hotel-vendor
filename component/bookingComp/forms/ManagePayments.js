@@ -41,21 +41,21 @@ export default function ManagePayments({
   // ---- Summary calculations ----
   const totalAmount = prevPayments.reduce(
     (sum, p) => sum + (Number(p.amount) || 0),
-    0
+    0,
   );
   const advancePayment = booking?.advance_payment || null;
   const advanceAmount = advancePayment?.amount || 0;
   const totalRoomAmount = roomTokens.reduce(
     (sum, r) => sum + (parseFloat(r.total_amount) || r.amount || 0),
-    0
+    0,
   );
   const totalServiceAmount = services.reduce(
     (sum, s) => sum + (parseFloat(s.total_amount) || 0),
-    0
+    0,
   );
   const totalFoodAmount = foodItems.reduce(
     (sum, f) => sum + (parseFloat(f.total_amount) || 0),
-    0
+    0,
   );
   const grandTotal = totalRoomAmount + totalServiceAmount + totalFoodAmount;
   const amountPayed = totalAmount + advanceAmount;
@@ -82,7 +82,7 @@ export default function ManagePayments({
       setErrorMessage(
         `Total payment (₹${
           form.amount
-        }) cannot exceed due amount (₹${dueAmount.toFixed(1)}).`
+        }) cannot exceed due amount (₹${dueAmount.toFixed(1)}).`,
       );
       return;
     }
@@ -105,7 +105,7 @@ export default function ManagePayments({
   const handleClose = () => setOpen(false);
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}>
       <Box
         sx={{
           position: 'absolute',

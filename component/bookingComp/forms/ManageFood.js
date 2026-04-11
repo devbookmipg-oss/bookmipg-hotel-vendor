@@ -137,7 +137,7 @@ export default function ManageFood({
   const handleClose = () => setOpen(false);
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}>
       <Box
         sx={{
           position: 'absolute',

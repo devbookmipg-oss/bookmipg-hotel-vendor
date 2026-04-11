@@ -15,7 +15,7 @@ const CancelBookingDialog = ({
 }) => {
   return (
     <>
-      <Dialog open={cancelDialog} onClose={() => setCancelDialog(false)}>
+      <Dialog open={cancelDialog}>
         <DialogTitle>🚫Cancel Booking</DialogTitle>
         <DialogContent>
           <DialogContentText>

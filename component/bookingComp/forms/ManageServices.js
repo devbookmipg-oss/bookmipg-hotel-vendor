@@ -135,7 +135,7 @@ export default function ManageServices({
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}>
       <Box
         sx={{
           position: 'absolute',

@@ -241,7 +241,7 @@ export default function CreateInvoiceModal({
   };
 
   return (
-    <Modal open={open} onClose={() => setOpen(false)}>
+    <Modal open={open}>
       <Box
         sx={{
           position: 'absolute',

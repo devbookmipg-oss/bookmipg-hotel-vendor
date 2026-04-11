@@ -76,7 +76,7 @@ export default function ManageRoomTariff({
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open}>
       <Box
         sx={{
           position: 'absolute',
