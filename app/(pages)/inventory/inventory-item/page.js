@@ -115,6 +115,8 @@ const Page = () => {
         publishedAt,
         updatedAt,
         createdAt,
+        inventory_purchases,
+        inventory_sales,
         ...updateBody
       } = formData;
 

@@ -10,6 +10,7 @@ import {
   TableBody,
   Grid,
 } from '@mui/material';
+import { px } from 'framer-motion';
 import React from 'react';
 import { ToWords } from 'to-words';
 
@@ -37,12 +38,16 @@ const SectionHeader = styled(Box)({
 const InfoRow = styled(Box)({
   display: 'flex',
   justifyContent: 'space-between',
-  padding: '6px 0',
+  padding: '3px 0',
   borderBottom: `1px solid ${BORDER_COLOR}`,
-  fontSize: '0.875rem',
+  fontSize: '0.9rem',
+  lineHeight: '1em',
   color: TEXT_PRIMARY,
   '&:last-child': {
     borderBottom: 'none',
+  },
+  ' &>p': {
+    fontSize: '0.8em',
   },
 });
 
@@ -50,7 +55,7 @@ const SummaryBox = styled(Box)({
   backgroundColor: LIGHT_BG,
   border: `1px solid ${BORDER_COLOR}`,
   borderRadius: '4px',
-  padding: '12px',
+  padding: '8px 12px',
 });
 
 const RoomInvoicePrint = React.forwardRef((props, ref) => {
@@ -150,7 +155,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
           display: 'flex',
           alignItems: 'flex-start',
           gap: '20px',
-          marginBottom: '30px',
+          marginBottom: '10px',
           paddingBottom: '20px',
           borderBottom: `3px solid ${BRAND_RED}`,
         }}
@@ -158,8 +163,8 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
         {/* Logo */}
         <Box
           sx={{
-            width: '110px',
-            height: '110px',
+            width: '90px',
+            height: '90px',
             borderRadius: '4px',
             overflow: 'hidden',
             display: 'flex',
@@ -192,26 +197,36 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: TEXT_SECONDARY, mt: 0.5, fontSize: 13 }}
+            sx={{
+              color: TEXT_SECONDARY,
+              mt: 0.5,
+              fontSize: 11,
+              lineHeight: '1.1em',
+            }}
           >
             {hotel?.hotel_address_line1}, {hotel?.hotel_address_line2}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: TEXT_SECONDARY, fontSize: 13 }}
+            sx={{ color: TEXT_SECONDARY, fontSize: 11, lineHeight: '1.1em' }}
           >
             {hotel?.hotel_state}, PIN-{hotel?.hotel_pincode}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: TEXT_SECONDARY, mt: 1, fontSize: 13 }}
+            sx={{
+              color: TEXT_SECONDARY,
+              mt: 1,
+              fontSize: 11,
+              lineHeight: '1.1em',
+            }}
           >
             Phone: {hotel?.hotel_mobile}{' '}
             {hotel?.hotel_alt_mobile && `, ${hotel?.hotel_alt_mobile}`}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: TEXT_SECONDARY, fontSize: 13 }}
+            sx={{ color: TEXT_SECONDARY, fontSize: 11, lineHeight: '1.1em' }}
           >
             Email: {hotel?.hotel_email || 'N/A'} | GSTIN:{' '}
             {hotel?.hotel_gst_no || 'N/A'}
@@ -237,7 +252,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
           </Typography>
           <Typography
             variant="h6"
-            sx={{ fontWeight: 'bold', color: BRAND_RED, my: 1 }}
+            sx={{ fontWeight: 'bold', color: BRAND_RED, lineHeight: '1.1em' }}
           >
             {data?.invoice_no}
           </Typography>
@@ -246,7 +261,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
           </Typography>
           <Typography
             variant="caption"
-            sx={{ color: TEXT_SECONDARY, display: 'block', mt: 1 }}
+            sx={{ color: TEXT_SECONDARY, display: 'block' }}
           >
             Booking ID: {booking?.booking_id}
           </Typography>
@@ -254,7 +269,7 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
       </Box>
 
       {/* Guest & Booking Info Grid */}
-      <Grid container spacing={2} sx={{ marginBottom: '30px' }}>
+      <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
         <Grid size={6}>
           <Section>
             <SectionHeader>
@@ -280,14 +295,19 @@ const RoomInvoicePrint = React.forwardRef((props, ref) => {
                   {booking?.customer?.company_name || 'N/A'}
                 </Typography>
               </InfoRow>
-              <InfoRow>
-                <Typography sx={{ fontWeight: 600 }}>Address:</Typography>
-                <Typography>{booking?.customer?.address || 'N/A'}</Typography>
-              </InfoRow>
-              <InfoRow>
-                <Typography sx={{ fontWeight: 600 }}>GSTIN:</Typography>
-                <Typography>{booking?.customer?.gst_no || 'N/A'}</Typography>
-              </InfoRow>
+              {booking?.customer?.gst_no && (
+                <InfoRow>
+                  <Typography sx={{ fontWeight: 600 }}>Address:</Typography>
+                  <Typography>{booking?.customer?.address || 'N/A'}</Typography>
+                </InfoRow>
+              )}
+
+              {booking?.customer?.gst_no && (
+                <InfoRow>
+                  <Typography sx={{ fontWeight: 600 }}>GSTIN:</Typography>
+                  <Typography>{booking?.customer?.gst_no || 'N/A'}</Typography>
+                </InfoRow>
+              )}
             </SummaryBox>
           </Section>
         </Grid>

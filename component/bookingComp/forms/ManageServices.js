@@ -50,18 +50,26 @@ export default function ManageServices({
     let gst = parseFloat(updated[index].gst) || 0;
     let amount = parseFloat(updated[index].amount) || 0;
 
-    // 🔹 If Rate and GST entered → Calculate Amount
+    // 🔹 If Rate or GST changed → Calculate Amount
     if (field === 'rate' || field === 'gst') {
-      if (rate && gst) {
-        amount = +(rate + (rate * gst) / 100).toFixed(2);
+      if (rate) {
+        if (gst) {
+          amount = +(rate + (rate * gst) / 100).toFixed(2);
+        } else {
+          amount = +rate.toFixed(2);
+        }
         updated[index].amount = amount;
       }
     }
 
-    // 🔹 If Amount and GST entered → Calculate Rate
-    if (field === 'amount' || field === 'gst') {
-      if (amount && gst && field === 'amount') {
-        rate = +(amount / (1 + gst / 100)).toFixed(2);
+    // 🔹 If Amount changed → Calculate Rate when GST is present, otherwise mirror amount
+    if (field === 'amount') {
+      if (amount) {
+        if (gst) {
+          rate = +(amount / (1 + gst / 100)).toFixed(2);
+        } else {
+          rate = +amount.toFixed(2);
+        }
         updated[index].rate = rate;
       }
     }
@@ -79,7 +87,7 @@ export default function ManageServices({
 
   const handleSaveAll = () => {
     for (let s of services) {
-      if (!s.item || !s.rate || !s.gst) {
+      if (!s.item || !s.rate) {
         WarningToast(
           'Please fill Room, Item, and Rate for all rows before saving.',
         );

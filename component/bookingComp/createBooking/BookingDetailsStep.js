@@ -176,10 +176,10 @@ export default function BookingDetailsStep({
               onChange={(e) => handleChange('meal_plan', e.target.value)}
             >
               <MenuItem value="">Not Selected</MenuItem>
-              <MenuItem value="EP">EP - Room Only</MenuItem>
-              <MenuItem value="CP">CP - Room + Breakfast</MenuItem>
-              <MenuItem value="MAP">MAP - Room + B&apos;fast + Dinner</MenuItem>
-              <MenuItem value="AP">AP - All Meals Included</MenuItem>
+              <MenuItem value="EP">Room Only</MenuItem>
+              <MenuItem value="CP">Room + Breakfast</MenuItem>
+              <MenuItem value="MAP">Room + B&apos;fast + Dinner</MenuItem>
+              <MenuItem value="AP">All Meals Included</MenuItem>
             </TextField>
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>

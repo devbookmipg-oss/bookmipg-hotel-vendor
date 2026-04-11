@@ -308,6 +308,7 @@ export default function BookingServiceActionsCard({
                   label="Manage Services"
                   color="warning"
                   disabled={
+                    booking.checked_in !== true ||
                     booking.booking_status === 'Cancelled' ||
                     booking.booking_status === 'Blocked'
                   }
@@ -318,6 +319,7 @@ export default function BookingServiceActionsCard({
                   label="Manage Food"
                   color="warning"
                   disabled={
+                    booking.checked_in !== true ||
                     booking.booking_status === 'Cancelled' ||
                     booking.booking_status === 'Blocked'
                   }

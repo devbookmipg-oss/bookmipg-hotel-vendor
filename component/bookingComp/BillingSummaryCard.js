@@ -59,19 +59,22 @@ export default function BillingSummaryCard({ booking }) {
   const deleteFoodItems = async ({ id, orderId }) => {
     const filteredFoodItems = foodItems.filter((_, index) => index !== id);
     try {
-      await UpdateData({
-        auth,
-        endPoint: 'table-orders',
-        id: orderId,
-        payload: {
-          data: {
-            closing_method: 'Room Transfer',
-            token_status: 'Open',
-            room_no: '',
-            room_booking: null,
+      if (orderId) {
+        await UpdateData({
+          auth,
+          endPoint: 'table-orders',
+          id: orderId,
+          payload: {
+            data: {
+              closing_method: 'Room Transfer',
+              token_status: 'Open',
+              room_no: '',
+              room_booking: null,
+            },
           },
-        },
-      });
+        });
+      }
+
       await UpdateData({
         endPoint: 'room-bookings',
         auth,

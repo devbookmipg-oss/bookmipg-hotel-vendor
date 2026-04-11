@@ -173,7 +173,10 @@ const RoomAvailabilityStep = ({
               );
 
               return (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={room.documentId}>
+                <Grid
+                  size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                  key={room.documentId}
+                >
                   <MotionCard
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -260,10 +263,6 @@ const RoomAvailabilityStep = ({
                         <Typography variant="caption" color="textSecondary">
                           <strong>Floor:</strong> {room.floor}
                         </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          <strong>Capacity:</strong>{' '}
-                          {room.occupancy_count || '—'}
-                        </Typography>
                       </Box>
 
                       <Divider sx={{ my: 1.5 }} />
@@ -323,7 +322,7 @@ const RoomAvailabilityStep = ({
             {selectedRooms.map((room) => (
               <Chip
                 key={room?.documentId}
-                label={`Room ${room?.room_no} - ${room?.category?.name}`}
+                label={`Room ${room?.room_no}`}
                 onDelete={() => handleRoomSelection(room)}
                 color="primary"
                 variant="outlined"

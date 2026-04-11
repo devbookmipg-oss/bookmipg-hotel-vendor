@@ -174,7 +174,7 @@ export default function GuestStep({ selectedGuest, setSelectedGuest }) {
           </Box>
         ) : filteredData.length > 0 ? (
           <Grid container spacing={2}>
-            {filteredData.map((guest) => {
+            {filteredData.slice(0, 5).map((guest) => {
               const isSelected = selectedGuest?.documentId === guest.documentId;
               return (
                 <Grid size={{ xs: 12, sm: 6 }} key={guest.documentId}>
