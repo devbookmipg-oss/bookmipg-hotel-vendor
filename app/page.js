@@ -184,27 +184,40 @@ export default function FacebookLogin() {
         );
         const hotel = await getUser(res.data.jwt, populatedUser.hotel_id);
 
-        // set the jwt in the cookies
-        setCookie(null, 'token', res.data.jwt, {
-          maxAge: 30 * 24 * 60 * 60,
-          path: '/',
-        });
-        // set the user in the cookies
-        setCookie(null, 'user', JSON.stringify(populatedUser), {
-          maxAge: 30 * 24 * 60 * 60,
-          path: '/',
-        });
-        setCookie(null, 'hotel', JSON.stringify(hotel), {
-          maxAge: 30 * 24 * 60 * 60,
-          path: '/',
-        });
-        dispatchAuth({
-          type: 'LOGIN_SUCCESS',
-          payload: { token: res.data.jwt, user: populatedUser },
-        });
+        const {
+          banner_image,
+          hotel_image1,
+          hotel_image2,
+          hotel_image3,
+          hotel_image4,
+          amenities,
+          online_bookings,
+          about,
+          ...restHotel
+        } = hotel;
 
-        router.push(`/dashboard`);
-        return;
+        if (populatedUser && hotel) {
+          setCookie(null, 'token', res.data.jwt, {
+            maxAge: 30 * 24 * 60 * 60,
+            path: '/',
+          });
+
+          setCookie(null, 'user', JSON.stringify(populatedUser), {
+            maxAge: 30 * 24 * 60 * 60,
+            path: '/',
+          });
+          setCookie(null, 'hotel', JSON.stringify(restHotel), {
+            maxAge: 30 * 24 * 60 * 60,
+            path: '/',
+          });
+          dispatchAuth({
+            type: 'LOGIN_SUCCESS',
+            payload: { token: res.data.jwt, user: populatedUser },
+          });
+
+          router.push(`/dashboard`);
+          return;
+        }
       }
     } catch (error) {
       setLoading(false);
