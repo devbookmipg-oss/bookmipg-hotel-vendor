@@ -241,7 +241,7 @@ const UpdateOrder = () => {
     endPoint: 'table-orders',
     id: orderId,
   });
-  console.log(existingOrder);
+  console.log('Existing Order:', existingOrder);
 
   const [localFoodItems, setLocalFoodItems] = useState(
     formData.food_items || [],
@@ -478,13 +478,7 @@ const UpdateOrder = () => {
         },
       },
     });
-    setFormData({
-      food_items: [],
-      notes: '',
-      hotel_id: auth?.user?.hotel_id || '',
-      table: '',
-      token_status: 'Open',
-    });
+
     SuccessToast('Order updated successfully');
     setLoading(false);
     router.push('/restaurant/table-orders');

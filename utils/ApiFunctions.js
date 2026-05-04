@@ -1,5 +1,5 @@
 import { BASEURL, fetcher } from '@/config/MainApi';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import axios from 'axios';
 
 // fetch data list
@@ -15,9 +15,12 @@ export const GetDataList = ({ auth, endPoint }) => {
 
 // get single data
 export const GetSingleData = ({ auth, endPoint, id }) => {
-  const { data } = useSWR(`${BASEURL}/${endPoint}/${id}?populate=*`, fetcher, {
+  const apiUrl = `${BASEURL}/${endPoint}/${id}?populate=*`;
+  const { data } = useSWR(apiUrl, fetcher, {
     revalidateOnFocus: true,
+    revalidateOnMount: true,
     refreshInterval: 1000,
+    dedupingInterval: 2000,
   });
   return data;
 };
@@ -39,6 +42,10 @@ export const UpdateData = async ({ auth, endPoint, id, payload }) => {
       Authorization: `Bearer ${auth.token}`,
     },
   });
+
+  // Ensure the single-item cache is revalidated after an update
+  mutate(`${BASEURL}/${endPoint}/${id}?populate=*`);
+
   return res;
 };
 
