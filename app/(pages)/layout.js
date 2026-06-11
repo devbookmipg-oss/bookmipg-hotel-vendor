@@ -15,6 +15,7 @@ import {
   RateReview,
   ShoppingCart,
 } from '@mui/icons-material';
+import { GetSingleData } from '@/utils/ApiFunctions';
 
 // styles
 const Container = styled(Box)`
@@ -218,9 +219,20 @@ const filterMenuByAccess = (menuLinks, access = []) => {
 
 const Layout = ({ children }) => {
   const { logout, auth } = useAuth();
+  console.log('auth in layout', auth);
   const access = auth?.user?.access || [];
 
   const visibleMenus = filterMenuByAccess(menuLinks, access);
+
+  const profile = GetSingleData({
+    endPoint: 'hotels',
+    id: auth?.user?.hotel_id,
+    auth,
+  });
+
+  if (!profile) {
+    return <div>404 Not Found...</div>;
+  }
 
   return (
     <>
