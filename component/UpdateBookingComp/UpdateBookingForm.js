@@ -25,6 +25,7 @@ import RoomAvailabilityStep from './RoomAvailabilityStep';
 import FinalPreviewStep from './FinalPreviewStep';
 import { GetTodaysDate } from '@/utils/DateFetcher';
 import { Check } from 'lucide-react';
+import dayjs from 'dayjs';
 
 const steps = [
   { label: 'Guest', icon: '👤' },
@@ -46,6 +47,45 @@ const generateNextBookingId = (bookings) => {
   const maxNumber = Math.max(...numbers);
 
   return `SOLV-${maxNumber + 1}`;
+};
+
+const buildInitialSelectedRooms = (bookingData = {}) => {
+  const roomSelections = [];
+  const bookingRooms = Array.isArray(bookingData?.rooms)
+    ? bookingData.rooms
+    : [];
+  const roomLookup = new Map(
+    bookingRooms.map((room) => [String(room.room_no), room]),
+  );
+  const roomTokens = Array.isArray(bookingData?.room_tokens)
+    ? bookingData.room_tokens
+    : [];
+
+  if (!roomTokens.length) return [];
+
+  roomTokens.forEach((token) => {
+    const roomDetails = roomLookup.get(String(token.room)) || {};
+    const start = dayjs(token.in_date || bookingData?.checkin_date);
+    const end = dayjs(token.out_date || bookingData?.checkout_date);
+
+    if (!start.isValid() || !end.isValid() || end.isBefore(start)) return;
+
+    let current = start;
+
+    while (current.isBefore(end, 'day')) {
+      const date = current.format('YYYY-MM-DD');
+      roomSelections.push({
+        key: `${roomDetails.room_no || token.room}-${date}`,
+        ...roomDetails,
+        documentId: roomDetails.documentId || roomDetails.id,
+        room_no: roomDetails.room_no || token.room,
+        date,
+      });
+      current = current.add(1, 'day');
+    }
+  });
+
+  return roomSelections;
 };
 
 const UpdateBookingForm = ({
@@ -81,8 +121,12 @@ const UpdateBookingForm = ({
     children: bookingData?.children || 0,
   });
 
-  const [selectedRooms, setSelectedRooms] = useState([...bookingData?.rooms]);
-  const cleanedTokens = bookingData.room_tokens.map(({ id, ...rest }) => rest);
+  const [selectedRooms, setSelectedRooms] = useState(() =>
+    buildInitialSelectedRooms(bookingData),
+  );
+  const cleanedTokens = (bookingData?.room_tokens || []).map(
+    ({ id, ...rest }) => rest,
+  );
   const [roomTokens, setRoomTokens] = useState([...cleanedTokens]);
   const [paymentDetails, setPaymentDetails] = useState({
     date: bookingData?.advance_payment?.date,
@@ -126,9 +170,9 @@ const UpdateBookingForm = ({
 
   const handleSubmitBooking = async () => {
     if (!validateStep()) return;
-    const rooms = selectedRooms.map((r) => {
-      return r.documentId;
-    });
+    const rooms = selectedRooms
+      .map((r) => r.documentId || r.id || r._id)
+      .filter(Boolean);
     try {
       setLoading(true);
 

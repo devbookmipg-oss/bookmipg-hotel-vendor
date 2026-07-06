@@ -9,7 +9,7 @@ import {
   GetUsers,
   GetUserList,
 } from '@/utils/ApiFunctions';
-import { SuccessToast } from '@/utils/GenerateToast';
+import { ErrorToast, SuccessToast } from '@/utils/GenerateToast';
 import { Loader } from '@/component/common';
 
 import {
@@ -106,7 +106,7 @@ const Page = () => {
 
   const validate = () => {
     let newErrors = {};
-    if (!formData.username.trim()) newErrors.username = 'Username is required';
+
     if (!password.trim() && !editing)
       newErrors.password = 'Password is required';
     setErrors(newErrors);
@@ -114,9 +114,18 @@ const Page = () => {
   };
 
   const handleSave = async () => {
+    console.log('clicked save');
     if (!validate()) return;
 
     if (editing) {
+      await UpdateUser();
+    } else {
+      await CreateNewUser();
+    }
+  };
+
+  const UpdateUser = async () => {
+    try {
       let data = {
         permissions: formData.permissions,
         access: formData.access,
@@ -124,7 +133,8 @@ const Page = () => {
         confirmed: formData.confirmed,
         hotel_id: formData.hotel_id,
         role: formData.role,
-        username: formData.username,
+        username: formData.email,
+        email: formData.email,
       };
       if (password) {
         data = {
@@ -140,18 +150,30 @@ const Page = () => {
         payload: data,
       });
       SuccessToast('User updated successfully');
-    } else {
+      setFormOpen(false);
+      setFormData(initialForm());
+      setPassword('');
+    } catch (err) {
+      console.log(err);
+      ErrorToast(err.response.data.error.message || 'Failed to update user');
+    }
+  };
+
+  const CreateNewUser = async () => {
+    try {
       await CreateNewData({
         auth,
         endPoint: 'users',
-        payload: { ...formData, password: password },
+        payload: { ...formData, password: password, username: formData.email },
       });
       SuccessToast('User created successfully');
+      setFormOpen(false);
+      setFormData(initialForm());
+      setPassword('');
+    } catch (err) {
+      console.log(err);
+      ErrorToast(err.response.data.error.message || 'Failed to create user');
     }
-    setFormOpen(false);
-    setFormData(initialForm());
-    setPassword('');
-    setUserSearch('');
   };
 
   const handleDeleteClick = (row) => {
@@ -192,6 +214,7 @@ const Page = () => {
               label="Search by Username"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
+              autoComplete="off"
             />
             <Button
               variant="contained"
@@ -209,24 +232,17 @@ const Page = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                  {[
-                    '#',
-                    'Username',
-                    'Email',
-                    'Role',
-                    'Access',
-
-                    'Status',
-                    'Actions',
-                  ].map((h) => (
-                    <TableCell
-                      key={h}
-                      sx={{ fontWeight: 'bold' }}
-                      align={h === 'Access' ? 'center' : 'left'}
-                    >
-                      {h}
-                    </TableCell>
-                  ))}
+                  {['#', 'Email', 'Role', 'Access', 'Status', 'Actions'].map(
+                    (h) => (
+                      <TableCell
+                        key={h}
+                        sx={{ fontWeight: 'bold' }}
+                        align={h === 'Access' ? 'center' : 'left'}
+                      >
+                        {h}
+                      </TableCell>
+                    ),
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -239,7 +255,6 @@ const Page = () => {
                   ?.map((row, index) => (
                     <TableRow key={row.documentId}>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{row.username}</TableCell>
                       <TableCell>{row.email}</TableCell>
                       <TableCell>
                         {row.role?.name === 'hotel-admin'
@@ -360,19 +375,6 @@ const Page = () => {
             <DialogTitle>{editing ? 'Edit User' : 'Create User'}</DialogTitle>
             <DialogContent>
               <Grid container spacing={5} sx={{ mt: 3 }}>
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    label="Username"
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    error={!!errors.username}
-                    helperText={errors.username}
-                  />
-                </Grid>
-
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth

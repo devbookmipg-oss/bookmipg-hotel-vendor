@@ -91,6 +91,7 @@ export default function BookingForm() {
     booking_status: 'Confirmed',
     checkin_date: formatDate(todaysdate),
     checkout_date: formatDate(tomorrow),
+    meal_plan: 'EP',
   });
 
   const [selectedRooms, setSelectedRooms] = useState([]);
@@ -177,6 +178,7 @@ export default function BookingForm() {
         room_tokens: roomTokens,
         advance_payment: paymentDetails,
         hotel_id: auth?.user?.hotel_id || '',
+        user_created: auth?.user?.username,
       };
 
       const res = await CreateNewData({
@@ -490,8 +492,8 @@ export default function BookingForm() {
                         gap: 0.5,
                       }}
                     >
-                      {selectedRooms.map((room) => (
-                        <Typography key={room.documentId} variant="caption">
+                      {selectedRooms.map((room, index) => (
+                        <Typography key={index} variant="caption">
                           {room.room_no} - {room.category?.name}
                         </Typography>
                       ))}

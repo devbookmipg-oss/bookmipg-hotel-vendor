@@ -2,7 +2,7 @@
 import { useAuth } from '@/context';
 import { Box, styled } from '@mui/material';
 
-import { Header, Sidebar } from '@/component/common';
+import { Header, Loader, Sidebar } from '@/component/common';
 import {
   AccountBalance,
   AdminPanelSettings,
@@ -15,7 +15,8 @@ import {
   RateReview,
   ShoppingCart,
 } from '@mui/icons-material';
-import { GetSingleData } from '@/utils/ApiFunctions';
+import { GetSingleData, GetSingleUser } from '@/utils/ApiFunctions';
+import AccountBlocked from '@/component/common/AccountBlocked';
 
 // styles
 const Container = styled(Box)`
@@ -219,19 +220,33 @@ const filterMenuByAccess = (menuLinks, access = []) => {
 
 const Layout = ({ children }) => {
   const { logout, auth } = useAuth();
-  console.log('auth in layout', auth);
+
   const access = auth?.user?.access || [];
 
   const visibleMenus = filterMenuByAccess(menuLinks, access);
 
-  const profile = GetSingleData({
+  const data = GetSingleData({
     endPoint: 'hotels',
     id: auth?.user?.hotel_id,
     auth,
   });
 
-  if (!profile) {
-    return <div>404 Not Found...</div>;
+  const user = GetSingleUser({
+    endPoint: 'users',
+    auth: auth,
+    id: auth?.user?.id,
+  });
+
+  if (!data) {
+    return <Loader />;
+  }
+
+  if (data && data?.blocked) {
+    return <AccountBlocked />;
+  }
+
+  if (data?.blocked || !user?.confirmed) {
+    return <AccountBlocked />;
   }
 
   return (

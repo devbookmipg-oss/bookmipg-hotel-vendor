@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -16,12 +16,13 @@ import {
   Chip,
   Grid,
   MenuItem,
+  FormControlLabel,
+  Checkbox,
   Divider,
 } from '@mui/material';
 import { CalculateDays } from '@/utils/CalculateDays';
 import { CreditCard, MapPin, User, DollarSign } from 'lucide-react';
 
-// SectionCard Component - OUTSIDE render to prevent recreation and focus loss
 const SectionCard = ({ icon: Icon, title, children }) => (
   <Card sx={{ borderRadius: 2, mb: 3, border: '1px solid #e0e0e0' }}>
     <CardContent>
@@ -53,12 +54,60 @@ const FinalPreviewStep = ({
   setPaymentDetails,
   paymentMethods,
 }) => {
+  const [useBulkPrice, setUseBulkPrice] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [bulkGst, setBulkGst] = useState('');
+
   const totalDays = CalculateDays({
     checkin: bookingDetails.checkin_date,
     checkout: bookingDetails.checkout_date,
   });
 
-  // ✅ Bidirectional handler
+  const applyBulkChanges = useCallback(
+    (priceValue, gstValue) => {
+      const numericPrice = parseFloat(priceValue) || 0;
+      const numericGst = parseFloat(gstValue) || 0;
+      const hasPrice = priceValue !== '' && numericPrice >= 0;
+      const hasGst = gstValue !== '' && numericGst >= 0;
+
+      if (useBulkPrice && (hasPrice || hasGst)) {
+        const updated = roomTokens.map((room) => {
+          const currentRate = parseFloat(room.rate) || 0;
+          const currentGst = parseFloat(room.gst) || 0;
+
+          const rate = hasPrice ? numericPrice : currentRate;
+          const gst = hasGst ? numericGst : currentGst;
+          const days = parseFloat(room.days) || totalDays;
+          const newAmount = (rate + (rate * gst) / 100) * days;
+
+          return {
+            ...room,
+            rate: parseFloat(rate.toFixed(2)),
+            gst: parseFloat(gst.toFixed(2)),
+            amount: parseFloat(newAmount.toFixed(2)),
+          };
+        });
+
+        setRoomTokens(updated);
+      }
+    },
+    [roomTokens, setRoomTokens, totalDays, useBulkPrice],
+  );
+
+  useEffect(() => {
+    if (useBulkPrice) {
+      applyBulkChanges(bulkPrice, bulkGst);
+    }
+  }, [useBulkPrice, bulkPrice, bulkGst, applyBulkChanges]);
+
+  const handleBulkModeChange = (checked) => {
+    setUseBulkPrice(checked);
+    if (!checked) {
+      setBulkPrice('');
+      setBulkGst('');
+    }
+  };
+
   const handleChange = (index, field, value) => {
     const updated = [...roomTokens];
     const room = { ...updated[index] };
@@ -72,22 +121,29 @@ const FinalPreviewStep = ({
     const amount = parseFloat(room.amount) || 0;
 
     if (field === 'rate' || field === 'gst') {
-      // Forward calc
       const newAmount = (rate + (rate * gst) / 100) * days;
       room.amount = parseFloat(newAmount.toFixed(2));
     } else if (field === 'amount') {
-      // Reverse calc
       const base = amount / days;
       const newRate = base / (1 + gst / 100);
       room.rate = parseFloat(newRate.toFixed(2));
     }
 
-    // Keep everything to 2 decimals
     room.rate = parseFloat((room.rate || 0).toFixed(2));
     room.amount = parseFloat((room.amount || 0).toFixed(2));
 
     updated[index] = room;
     setRoomTokens(updated);
+  };
+
+  const handleBulkPriceChange = (value) => {
+    setBulkPrice(value);
+    applyBulkChanges(value, bulkGst);
+  };
+
+  const handleBulkGstChange = (value) => {
+    setBulkGst(value);
+    applyBulkChanges(bulkPrice, value);
   };
 
   const handleAdvanceChange = (field, value) => {
@@ -97,11 +153,13 @@ const FinalPreviewStep = ({
     }));
   };
 
-  const totalAmount = roomTokens.reduce((sum, r) => sum + (r.amount || 0), 0);
+  const totalAmount = (roomTokens || []).reduce(
+    (sum, r) => sum + (r.amount || 0),
+    0,
+  );
 
   return (
     <Box>
-      {/* Guest Information */}
       {selectedGuest && (
         <SectionCard icon={User} title="Guest Information">
           <Box>
@@ -150,7 +208,6 @@ const FinalPreviewStep = ({
         </SectionCard>
       )}
 
-      {/* Booking Details */}
       <SectionCard icon={MapPin} title="Booking Details">
         <Grid container spacing={1.5}>
           <Grid size={{ xs: 12, sm: 3 }}>
@@ -212,29 +269,73 @@ const FinalPreviewStep = ({
         </Grid>
       </SectionCard>
 
-      {/* Selected Rooms */}
-      <SectionCard
-        icon={MapPin}
-        title={`Selected Rooms (${selectedRooms.length})`}
-      >
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {selectedRooms.map((room) => (
-            <Chip
-              key={room.documentId}
-              label={`Room ${room.room_no} - ${room.category.name}`}
-              color="primary"
-              variant="outlined"
-              sx={{
-                borderColor: '#c20f12',
-                color: '#c20f12',
-                fontWeight: 600,
-              }}
-            />
-          ))}
-        </Box>
-      </SectionCard>
+      {selectedRooms.length > 0 && (
+        <SectionCard icon={DollarSign} title="Selected Rooms">
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {selectedRooms.map((room) => (
+              <Chip
+                key={room.key || `${room.room_no}-${room.date}`}
+                label={`Room ${room.room_no} • ${room.date}`}
+                color="info"
+                size="small"
+              />
+            ))}
+          </Box>
+        </SectionCard>
+      )}
 
-      {/* Room Pricing Table */}
+      {roomTokens.length > 0 && (
+        <Card sx={{ borderRadius: 2, mb: 3, border: '1px solid #e0e0e0' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={useBulkPrice}
+                    onChange={(e) => handleBulkModeChange(e.target.checked)}
+                    sx={{
+                      color: '#c20f12',
+                      '&.Mui-checked': { color: '#c20f12' },
+                    }}
+                  />
+                }
+                label="Set bulk price and GST"
+                sx={{
+                  '.MuiFormControlLabel-label': {
+                    fontWeight: 600,
+                    color: '#424242',
+                  },
+                }}
+              />
+            </Box>
+            {useBulkPrice && (
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <TextField
+                  type="number"
+                  label="Enter price for all rooms"
+                  placeholder="0.00"
+                  value={bulkPrice}
+                  onChange={(e) => handleBulkPriceChange(e.target.value)}
+                  size="small"
+                  sx={{ width: 250 }}
+                  inputProps={{ step: '0.01', min: '0' }}
+                />
+                <TextField
+                  type="number"
+                  label="Enter GST % for all rooms"
+                  placeholder="0.00"
+                  value={bulkGst}
+                  onChange={(e) => handleBulkGstChange(e.target.value)}
+                  size="small"
+                  sx={{ width: 250 }}
+                  inputProps={{ step: '0.01', min: '0', max: '100' }}
+                />
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card
         sx={{
           borderRadius: 2,
@@ -283,15 +384,20 @@ const FinalPreviewStep = ({
               <TableBody>
                 {roomTokens.map((room, index) => (
                   <TableRow
-                    key={room.room}
+                    key={room.room || `${room.item}-${index}`}
                     sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}
                   >
                     <TableCell sx={{ fontWeight: 600 }}>{room.room}</TableCell>
-                    <TableCell>{room.item}</TableCell>
+                    <TableCell>
+                      {room.item ||
+                        room.room_type ||
+                        room.category?.name ||
+                        'Room'}
+                    </TableCell>
                     <TableCell align="right">
                       <TextField
                         type="number"
-                        value={room.rate}
+                        value={room.rate ?? ''}
                         onChange={(e) =>
                           handleChange(index, 'rate', e.target.value)
                         }
@@ -306,7 +412,7 @@ const FinalPreviewStep = ({
                     <TableCell align="right">
                       <TextField
                         type="number"
-                        value={room.gst}
+                        value={room.gst ?? ''}
                         onChange={(e) =>
                           handleChange(index, 'gst', e.target.value)
                         }
@@ -321,7 +427,7 @@ const FinalPreviewStep = ({
                     >
                       <TextField
                         type="number"
-                        value={room.amount}
+                        value={room.amount ?? ''}
                         onChange={(e) =>
                           handleChange(index, 'amount', e.target.value)
                         }
@@ -356,7 +462,6 @@ const FinalPreviewStep = ({
         </CardContent>
       </Card>
 
-      {/* Advance Payment */}
       <SectionCard icon={CreditCard} title="Advance Payment">
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 4 }}>
@@ -373,11 +478,7 @@ const FinalPreviewStep = ({
               size="small"
               value={paymentDetails.mode}
               onChange={(e) => handleAdvanceChange('mode', e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1.5,
-                },
-              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
             >
               <MenuItem value="">Select Payment Mode</MenuItem>
               {paymentMethods?.map((method) => (
@@ -402,11 +503,7 @@ const FinalPreviewStep = ({
               placeholder="0"
               value={paymentDetails.amount}
               onChange={(e) => handleAdvanceChange('amount', e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1.5,
-                },
-              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
             />
           </Grid>
           <Grid size={12}>
@@ -425,17 +522,12 @@ const FinalPreviewStep = ({
               placeholder="Any special notes about this payment..."
               value={paymentDetails.remark || ''}
               onChange={(e) => handleAdvanceChange('remark', e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 1.5,
-                },
-              }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1.5 } }}
             />
           </Grid>
         </Grid>
       </SectionCard>
 
-      {/* Amount Summary */}
       <Card
         sx={{
           borderRadius: 2,
@@ -467,7 +559,7 @@ const FinalPreviewStep = ({
                 ₹{totalAmount.toFixed(2)}
               </Typography>
             </Grid>
-            {paymentDetails.amount > 0 && (
+            {parseFloat(paymentDetails.amount || 0) > 0 && (
               <>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="textSecondary">
