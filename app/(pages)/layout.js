@@ -237,17 +237,17 @@ const Layout = ({ children }) => {
     id: auth?.user?.id,
   });
 
-  if (!data) {
-    return <Loader />;
-  }
+  // if (!data) {
+  //   return <Loader />;
+  // }
 
-  if (data && data?.blocked) {
-    return <AccountBlocked />;
-  }
+  // if (data && data?.blocked) {
+  //   return <AccountBlocked />;
+  // }
 
-  if (data?.blocked || !user?.confirmed) {
-    return <AccountBlocked />;
-  }
+  // if (data?.blocked || !user?.confirmed) {
+  //   return <AccountBlocked />;
+  // }
 
   return (
     <>

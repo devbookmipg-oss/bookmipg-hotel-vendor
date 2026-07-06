@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   Box,
@@ -19,6 +19,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { SuccessToast } from '@/utils/GenerateToast';
+import { useSWRConfig } from 'swr';
+import { BASEURL } from '@/config/MainApi';
 
 export default function ManageRoomTariff({
   open,
@@ -26,39 +28,41 @@ export default function ManageRoomTariff({
   booking,
   handleManageRoomTariff,
 }) {
+  const { mutate } = useSWRConfig();
   const [roomTokens, setRoomTokens] = useState([...booking?.room_tokens]);
   const [highlightedIndex, setHighlightedIndex] = useState(null);
 
+  useEffect(() => {
+    setRoomTokens([...(booking?.room_tokens || [])]);
+  }, [booking?.room_tokens]);
+
   const handleInlineChange = (index, field, value) => {
     const updated = [...roomTokens];
-    updated[index][field] = value;
+    const row = { ...updated[index] };
 
-    let rate = parseFloat(updated[index].rate) || 0;
-    let gst = parseFloat(updated[index].gst) || 0;
-    let amount = parseFloat(updated[index].amount) || 0;
+    row[field] = value === '' ? '' : Number(value);
 
-    // 🔹 If Rate and GST entered → calculate Amount
+    const rate = Number(row.rate) || 0;
+    const gst = Number(row.gst) || 0;
+    const days = Number(row.days) || 1;
+    const amount = Number(row.amount) || 0;
+
     if (field === 'rate' || field === 'gst') {
-      if (rate && gst) {
-        amount = +(rate + (rate * gst) / 100).toFixed(2);
-        updated[index].amount = amount;
-      }
+      row.amount = Number(((rate + (rate * gst) / 100) * days).toFixed(2));
     }
 
-    // 🔹 If Amount and GST entered → calculate Rate
-    if (field === 'amount' || field === 'gst') {
-      if (amount && gst && field === 'amount') {
-        rate = +(amount / (1 + gst / 100)).toFixed(2);
-        updated[index].rate = rate;
-      }
+    if (field === 'amount') {
+      row.rate = Number((amount / ((1 + gst / 100) * days)).toFixed(2));
     }
+
+    updated[index] = row;
 
     setRoomTokens(updated);
     setHighlightedIndex(index);
     setTimeout(() => setHighlightedIndex(null), 800);
   };
 
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     for (let s of roomTokens) {
       if (!s.room || !s.item || !s.rate) {
         alert('Please fill Room, Item, and Rate for all rows before saving.');
@@ -66,9 +70,18 @@ export default function ManageRoomTariff({
       }
     }
 
-    handleManageRoomTariff(roomTokens);
-    SuccessToast('Room Tariff updated successfully');
-    setOpen(false);
+    try {
+      const res = await handleManageRoomTariff(roomTokens);
+      if (res) {
+        await mutate(
+          `${BASEURL}/room-bookings/${booking?.documentId}?populate=*`,
+        );
+      }
+      SuccessToast('Room Tariff updated successfully');
+      setOpen(false);
+    } catch (err) {
+      console.error('ManageRoomTariff save error', err);
+    }
   };
 
   const handleClose = () => {
@@ -76,14 +89,14 @@ export default function ManageRoomTariff({
   };
 
   return (
-    <Modal open={open}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: { xs: '95%', sm: 850 },
+          width: { xs: '95%', sm: 900 },
           bgcolor: 'background.paper',
           borderRadius: 3,
           p: 3,
@@ -123,6 +136,7 @@ export default function ManageRoomTariff({
                   'HSN',
                   'Rate (₹)',
                   'GST (%)',
+                  'Days',
                   'Amount (₹)',
                 ].map((header) => (
                   <TableCell
@@ -153,33 +167,43 @@ export default function ManageRoomTariff({
                     <TableCell>
                       <TextField
                         size="small"
-                        type="number"
-                        value={room.rate}
-                        onChange={(e) =>
-                          handleInlineChange(index, 'rate', e.target.value)
-                        }
+                        value={room.rate ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^\d*\.?\d*$/.test(value)) {
+                            handleInlineChange(index, 'rate', value);
+                          }
+                        }}
+                        inputProps={{ inputMode: 'decimal' }}
                         fullWidth
                       />
                     </TableCell>
                     <TableCell>
                       <TextField
                         size="small"
-                        type="number"
-                        value={room.gst}
-                        onChange={(e) =>
-                          handleInlineChange(index, 'gst', e.target.value)
-                        }
+                        value={room.gst ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^\d*\.?\d*$/.test(value)) {
+                            handleInlineChange(index, 'gst', value);
+                          }
+                        }}
+                        inputProps={{ inputMode: 'decimal' }}
                         fullWidth
                       />
                     </TableCell>
+                    <TableCell>{room.days}</TableCell>
                     <TableCell>
                       <TextField
                         size="small"
-                        type="number"
-                        value={room.amount}
-                        onChange={(e) =>
-                          handleInlineChange(index, 'amount', e.target.value)
-                        }
+                        value={room.amount ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^\d*\.?\d*$/.test(value)) {
+                            handleInlineChange(index, 'amount', value);
+                          }
+                        }}
+                        inputProps={{ inputMode: 'decimal' }}
                         fullWidth
                       />
                     </TableCell>

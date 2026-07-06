@@ -28,7 +28,6 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
   const services = booking?.service_tokens || [];
   const foodItems = booking?.food_tokens || [];
 
-  const [selectedPayment, setSelectedPayment] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [paymentToDelete, setPaymentToDelete] = useState(null);
 
@@ -40,7 +39,7 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
   const advancePayment = booking?.advance_payment || null;
   const advanceAmount = advancePayment?.amount || 0;
   const totalRoomAmount = roomTokens.reduce(
-    (sum, r) => sum + (parseFloat(r.total_amount) || r.amount || 0),
+    (sum, r) => sum + (parseFloat(r.amount) || r.amount || 0),
     0,
   );
   const totalServiceAmount = services.reduce(
@@ -51,9 +50,12 @@ export default function PaymentHistoryCard({ booking, hotel, auth }) {
     (sum, f) => sum + (parseFloat(f.total_amount) || 0),
     0,
   );
-  const grandTotal = totalRoomAmount + totalServiceAmount + totalFoodAmount;
-  const amountPayed = totalAmount + advanceAmount;
-  const dueAmount = grandTotal - amountPayed;
+  const grandTotal =
+    parseFloat(totalRoomAmount) +
+    parseFloat(totalServiceAmount) +
+    parseFloat(totalFoodAmount);
+  const amountPayed = parseFloat(totalAmount) + parseFloat(advanceAmount);
+  const dueAmount = parseFloat(grandTotal) - parseFloat(amountPayed);
 
   // ---- Delete logic ----
   const handleOpenDeleteDialog = (payment) => {
