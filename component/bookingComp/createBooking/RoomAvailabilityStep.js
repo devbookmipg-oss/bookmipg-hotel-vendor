@@ -481,74 +481,8 @@ const RoomAvailabilityStep = ({
     setRoomTokens(buildRoomTokens(updatedSelectedRooms));
   };
 
-  const removeSelection = (key) => {
-    const updatedSelectedRooms = selectedRooms.filter((r) => r.key !== key);
-
-    setSelectedRooms(updatedSelectedRooms);
-    setRoomTokens(buildRoomTokens(updatedSelectedRooms));
-  };
-
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ mb: 2.5 }}>
-        <Typography
-          variant="caption"
-          sx={{
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            color: '#666',
-            display: 'block',
-            mb: 1,
-          }}
-        >
-          Filter by Category
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Button
-            variant={selectedCategory === 'all' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => setSelectedCategory('all')}
-            startIcon={<GridIcon size={16} />}
-            sx={{
-              borderRadius: 1.5,
-              textTransform: 'none',
-              fontWeight: 600,
-              bgcolor: selectedCategory === 'all' ? '#c20f12' : 'inherit',
-              borderColor: selectedCategory === 'all' ? '#c20f12' : '#ddd',
-            }}
-          >
-            All Rooms
-          </Button>
-
-          {categories?.map((category) => (
-            <Button
-              key={category.documentId}
-              variant={
-                selectedCategory === category.documentId
-                  ? 'contained'
-                  : 'outlined'
-              }
-              size="small"
-              onClick={() => setSelectedCategory(category.documentId)}
-              startIcon={<Tag size={16} />}
-              sx={{
-                borderRadius: 1.5,
-                textTransform: 'none',
-                fontWeight: 600,
-                bgcolor:
-                  selectedCategory === category.documentId
-                    ? '#c20f12'
-                    : 'inherit',
-                borderColor:
-                  selectedCategory === category.documentId ? '#c20f12' : '#ddd',
-              }}
-            >
-              {category.name}
-            </Button>
-          ))}
-        </Box>
-      </Box>
-
       <Box
         sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
       >
