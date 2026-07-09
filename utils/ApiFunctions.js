@@ -14,7 +14,7 @@ export const GetDataList = ({ auth, endPoint }) => {
 };
 
 // get single data
-export const GetSingleData = ({ auth, endPoint, id }) => {
+export const GetSingleData = ({ endPoint, id }) => {
   const apiUrl = `${BASEURL}/${endPoint}/${id}?populate=*`;
   const { data } = useSWR(apiUrl, fetcher, {
     revalidateOnFocus: true,
@@ -84,24 +84,13 @@ export const GetUserList = ({ auth }) => {
 };
 
 // fetch data list
-export const GetUnfilteredDataList = ({ auth, endPoint }) => {
+export const GetUnfilteredDataList = ({ endPoint }) => {
   const apiUrl = `${BASEURL}/${endPoint}?sort=createdAt:DESC&populate=*`;
 
-  const { data } = useSWR(
-    apiUrl,
-    async (url) => {
-      const res = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${auth.token}`,
-        },
-      });
-      return res.data.data;
-    },
-    {
-      refreshInterval: 500,
-      revalidateOnFocus: true,
-    },
-  );
+  const { data } = useSWR(apiUrl, fetcher, {
+    refreshInterval: 500,
+    revalidateOnFocus: true,
+  });
   return data;
 };
 

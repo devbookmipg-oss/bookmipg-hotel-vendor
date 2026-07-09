@@ -4,6 +4,18 @@ import { jwtDecode } from 'jwt-decode';
 export function middleware(req) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get('token')?.value;
+  const publicPaths = ['/manage-bookings'];
+
+  const isPublicPath =
+    publicPaths.includes(pathname) || pathname.startsWith('/manage-bookings/');
+
+  if (isPublicPath) {
+    return NextResponse.next();
+  }
+
+  if (publicPaths.includes(pathname)) {
+    return NextResponse.next();
+  }
 
   // If user is logged in and tries to go to "/", redirect to /dashboard
   if (pathname === '/') {
